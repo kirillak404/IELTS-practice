@@ -1,74 +1,23 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Personal Account
+    Practice
 {% endblock %}
 
 {% block main %}
-<h3>
-  Hello 👋
-  <small class="text-muted">Here's what you have</small>
-</h3>
-<br>
-<h5>Cash: <mark>{{ cash | usd }}</mark></h5>
-<h5>Stocks: <mark>{{ stocks_price | usd }}</mark></h5>
-<h5>Total: <mark>{{ total | usd }}</mark></h5>
-<br>
 
-{% if stocks %}
-
-<table class="table table-hover table-borderless text-start">
- <thead class="thead-light">
-    <tr class="table-header">
-      <th scope="col" >Symbol</th>
-      <th scope="col">Name</th>
-      <th scope="col">Shares</th>
-      <th scope="col">Price</th>
-      <th scope="col">Change</th>
-      <th scope="col">TOTAL</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for stock in stocks %}
-
-    <tr>
-      <td>{{ stock["symbol"] }}</td>
-      <td>{{ stock["name"] }}</td>
-      <td>{{ stock["shares"] }}</td>
-      <td>{{ stock["price"] | usd }}</td>
-      <td class="price-change">{{ stock["price_diff_pers"] | percent }} ({{ stock["price_diff_abs"] | usd }})</td>
-      <td>{{ stock["total_price"] | usd }}</td>
-    </tr>
-
-  {% endfor %}
-  </tbody>
-</table>
-
-
-<script>
-    // Получение всех элементов с классом "price-change"
-    const priceChangeElements = document.querySelectorAll('.price-change');
-
-    // Обработка каждого элемента
-    priceChangeElements.forEach((element) => {
-        // Получение текста элемента
-        const textContent = element.textContent;
-
-        // Извлечение числового значения из текста
-        const value = parseFloat(textContent);
-
-        // Установка цвета текста элемента в зависимости от значения
-        if (value < 0) {
-            element.style.color = 'red';
-        } else if (value > 0) {
-            element.style.color = 'green';
-        } else {
-            element.style.color = 'black';
-        }
-    });
-</script>
+{% if current_user.is_authenticated %}
+    <h2>Authorized user content</h2>
+    <p>Welcome, {{ current_user.email }}!</p>
+{% else %}
+    <h2>Public content</h2>
+    <p>This content is visible to everyone.</p>
+    <a href="{{ url_for('register') }}">
+        <button type="submit" class="btn btn-primary btn-lg">Register for free</button>
+    </a>
 
 
 {% endif %}
+
 
 {% endblock %}

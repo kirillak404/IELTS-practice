@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Sign in
+{% endblock %}
+
+{% block main %}
+<h2>
+  Sign in
+</h2>
+<br>
+
+<div class="container">
+  <form style="width: 40%; margin: 0 auto;">
+    <div class="form-floating mb-3">
+      <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+      <label for="floatingInput">Email address</label>
+    </div>
+  <div class="form-floating">
+    <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
+    <label for="floatingPassword">Password</label>
+  </div>
+
+  <div class="d-grid gap-2 mt-3">
+    <input type="submit" class="btn btn-primary btn-lg" value="Sign In">
+  </div>
+
+  </form>
+</div>
+
+
+
+{% endblock %}

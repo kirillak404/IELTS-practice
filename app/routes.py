@@ -1,10 +1,11 @@
 import os
 import time
 
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect
 
 from app import app
 from app.utils import transcript_file
+from app.forms import LoginForm
 
 
 @app.route('/')
@@ -12,9 +13,14 @@ def hello_world():
     return render_template("practice.html")
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    return render_template("login.html")
+    form = LoginForm()
+    if form.validate_on_submit():
+        print("valid")
+        return redirect('/')
+    print("invalid")
+    return render_template('login.html', form=form)
 
 
 @app.route("/upload_audio", methods=["POST"])

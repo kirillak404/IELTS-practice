@@ -72,3 +72,10 @@ async function sendAudioFile(blob) {
   }
 }
 
+
+$(document).ready(function() {
+    $('input').on('input', function() {
+        $(this).removeClass('is-invalid is-valid');
+    });
+});
+

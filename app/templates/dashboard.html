@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Select practice
+{% endblock %}
+
+{% block h1 %}
+{% if current_user.is_authenticated %}
+Hello {{ current_user.first_name or 'there' }} 👋
+{% endif %}
+{% endblock %}
+
+{% block main %}
+
+
+<div class="row">
+   <div class="col">
+      <div class="card mb-4" style="width: 18rem;">
+         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <title>Placeholder</title>
+            <rect width="100%" height="100%" fill="#868e96"></rect>
+            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
+         </svg>
+         <div class="card-body">
+            <h5 class="card-title">Speaking</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="{{ url_for('practice_speaking') }}" class="btn btn-primary">Practice Speaking</a>
+         </div>
+      </div>
+   </div>
+   <div class="col">
+      <div class="card mb-4" style="width: 18rem;">
+         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <title>Placeholder</title>
+            <rect width="100%" height="100%" fill="#868e96"></rect>
+            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
+         </svg>
+         <div class="card-body">
+            <h5 class="card-title">Listening</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary disabled">Go somewhere</a>
+         </div>
+      </div>
+   </div>
+   <div class="col">
+      <div class="card mb-4" style="width: 18rem;">
+         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <title>Placeholder</title>
+            <rect width="100%" height="100%" fill="#868e96"></rect>
+            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
+         </svg>
+         <div class="card-body">
+            <h5 class="card-title">Reading</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary disabled">Go somewhere</a>
+         </div>
+      </div>
+   </div>
+   <div class="col">
+      <div class="card mb-4" style="width: 18rem;">
+         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <title>Placeholder</title>
+            <rect width="100%" height="100%" fill="#868e96"></rect>
+            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
+         </svg>
+         <div class="card-body">
+            <h5 class="card-title">Writing</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary disabled">Go somewhere</a>
+         </div>
+      </div>
+   </div>
+</div>
+
+{% endblock %}

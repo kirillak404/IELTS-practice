@@ -2,20 +2,19 @@ import os
 import time
 
 from flask import render_template, request, jsonify, redirect, flash, url_for
-from flask_login import login_user, logout_user, login_required, current_user
 from flask_dance.contrib.google import google
+from flask_login import login_user, logout_user, login_required, current_user
 
 from app import app, db
-from app.utils import transcript_file
 from app.forms import LoginForm, RegistrationForm
-
 from app.models import User
-from wtforms.validators import ValidationError
-
+from app.utils import transcript_file
 
 
 @app.route('/')
 def index():
+    if current_user.is_authenticated:
+        return render_template("dashboard.html")
     return render_template("index.html")
 
 
@@ -55,12 +54,13 @@ def register():
 
 @app.route("/google_login")
 def google_login():
-
     if not google.authorized:
         return redirect(url_for("google.login"))
     account_info = google.get("/oauth2/v2/userinfo").json()
+    print('log1', account_info)
 
     user = User.query.filter_by(email=account_info["email"]).first()
+    print('log2', user)
 
     if user:
         if user.google_id is None:
@@ -71,6 +71,7 @@ def google_login():
             return redirect(url_for('login'))
         else:
             login_user(user)
+            print("Log3, Authenticated user:", current_user)
 
     else:
         user = User(email=account_info["email"],
@@ -95,6 +96,7 @@ def logout():
     return redirect(url_for('index'))
 
 
+@login_required
 @app.route("/upload_audio", methods=["POST"])
 def upload_audio():
     if "audio" not in request.files:
@@ -113,3 +115,11 @@ def upload_audio():
     transcript = transcript_file(audio_path)
 
     return render_template("result.html", transcript=transcript)
+
+
+@app.route('/practice/speaking/', methods=["GET", "POST"])
+@login_required
+def practice_speaking():
+    if request.method == "GET":
+        return render_template("speaking.html")
+

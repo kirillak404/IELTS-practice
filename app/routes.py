@@ -10,7 +10,7 @@ from app.utils import transcript_file
 from app.forms import LoginForm, RegistrationForm
 
 from app.models import User
-from sqlalchemy.exc import IntegrityError
+from wtforms.validators import ValidationError
 
 
 
@@ -21,9 +21,13 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
+
         if user and user.check_password(form.password.data):
             login_user(user)
             return redirect(url_for('index'))
@@ -35,7 +39,6 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        flash('You are already registered and authenticated')
         return redirect(url_for('index'))
 
     form = RegistrationForm()
@@ -43,11 +46,7 @@ def register():
         user = User(email=form.email.data)
         user.set_password(form.password.data)
         db.session.add(user)
-        try:
-            db.session.commit()
-        except IntegrityError:
-            flash('A user with this email address is already registered')
-            return redirect(url_for('register'))
+        db.session.commit()
 
         flash('Registration successful. You can now log in.')
         return redirect(url_for('login'))
@@ -56,13 +55,23 @@ def register():
 
 @app.route("/google_login")
 def google_login():
+
     if not google.authorized:
         return redirect(url_for("google.login"))
     account_info = google.get("/oauth2/v2/userinfo").json()
-    user = User.query.filter_by(google_id=account_info["id"]).first()
+
+    user = User.query.filter_by(email=account_info["email"]).first()
 
     if user:
-        login_user(user)
+        if user.google_id is None:
+            flash('Please sign in with your email and password.')
+            return redirect(url_for('login'))
+        elif user.google_id != account_info["id"]:
+            flash('This email is linked to a different Google account.')
+            return redirect(url_for('login'))
+        else:
+            login_user(user)
+
     else:
         user = User(email=account_info["email"],
                     google_id=account_info["id"],

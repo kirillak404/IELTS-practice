@@ -1,24 +1,18 @@
 {% extends "layout.html" %}
-
 {% block title %}
-    Practice
+Practice
 {% endblock %}
-
 {% block main %}
 <h3>
-  Hello 👋
-  <small class="text-muted">press the "Start Recording" button and say something</small>
+   Hello 👋
+   <small class="text-muted">press the "Start Recording" button and say something</small>
 </h3>
 <br>
-
-
 <button type="button" class="btn btn-primary btn-lg" id="recordButton">
-    <span id="recordText">Start Recording</span>
-    <span id="spinner" class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" style="display: none;"></span>
-    <span id="loadingText" style="display: none;">Loading...</span>
+<span id="recordText">Start Recording</span>
+<span id="spinner" class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" style="display: none;"></span>
+<span id="loadingText" style="display: none;">Loading...</span>
 </button>
-
 <!-- Recording scripts-->
 <script src="{{ url_for('static', filename='recording.js') }}"></script>
-
 {% endblock %}

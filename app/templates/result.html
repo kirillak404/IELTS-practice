@@ -1,24 +1,16 @@
 {% extends "layout.html" %}
-
 {% block title %}
-    Result
+Result
 {% endblock %}
-
 {% block main %}
-
-
 <figure class="text-center">
-  <blockquote class="blockquote">
-    <p class="mb-0">{{ transcript }}</p>
-
-  </blockquote>
-  <figcaption class="blockquote-footer">
-    The author of this masterpiece: <cite title="Source Title">You</cite>
-  </figcaption>
+   <blockquote class="blockquote">
+      <p class="mb-0">{{ transcript }}</p>
+   </blockquote>
+   <figcaption class="blockquote-footer">
+      The author of this masterpiece: <cite title="Source Title">You</cite>
+   </figcaption>
 </figure>
-
 <br>
 <button type="button" class="btn btn-primary btn-lg" onclick="window.location.href='/'">Try again</button>
-
-
 {% endblock %}

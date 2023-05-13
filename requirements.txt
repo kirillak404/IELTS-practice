@@ -24,3 +24,4 @@ yarl==1.9.2
 
 WTForms~=3.0.1
 SQLAlchemy~=2.0.12
+Authlib~=1.2.0

@@ -8,7 +8,7 @@ Sign in
 </h2>
 <br>
 
-<form method="POST" action="{{ url_for('login') }}" style="width: 40%; margin: 0 auto;" id="login-form" novalidate>
+<form method="POST" action="{{ url_for('auth.login') }}" style="width: 40%; margin: 0 auto;" id="login-form" novalidate>
     {{ form.csrf_token }}
     <div class="form-floating mb-3">
         {{ form.email(id="floatingInput", class="form-control " + ('is-invalid' if form.email.errors else ''), placeholder="name@example.com", required=True) }}
@@ -34,7 +34,7 @@ Sign in
 </form>
 
 <!-- Sign in with Google -->
-<a class="btn btn-outline-dark gap-2 btn-lg mt-5" href="{{ url_for('google_login') }}" role="button" style="text-transform:none">
+<a class="btn btn-outline-dark gap-2 btn-lg mt-5" href="{{ url_for('auth.login_google') }}" role="button" style="text-transform:none">
    <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png" />
    Sign in with Google
 </a>

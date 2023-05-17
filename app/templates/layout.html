@@ -51,8 +51,9 @@
          </div>
       </header>
       {% endif %}
-      <main class="container text-center">
-         <h1 class="mt-5 mb-5">{% block h1 %}{% endblock %}</h1>
+      <main class="container">
+         <h1 class="mt-5 mb-4 text-right">{% block h1 %}{% endblock %}</h1>
+         <h2 class="mb-5 text-right">{% block h2 %}{% endblock %}</h2>
          {% block main %}{% endblock %}
       </main>
    </body>

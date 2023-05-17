@@ -10,7 +10,6 @@ from app.main import bp
 
 @bp.route('/')
 def index():
-    # user = session.get('user')
     if current_user.is_authenticated:
         return render_template("dashboard.html")
     return render_template("index.html")
@@ -37,8 +36,8 @@ def upload_audio():
     return render_template("result.html", transcript=transcript)
 
 
-@bp.route('/practice/speaking/', methods=["GET", "POST"])
 @login_required
+@bp.route('/practice/speaking/', methods=["GET", "POST"])
 def practice_speaking():
     if request.method == "GET":
         return render_template("speaking.html")

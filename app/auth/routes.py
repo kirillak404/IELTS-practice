@@ -103,7 +103,7 @@ def auth_google():
     else:
         user = User(email=google_user_info.get('email'),
                     google_id=google_user_info.get('sub'),
-                    verified_email=google_user_info.get('email_verified'),
+                    email_verified=google_user_info.get('email_verified'),
                     first_name=google_user_info.get('given_name'),
                     last_name=google_user_info.get('family_name'),
                     profile_picture=google_user_info.get('picture'),

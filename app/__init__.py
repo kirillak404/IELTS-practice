@@ -83,13 +83,6 @@ def create_app(config_class=Config):
                     db.session.add(new_question)
             db.session.commit()
 
-
-
-
-
-
-
-
     # register blueprints
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp)

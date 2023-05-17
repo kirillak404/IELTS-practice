@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Select practice
+{% endblock %}
+
+{% block h1 %}
+Speaking practice
+{% endblock %}
+
+{% block h2 %}
+{{ section.description }}
+{% endblock %}
+
+
+
+{% block main %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Part</th>
+      <th scope="col">Description</th>
+      <th scope="col">Approximate Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for subsection in subsections %}
+    <tr>
+      <td>Part {{ subsection.part_number }}: {{ subsection.name }}</td>
+      <td>{{ subsection.description }}</td>
+      <td>{{ subsection.approx_time }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<a href="/section/{{ section.name|lower }}/practice" class="btn btn-primary">Start {{ section.name }} practice</a>
+
+{% endblock %}

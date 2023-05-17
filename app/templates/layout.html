@@ -53,7 +53,7 @@
       {% endif %}
       <main class="container">
          <h1 class="mt-5 mb-4 text-right">{% block h1 %}{% endblock %}</h1>
-         <h2 class="mb-5 text-right">{% block h2 %}{% endblock %}</h2>
+         <h2 class="mb-5 text-right"><small class="text-muted">{% block h2 %}{% endblock %}</small></h2>
          {% block main %}{% endblock %}
       </main>
    </body>

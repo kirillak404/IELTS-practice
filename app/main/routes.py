@@ -1,9 +1,9 @@
-from flask import render_template
+from flask import render_template, request
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
 from app.main import bp
-from app import models
+from app import models, db
 
 
 @bp.route('/')
@@ -26,14 +26,19 @@ def render_section(name):
 
 
 @login_required
-@bp.route('/section/speaking/practice')
+@bp.route('/section/speaking/practice', methods=["GET", "POST"])
 def speaking_practice():
-    section = models.Section.query.filter(func.lower(models.Section.name) ==
-                                          func.lower("Speaking")).first()
+    if request.method == "GET":
+        section = models.Section.query.filter(
+            func.lower(models.Section.name) == func.lower("Speaking")).first()
 
-    subsections = models.Subsection.query.filter_by(section=section).all()
+        # TODO - не нравится, что так получаю данные: subsections[0]
+        question_set = models.QuestionSet.query.filter_by(
+            subsection=section.subsections[0]).order_by(func.random()).first()
 
-    return render_template("speaking.html", subsections=subsections, stage=1)
+        print(question_set.questions)
+
+        return render_template("speaking.html", subsections=section.subsections, stage=1)
 
 
 

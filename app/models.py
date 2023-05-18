@@ -62,7 +62,7 @@ class Subsection(db.Model):
     approx_time = db.Column(db.String(128), nullable=False)
 
     section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)
-    section = db.relationship('Section', backref='subsections')
+    section = db.relationship('Section', backref='subsections', lazy='joined')
 
     def __repr__(self):
         return f"<Subsection {self.name}>"
@@ -89,6 +89,7 @@ class QuestionSet(db.Model):
     topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
     topic = db.relationship('Topic', backref='question_sets')
 
+    questions = db.relationship('Question', backref='question_set', lazy='joined')
     __table_args__ = (db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
 
 
@@ -99,4 +100,3 @@ class Question(db.Model):
     text = db.Column(db.String(1000), nullable=False)
 
     question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'), nullable=False)
-    question_set = db.relationship('QuestionSet', backref='questions')

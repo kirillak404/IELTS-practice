@@ -29,7 +29,7 @@ def create_app(config_class=Config):
         # creating tables
         db.create_all()
 
-        # creating defaults data
+        # creating defaults data TODO вынести в utils
         if not models.Section.query.first():  # if no sections in database
 
             # inserting sections

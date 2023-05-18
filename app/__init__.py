@@ -41,46 +41,59 @@ def create_app(config_class=Config):
 
             # inserting subsections
             for subsection in SUBSECTIONS:
-                section = models.Section.query.filter_by(name=subsection["section"]).first()
+                section = models.Section.query.filter_by(
+                    name=subsection["section"]).first()
                 subsection["section"] = section
                 new_subsection = models.Subsection(**subsection)
                 db.session.add(new_subsection)
             db.session.commit()
 
-            # inserting questions
+            # inserting PART 1 topics
             for question_set in QUESTIONS:
                 subsection = models.Subsection.query.filter_by(
                     name=question_set["subsection"]).first()
 
-                # inserting new question set
+                # inserting new subsection_question
                 new_question_set = models.QuestionSet(subsection=subsection)
                 db.session.add(new_question_set)
 
-                # inserting many questions
+                # inserting questions inside topic
                 for question in question_set["questions"]:
                     new_question = models.Question(text=question,
                                                    question_set=new_question_set)
                     db.session.add(new_question)
+
             db.session.commit()
 
-            # inserting topics
+            # inserting PART 2-3 topics
             for topic in TOPICS:
                 subsection = models.Subsection.query.filter_by(
                     name=topic["subsection"]).first()
 
                 # inserting new topic
-                new_topic = models.Topic(text=topic["text"], subsection=subsection)
+                new_topic = models.Topic(name=topic["name"])
                 db.session.add(new_topic)
 
-                # inserting topic base questions
-                for question in topic["questions"]:
-                    new_question = models.TopicQuestion(text=question, topic=new_topic)
+                # inserting topic GENERAL questions
+                new_question_set = models.QuestionSet(subsection=subsection,
+                                                       topic=new_topic)
+                db.session.add(new_question_set)
+
+                for question in topic["general_questions"]:
+                    new_question = models.Question(text=question,
+                                                   question_set=new_question_set)
                     db.session.add(new_question)
 
-                # inserting discussion questions
+                # inserting topic DISCUSSION questions
+                subsection = models.Subsection.query.filter_by(
+                    name="Two-way Discussion").first()
+                new_question_set = models.QuestionSet(subsection=subsection, topic=new_topic)
+
                 for question in topic["discussion_questions"]:
-                    new_question = models.TopicDiscussionQuestion(text=question, topic=new_topic)
+                    new_question = models.Question(text=question,
+                                                   question_set=new_question_set)
                     db.session.add(new_question)
+
             db.session.commit()
 
     # register blueprints
@@ -93,4 +106,3 @@ def create_app(config_class=Config):
     app.jinja_env.filters['validation_class'] = validation_class
 
     return app
-

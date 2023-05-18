@@ -14,19 +14,19 @@ SECTIONS = [
 
 SUBSECTIONS = [
     {"name": "Introduction and Interview",
-     "part_number": 1,
+     "part": 1,
      "description": "The examiner asks questions about yourself, family, work/study, hobbies, etc.",
      "approx_time": "4-5 minutes",
      "section": "Speaking"},
 
     {"name": "Individual Long Turn",
-     "part_number": 2,
+     "part": 2,
      "description": "You are given a topic, prepare for 1-2 minutes, and speak for 1-2 minutes on the topic",
      "approx_time": "3-4 minutes",
      "section": "Speaking"},
 
     {"name": "Two-way Discussion",
-     "part_number": 3,
+     "part": 3,
      "description": "The examiner asks broader questions related to the topic in Part 2, and you discuss and express your opinions",
      "approx_time": "4-5 minutes",
      "section": "Speaking"}
@@ -60,8 +60,8 @@ QUESTIONS = [
 
 TOPICS = [
     {"subsection": "Individual Long Turn",
-     "text": "Describe a time you had to make a difficult decision.",
-     "questions": [
+     "name": "Describe a time you had to make a difficult decision.",
+     "general_questions": [
          "When this was",
          "What the decision was",
          "What you had to consider, and",
@@ -74,9 +74,12 @@ TOPICS = [
          "Do you think it's always good to take your time when making decisions?"
      ]},
 
+
+
+
     {"subsection": "Individual Long Turn",
-     "text": "I'd like you to describe a memorable event that happened in your life.",
-     "questions": [
+     "name": "I'd like you to describe a memorable event that happened in your life.",
+     "general_questions": [
          "What the event was",
          "Where it happened",
          "Who was with you",

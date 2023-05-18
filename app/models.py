@@ -49,7 +49,7 @@ class Section(db.Model):
     description = db.Column(db.String(255), nullable=False)
 
     def __repr__(self):
-        return f"{self.id}, {self.name}, {self.description}"
+        return f"<Section {self.name}>"
 
 
 class Subsection(db.Model):
@@ -57,12 +57,25 @@ class Subsection(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
-    part_number = db.Column(db.Integer, nullable=False)
+    part = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(255), nullable=False)
     approx_time = db.Column(db.String(128), nullable=False)
 
     section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)
     section = db.relationship('Section', backref='subsections')
+
+    def __repr__(self):
+        return f"<Subsection {self.name}>"
+
+
+class Topic(db.Model):
+    __tablename__ = 'topics'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f"<Topic {self.name}>"
 
 
 class QuestionSet(db.Model):
@@ -73,42 +86,17 @@ class QuestionSet(db.Model):
     subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'), nullable=False)
     subsection = db.relationship('Subsection', backref='question_sets')
 
+    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
+    topic = db.relationship('Topic', backref='question_sets')
+
+    __table_args__ = (db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
+
 
 class Question(db.Model):
     __tablename__ = 'questions'
 
     id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(255), nullable=False)
+    text = db.Column(db.String(1000), nullable=False)
 
     question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'), nullable=False)
     question_set = db.relationship('QuestionSet', backref='questions')
-
-
-class Topic(db.Model):
-    __tablename__ = 'topics'
-
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(255), nullable=False, unique=True)
-
-    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'), nullable=False)
-    subsection = db.relationship('Subsection', backref='topics')
-
-
-class TopicQuestion(db.Model):
-    __tablename__ = 'topic_questions'
-
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(255), nullable=False)
-
-    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
-    topic = db.relationship('Topic', backref='topic_questions')
-
-
-class TopicDiscussionQuestion(db.Model):
-    __tablename__ = 'topic_discussion_questions'
-
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(255), nullable=False)
-
-    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'), nullable=False)
-    topic = db.relationship('Topic', backref='topic_discussion_questions')

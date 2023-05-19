@@ -92,7 +92,7 @@ class QuestionSet(db.Model):
     subsection = db.relationship('Subsection', backref='question_sets')
 
     topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
-    topic = db.relationship('Topic', backref='question_sets')
+    topic = db.relationship('Topic', backref='question_sets', lazy='joined')
 
     questions = db.relationship('Question', backref='question_set', lazy='joined')
     __table_args__ = (db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
@@ -139,6 +139,7 @@ class UserAnswer(db.Model):
 
     gpt_answer = db.relationship('GPTAnswer', backref='user_answer',
                                  cascade='all, delete', uselist=False)
+
 
 
 class GPTAnswer(db.Model):

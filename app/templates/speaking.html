@@ -21,13 +21,15 @@ Speaking practice
 </div>
 
 
-<ul class="list-group ms-0 me-auto mt-5" style="max-width: 500px;">
-  <h3>Questions</h3>
+<ul class="list-group ms-0 me-auto mt-5" style="max-width: 600px;">
+  <h3>
+    Questions
+  </h3>
+  <p class="h4 text-muted">{% if question_set.topic %} {{ question_set.topic.name }} {% endif %}</p>
   {% for question in question_set.questions %}
   <li class="list-group-item">{{ question.text }}</li>
   {% endfor %}
 </ul>
-
 
 
 <div class="mb-3 mt-5">

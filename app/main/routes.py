@@ -1,9 +1,9 @@
 from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
-from sqlalchemy import func
+from sqlalchemy import func, desc
 
-from app.main import bp
 from app import models, db
+from app.main import bp
 
 
 @bp.route('/')
@@ -31,28 +31,40 @@ def speaking_practice():
     if request.method == "GET":
         section = models.Section.query.filter_by(name="Speaking").first()
 
-        # TODO
-        '''
-        1. Part 3 same topic as Part 2
-        '''
-
-        # looking for current user subsection
         user_progress = models.UserProgress.query.filter(
             models.UserProgress.user_id == current_user.id,
             models.UserProgress.section_id == section.id,
             models.UserProgress.is_completed == False
         ).first()
 
-        # set default (first subsection) if progress not found
+        # set subsection from user_progress
         if user_progress:
             subsection = models.Subsection.query.get(
                 user_progress.next_subsection_id)
+
+            # getting last topic id
+            last_user_answer = db.session.query(models.UserAnswer).filter(
+                models.UserAnswer.user_progress_id == user_progress.id
+            ).order_by(desc(models.UserAnswer.id)).first()
+
+            last_topic_id = models.QuestionSet.query.get(
+                last_user_answer.question_set_id).topic_id
+
+        # set subsection part 1 if progress not found
         else:
             subsection = models.Subsection().query.filter_by(
                 section=section, part=1).first()
+            last_topic_id = None
 
-        question_set = models.QuestionSet.query.filter_by(
-            subsection=subsection).order_by(func.random()).first()
+        if last_topic_id:
+            # getting question_set with particular topic_id
+            question_set = models.QuestionSet.query.filter_by(
+                subsection=subsection, topic_id=last_topic_id).order_by(
+                func.random()).first()
+        else:
+            # getting any question_set
+            question_set = models.QuestionSet.query.filter_by(
+                subsection=subsection).order_by(func.random()).first()
 
         return render_template("speaking.html",
                                subsections=section.subsections,
@@ -63,7 +75,7 @@ def speaking_practice():
 
     # TODO
     '''
-    1. Check that question_set_id is in correct subsection (or section)
+    1. Check that question_set_id is in NEXT subsection (or section)
     2. int -> add TRY EXCEPT
     '''
 
@@ -77,17 +89,16 @@ def speaking_practice():
         models.UserProgress.is_completed == False
     ).first()
 
-    # IF NOT USER PROGRESS
+    # creating new user_progress record
     if not user_progress:
         next_subsection = models.Subsection.query.filter_by(section=section,
                                                             part=2).first()
-
-        # inserting user_progress
         user_progress = models.UserProgress(user=current_user,
                                             section_id=section.id,
                                             next_subsection_id=next_subsection.id)
         db.session.add(user_progress)
 
+    # updating user_progress record
     else:
         current_subsection = models.Subsection.query.get(user_progress.next_subsection_id)
         next_part = current_subsection.part + 1
@@ -100,7 +111,7 @@ def speaking_practice():
         else:
             user_progress.next_subsection_id = next_subsection.id
 
-    # inserting user_answer
+    # inserting new user_answer
     user_answer = models.UserAnswer(user_progress=user_progress,
                                     question_set_id=question_set_id,
                                     answer_text=answer_text)

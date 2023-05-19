@@ -15,18 +15,37 @@ Speaking practice
 <div class="ms-0 me-auto" style="max-width: 300px;">
   <ol class="list-group">
     {% for subsection in subsections %}
-    <li class="list-group-item {% if stage == subsection.part %} active {% endif %}">Part {{ subsection.part }}: {{ subsection.name }}</li>
+    <li class="list-group-item {% if current_subsection.part == subsection.part %} active {% endif %}">Part {{ subsection.part }}: {{ subsection.name }}</li>
     {% endfor %}
   </ol>
 </div>
 
 
-<div class="mt-5 text-center">
-  <h3 class="display-5">
-    In your culture, who usually makes the important decisions in the family?
-  </h3>
-  <button type="button" class="btn btn-primary btn-lg mt-4">Next question</button>
+<ul class="list-group ms-0 me-auto mt-5" style="max-width: 500px;">
+  <h3>Questions</h3>
+  {% for question in question_set.questions %}
+  <li class="list-group-item">{{ question.text }}</li>
+  {% endfor %}
+</ul>
+
+
+
+<div class="mb-3 mt-5">
+  <h3>Answer</h3>
+  <form action="{{ url_for('main.speaking_practice') }}" method="post">
+    <input type="hidden" name="question_set_id" value="{{ question_set.id }}">
+    <input name="answers" class="form-control" id="exampleFormControlTextarea1" required>
+    <input class="btn btn-primary btn mt-4" type="submit" value="Send">
+  </form>
 </div>
+
+
+<!--<div class="mt-5 text-center">-->
+<!--  <h3 class="display-5">-->
+<!--    In your culture, who usually makes the important decisions in the family?-->
+<!--  </h3>-->
+<!--  <button type="button" class="btn btn-primary btn-lg mt-4">Next question</button>-->
+<!--</div>-->
 
 {% endblock %}
 

@@ -1,4 +1,4 @@
-from flask import render_template, request
+from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import func
 
@@ -29,27 +29,41 @@ def render_section(name):
 @bp.route('/section/speaking/practice', methods=["GET", "POST"])
 def speaking_practice():
     if request.method == "GET":
-        section = models.Section.query.filter(
-            func.lower(models.Section.name) == func.lower("Speaking")).first()
+        section = models.Section.query.filter_by(name="Speaking").first()
+        subsection = models.Subsection.query.filter_by(section=section,
+                                                       part=1).first()
 
-        # TODO - не нравится, что так получаю данные: subsections[0]
         question_set = models.QuestionSet.query.filter_by(
-            subsection=section.subsections[0]).order_by(func.random()).first()
+            subsection=subsection).order_by(func.random()).first()
 
-        print(question_set.questions)
+        return render_template("speaking.html",
+                               subsections=section.subsections,
+                               current_subsection=subsection,
+                               question_set=question_set)
 
-        return render_template("speaking.html", subsections=section.subsections, stage=1)
+    # handling POST request
+    answer_text = request.form.get('answers')
+    question_set_id = int(request.form.get('question_set_id'))  # TODO TRY
 
+    # if not user_progress
+    section = models.Section.query.filter_by(name="Speaking").first()
+    subsection = models.Subsection.query.filter_by(section=section,
+                                                   part=1).first()
 
+    # inserting user_progress
+    user_progress = models.UserProgress(user=current_user,
+                                        section_id=section.id,
+                                        current_subsection_id=subsection.id)
+    db.session.add(user_progress)
 
+    # inserting user_answer
+    user_answer = models.UserAnswer(user_progress=user_progress,
+                                    question_set_id=question_set_id,
+                                    answer_text=answer_text)
+    db.session.add(user_answer)
+    db.session.commit()
 
-
-
-
-
-
-
-
+    return redirect(url_for('main.speaking_practice'))
 
 # @login_required
 # @bp.route("/upload_audio", methods=["POST"])

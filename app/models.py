@@ -2,6 +2,7 @@ from datetime import datetime
 
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
+from sqlalchemy import event
 
 from app import db, login
 
@@ -112,12 +113,19 @@ class UserProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)
-    current_subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'))
+    next_subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'))
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
     completed_on = db.Column(db.DateTime)
 
     user_answers = db.relationship('UserAnswer', backref='user_progress',
                                    cascade='all, delete')
+
+
+@event.listens_for(UserProgress.is_completed, 'set')
+def update_user_progress(target, value, oldvalue, initiator):
+    if value:  # if is_completed is set to True
+        target.next_subsection_id = None
+        target.completed_on = datetime.utcnow()
 
 
 class UserAnswer(db.Model):

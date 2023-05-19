@@ -30,8 +30,26 @@ def render_section(name):
 def speaking_practice():
     if request.method == "GET":
         section = models.Section.query.filter_by(name="Speaking").first()
-        subsection = models.Subsection.query.filter_by(section=section,
-                                                       part=1).first()
+
+        # TODO
+        '''
+        1. Part 3 same topic as Part 2
+        '''
+
+        # looking for current user subsection
+        user_progress = models.UserProgress.query.filter(
+            models.UserProgress.user_id == current_user.id,
+            models.UserProgress.section_id == section.id,
+            models.UserProgress.is_completed == False
+        ).first()
+
+        # set default (first subsection) if progress not found
+        if user_progress:
+            subsection = models.Subsection.query.get(
+                user_progress.next_subsection_id)
+        else:
+            subsection = models.Subsection().query.filter_by(
+                section=section, part=1).first()
 
         question_set = models.QuestionSet.query.filter_by(
             subsection=subsection).order_by(func.random()).first()
@@ -42,19 +60,45 @@ def speaking_practice():
                                question_set=question_set)
 
     # handling POST request
+
+    # TODO
+    '''
+    1. Check that question_set_id is in correct subsection (or section)
+    2. int -> add TRY EXCEPT
+    '''
+
     answer_text = request.form.get('answers')
-    question_set_id = int(request.form.get('question_set_id'))  # TODO TRY
-
-    # if not user_progress
+    question_set_id = int(request.form.get('question_set_id'))
     section = models.Section.query.filter_by(name="Speaking").first()
-    subsection = models.Subsection.query.filter_by(section=section,
-                                                   part=1).first()
 
-    # inserting user_progress
-    user_progress = models.UserProgress(user=current_user,
-                                        section_id=section.id,
-                                        current_subsection_id=subsection.id)
-    db.session.add(user_progress)
+    user_progress = models.UserProgress.query.filter(
+        models.UserProgress.user_id == current_user.id,
+        models.UserProgress.section_id == section.id,
+        models.UserProgress.is_completed == False
+    ).first()
+
+    # IF NOT USER PROGRESS
+    if not user_progress:
+        next_subsection = models.Subsection.query.filter_by(section=section,
+                                                            part=2).first()
+
+        # inserting user_progress
+        user_progress = models.UserProgress(user=current_user,
+                                            section_id=section.id,
+                                            next_subsection_id=next_subsection.id)
+        db.session.add(user_progress)
+
+    else:
+        current_subsection = models.Subsection.query.get(user_progress.next_subsection_id)
+        next_part = current_subsection.part + 1
+        next_subsection = models.Subsection.query.filter_by(section=section,
+                                                            part=next_part).first()
+
+        # if not next_subsection -> section completed
+        if not next_subsection:
+            user_progress.is_completed = True
+        else:
+            user_progress.next_subsection_id = next_subsection.id
 
     # inserting user_answer
     user_answer = models.UserAnswer(user_progress=user_progress,
@@ -64,6 +108,32 @@ def speaking_practice():
     db.session.commit()
 
     return redirect(url_for('main.speaking_practice'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # @login_required
 # @bp.route("/upload_audio", methods=["POST"])

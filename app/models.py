@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from flask_login import UserMixin
+from sqlalchemy import func, desc
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy import event
 
 from app import db, login
 
@@ -24,7 +24,8 @@ class User(UserMixin, db.Model):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    user_progress = db.relationship('UserProgress', backref='user', cascade='all, delete')
+    user_progress = db.relationship('UserProgress', backref='user',
+                                    cascade='all, delete')
 
     def __repr__(self):
         return '<User %r>' % self.email
@@ -37,6 +38,14 @@ class User(UserMixin, db.Model):
 
     def set_google_id(self, google_id):
         self.google_id = google_id
+
+    def get_section_progress(self, section_id):
+        user_progress = UserProgress.query.filter(
+            UserProgress.user_id == self.id,
+            UserProgress.section_id == section_id,
+            UserProgress.is_completed == False
+        ).first()
+        return user_progress
 
 
 @login.user_loader
@@ -56,6 +65,10 @@ class Section(db.Model):
     def __repr__(self):
         return f"<Section {self.name}>"
 
+    @staticmethod
+    def get_by_name(name):
+        return Section.query.filter(Section.name.ilike(name)).first_or_404()
+
 
 class Subsection(db.Model):
     __tablename__ = 'subsections'
@@ -66,7 +79,8 @@ class Subsection(db.Model):
     description = db.Column(db.String(255), nullable=False)
     approx_time = db.Column(db.String(128), nullable=False)
 
-    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'),
+                           nullable=False)
     section = db.relationship('Section', back_populates='subsections')
 
     def __repr__(self):
@@ -88,14 +102,17 @@ class QuestionSet(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'), nullable=False)
+    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'),
+                              nullable=False)
     subsection = db.relationship('Subsection', backref='question_sets')
 
     topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
     topic = db.relationship('Topic', backref='question_sets', lazy='joined')
 
-    questions = db.relationship('Question', backref='question_set', lazy='joined')
-    __table_args__ = (db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
+    questions = db.relationship('Question', backref='question_set',
+                                lazy='joined')
+    __table_args__ = (
+        db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
 
 
 class Question(db.Model):
@@ -104,7 +121,8 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String(1000), nullable=False)
 
-    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'), nullable=False)
+    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'),
+                                nullable=False)
 
 
 class UserProgress(db.Model):
@@ -112,7 +130,8 @@ class UserProgress(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)
+    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'),
+                           nullable=False)
     next_subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'))
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
     completed_on = db.Column(db.DateTime)
@@ -120,26 +139,40 @@ class UserProgress(db.Model):
     user_answers = db.relationship('UserAnswer', backref='user_progress',
                                    cascade='all, delete')
 
+    def __init__(self, *args, **kwargs):
+        super(UserProgress, self).__init__(*args, **kwargs)
+        self.next_subsection_id = Subsection.query.filter_by(
+            section_id=self.section_id, part=2).first().id
 
-@event.listens_for(UserProgress.is_completed, 'set')
-def update_user_progress(target, value, oldvalue, initiator):
-    if value:  # if is_completed is set to True
-        target.next_subsection_id = None
-        target.completed_on = datetime.utcnow()
+    def update_next_subsection(self, section):
+        current_subsection = Subsection.query.get(self.next_subsection_id)
+        next_part = current_subsection.part + 1
+        next_subsection = Subsection.query.filter_by(section=section,
+                                                     part=next_part).first()
+
+        # if not next_subsection -> section completed
+        if not next_subsection:
+            self.is_completed = True
+            self.next_subsection_id = None
+            self.completed_on = datetime.utcnow()
+        else:
+            self.next_subsection_id = next_subsection.id
 
 
 class UserAnswer(db.Model):
     __tablename__ = 'user_answers'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_progress_id = db.Column(db.Integer, db.ForeignKey('user_progress.id'), nullable=False)
-    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'), nullable=False)
+    user_progress_id = db.Column(db.Integer, db.ForeignKey('user_progress.id'),
+                                 nullable=False)
+    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'),
+                                nullable=False)
     answer_text = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow,
+                           nullable=False)
 
     gpt_answer = db.relationship('GPTAnswer', backref='user_answer',
                                  cascade='all, delete', uselist=False)
-
 
 
 class GPTAnswer(db.Model):

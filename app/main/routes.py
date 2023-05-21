@@ -16,8 +16,7 @@ def index():
 @login_required
 @bp.route('/section/<name>')
 def render_section(name):
-    section = models.Section.query.filter(func.lower(models.Section.name) ==
-                                          func.lower(name)).first_or_404()
+    section = models.Section.get_by_name(name)
     subsections = models.Subsection.query.filter_by(section=section).all()
 
     return render_template("section.html",
@@ -29,13 +28,8 @@ def render_section(name):
 @bp.route('/section/speaking/practice', methods=["GET", "POST"])
 def speaking_practice():
     if request.method == "GET":
-        section = models.Section.query.filter_by(name="Speaking").first()
-
-        user_progress = models.UserProgress.query.filter(
-            models.UserProgress.user_id == current_user.id,
-            models.UserProgress.section_id == section.id,
-            models.UserProgress.is_completed == False
-        ).first()
+        section = models.Section.get_by_name("speaking")
+        user_progress = current_user.get_section_progress(section.id)
 
         # set subsection from user_progress
         if user_progress:
@@ -79,37 +73,21 @@ def speaking_practice():
     2. int -> add TRY EXCEPT
     '''
 
+    # getting POST request args
     answer_text = request.form.get('answers')
     question_set_id = int(request.form.get('question_set_id'))
-    section = models.Section.query.filter_by(name="Speaking").first()
 
-    user_progress = models.UserProgress.query.filter(
-        models.UserProgress.user_id == current_user.id,
-        models.UserProgress.section_id == section.id,
-        models.UserProgress.is_completed == False
-    ).first()
+    section = models.Section.get_by_name("speaking")
+    user_progress = current_user.get_section_progress(section.id)
 
     # creating new user_progress record
     if not user_progress:
-        next_subsection = models.Subsection.query.filter_by(section=section,
-                                                            part=2).first()
         user_progress = models.UserProgress(user=current_user,
-                                            section_id=section.id,
-                                            next_subsection_id=next_subsection.id)
+                                            section_id=section.id)
         db.session.add(user_progress)
 
-    # updating user_progress record
     else:
-        current_subsection = models.Subsection.query.get(user_progress.next_subsection_id)
-        next_part = current_subsection.part + 1
-        next_subsection = models.Subsection.query.filter_by(section=section,
-                                                            part=next_part).first()
-
-        # if not next_subsection -> section completed
-        if not next_subsection:
-            user_progress.is_completed = True
-        else:
-            user_progress.next_subsection_id = next_subsection.id
+        user_progress.update_next_subsection(section)
 
     # inserting new user_answer
     user_answer = models.UserAnswer(user_progress=user_progress,

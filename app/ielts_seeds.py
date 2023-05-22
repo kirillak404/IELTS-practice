@@ -9,7 +9,7 @@ SECTIONS = [
      "description": "IELTS Writing is a section of the IELTS exam that assesses your English writing skills through specific tasks such as report writing or graph description."},
 
     {"name": "Speaking",
-     "description": "IELTS Speaking is a section of the IELTS exam that assesses your oral communication skills in English."}
+     "description": "IELTS Speaking tests your English oral communication skills."}
 ]
 
 SUBSECTIONS = [

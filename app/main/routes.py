@@ -1,6 +1,6 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
-from sqlalchemy import func, desc
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from app import models, db
 from app.main import bp
@@ -31,34 +31,16 @@ def speaking_practice():
         section = models.Section.get_by_name("speaking")
         user_progress = current_user.get_section_progress(section.id)
 
-        # set subsection from user_progress
         if user_progress:
             subsection = models.Subsection.query.get(
                 user_progress.next_subsection_id)
-
-            # getting last topic id
-            last_user_answer = db.session.query(models.UserAnswer).filter(
-                models.UserAnswer.user_progress_id == user_progress.id
-            ).order_by(desc(models.UserAnswer.id)).first()
-
-            last_topic_id = models.QuestionSet.query.get(
-                last_user_answer.question_set_id).topic_id
-
-        # set subsection part 1 if progress not found
+            last_topic_id = user_progress.get_last_topic()
         else:
-            subsection = models.Subsection().query.filter_by(
-                section=section, part=1).first()
+            subsection = models.Subsection.get_by_section_and_part(section, 1)
             last_topic_id = None
 
-        if last_topic_id:
-            # getting question_set with particular topic_id
-            question_set = models.QuestionSet.query.filter_by(
-                subsection=subsection, topic_id=last_topic_id).order_by(
-                func.random()).first()
-        else:
-            # getting any question_set
-            question_set = models.QuestionSet.query.filter_by(
-                subsection=subsection).order_by(func.random()).first()
+        question_set = models.QuestionSet.get_random_for_subsection(
+            subsection, last_topic_id)
 
         return render_template("speaking.html",
                                subsections=section.subsections,
@@ -66,27 +48,41 @@ def speaking_practice():
                                question_set=question_set)
 
     # handling POST request
-
-    # TODO
-    '''
-    1. Check that question_set_id is in NEXT subsection (or section)
-    2. int -> add TRY EXCEPT
-    '''
-
-    # getting POST request args
     answer_text = request.form.get('answers')
-    question_set_id = int(request.form.get('question_set_id'))
+    if not answer_text:
+        abort(400, "Answer text is missing")
+
+    question_set_id = request.form.get('question_set_id')
+    try:
+        question_set_id = int(question_set_id)
+    except ValueError:
+        return abort(400, "Question set must be an integer")
 
     section = models.Section.get_by_name("speaking")
     user_progress = current_user.get_section_progress(section.id)
 
     # creating new user_progress record
     if not user_progress:
+
+        # checking that question_set_id from POST request is valid
+        subsection = models.Subsection.get_by_section_and_part(section, 1)
+        question_set_is_valid = models.QuestionSet.valid_for_subsection(
+                question_set_id, subsection.id)
+        if not question_set_is_valid:
+            abort(400, "Invalid question_set_id")
+
         user_progress = models.UserProgress(user=current_user,
                                             section_id=section.id)
         db.session.add(user_progress)
 
+    # updating user_progress record
     else:
+        # checking that question_set_id from POST request is valid
+        question_set_is_valid = models.QuestionSet.valid_for_subsection(
+                question_set_id, user_progress.next_subsection_id)
+        if not question_set_is_valid:
+            abort(400, "Invalid question_set_id")
+
         user_progress.update_next_subsection(section)
 
     # inserting new user_answer
@@ -94,7 +90,15 @@ def speaking_practice():
                                     question_set_id=question_set_id,
                                     answer_text=answer_text)
     db.session.add(user_answer)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        abort(400, "Database integrity error")
+    except OperationalError:
+        db.session.rollback()
+        abort(500, "Database operational error")
 
     return redirect(url_for('main.speaking_practice'))
 

@@ -86,6 +86,10 @@ class Subsection(db.Model):
     def __repr__(self):
         return f"<Subsection {self.name}>"
 
+    @staticmethod
+    def get_by_section_and_part(section, part):
+        return Subsection.query.filter_by(section=section, part=part).first()
+
 
 class Topic(db.Model):
     __tablename__ = 'topics'
@@ -113,6 +117,20 @@ class QuestionSet(db.Model):
                                 lazy='joined')
     __table_args__ = (
         db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
+
+    @staticmethod
+    def get_random_for_subsection(subsection, topic_id=None):
+        query = QuestionSet.query.filter_by(subsection=subsection)
+        if topic_id:
+            query = query.filter_by(topic_id=topic_id)
+        return query.order_by(func.random()).first()
+
+    @staticmethod
+    def valid_for_subsection(question_set_id, subsection_id):
+        question_set = QuestionSet.query.get(question_set_id)
+        if not question_set or subsection_id != question_set.subsection_id:
+            return False
+        return True
 
 
 class Question(db.Model):
@@ -158,6 +176,13 @@ class UserProgress(db.Model):
         else:
             self.next_subsection_id = next_subsection.id
 
+    def get_last_topic(self):
+        last_answer = UserAnswer.query.filter(
+            UserAnswer.user_progress_id == self.id
+        ).order_by(desc(UserAnswer.id)).first()
+
+        return last_answer.question_set.topic_id
+
 
 class UserAnswer(db.Model):
     __tablename__ = 'user_answers'
@@ -173,6 +198,8 @@ class UserAnswer(db.Model):
 
     gpt_answer = db.relationship('GPTAnswer', backref='user_answer',
                                  cascade='all, delete', uselist=False)
+
+    question_set = db.relationship('QuestionSet', backref='user_answers')
 
 
 class GPTAnswer(db.Model):

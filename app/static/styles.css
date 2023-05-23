@@ -70,3 +70,22 @@ nav .navbar-brand .green
 #centred-container p {
     text-align: center; /* Выравнивание текста по центру */
 }
+
+
+.recording-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 3px;
+  border-radius: 50%;
+  background-color: red;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+

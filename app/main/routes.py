@@ -1,3 +1,4 @@
+import json
 from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -42,11 +43,12 @@ def speaking_practice():
 
         question_set = QuestionSet.get_random_for_subsection(
             subsection, last_topic_id)
+        question_list = [q.text for q in question_set.questions]
 
         return render_template("speaking.html",
                                subsections=section.subsections,
                                current_subsection=subsection,
-                               question_set=question_set)
+                               question_list=question_list)
 
     # POST request processing
     answer_text = request.form.get('answers')

@@ -2,13 +2,17 @@
 {% block title %}
 Register
 {% endblock %}
-{% block main %}
-<h2>
-   Register for free
-</h2>
-<br>
 
-<form method="POST" action="{{ url_for('auth.register') }}" style="width: 40%; margin: 0 auto;" id="register-form" novalidate>
+{% block h1 %}
+Register for free
+{% endblock %}
+
+{% block h2 %}
+
+{% endblock %}
+
+{% block main %}
+<form method="POST" action="{{ url_for('auth.register') }}" style="width: 40%;" id="register-form" novalidate>
     {{ form.csrf_token }}
     <div class="form-floating mb-3">
         {{ form.email(id="floatingInput", class="form-control " + ('is-invalid' if form.email.errors else ''), placeholder="name@example.com", required=True) }}

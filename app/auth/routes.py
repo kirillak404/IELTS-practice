@@ -65,8 +65,7 @@ def login_google():
     return oauth.google.authorize_redirect(redirect_uri)
 
 
-# TODO update route to /auth/google
-@bp.route('/auth')
+@bp.route('/auth/google')
 def auth_google():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))

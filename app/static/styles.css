@@ -45,5 +45,28 @@ nav .navbar-brand .green
 }
 
 
+.custom-form-container {
+   max-width: 100%;
+   margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+   .custom-form-container {
+      max-width: 400px;
+   }
+}
 
 
+#centred-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    max-width: 750px; /* Ограничение ширины до 400 пикселей */
+    margin: 0 auto; /* Центрирование блока по горизонтали */
+}
+
+#centred-container p {
+    text-align: center; /* Выравнивание текста по центру */
+}

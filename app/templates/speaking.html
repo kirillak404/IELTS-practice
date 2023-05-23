@@ -1,42 +1,79 @@
 {% extends "layout.html" %}
-
 {% block title %}
-Select practice
+   Speaking practice
 {% endblock %}
-
 {% block h1 %}
-Speaking practice
+   Speaking practice
 {% endblock %}
 
-{% block main %}
-
-<ul class="list-group" style="max-width: 380px;">
-  {% for subsection in subsections %}
-  <li class="list-group-item d-flex justify-content-between align-items-center">
-    Part {{ subsection.part }}: {{ subsection.name }}
-    {% if subsection.part == current_subsection.part %}
-    <span class="badge bg-primary rounded-pill">You are here</span>
-    {% elif subsection.part < current_subsection.part %}
-    <span class="badge bg-success rounded-pill">Completed</span>
-    {% endif %}
-  </li>
-  {% endfor %}
-</ul>
-
+{% block h1_classes %}
+   text-center
 {% endblock %}
 
+{% block content %}
 
-{% block centered %}
-<p class="lead fs-2">
-  In the Speaking section's first part, answer questions about yourself, family, job, and more.
-  Simply use your voice and a microphone.
-</p>
-<button class="btn btn-primary btn-lg" id="microphoneButton">
-  <i class="bi bi-mic-fill"></i> Turn on the microphone
-</button>
+<div class="container text-center">
+   <ul class="list-group" style="max-width: 380px; margin: 0 auto;">
+      {% for subsection in subsections %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+         Part {{ subsection.part }}: {{ subsection.name }}
+         {% if subsection.part == current_subsection.part %}
+         <span class="badge bg-primary rounded-pill">You are here</span>
+         {% elif subsection.part < current_subsection.part %}
+         <span class="badge bg-success rounded-pill">Completed</span>
+         {% endif %}
+      </li>
+      {% endfor %}
+   </ul>
+</div>
+
+<div id="centred-container">
+   <p class="lead fs-2">
+      In the Speaking section's first part, answer questions about yourself, family, job, and more.
+      Simply use your voice and a microphone.
+   </p>
+   <button class="btn btn-primary btn-lg" id="microphoneButton">
+   <i class="bi bi-mic-fill"></i> Turn on the microphone
+   </button>
+   <button class="btn btn btn-success btn-lg" id="start_speaking_practice" style="display: none;">
+   <i class="bi bi-record-circle-fill"></i> Start speaking practice
+   </button>
+   <p class="text-muted small mt-2">Time limit: 5 minutes</p>
+</div>
+
+
+
+
 
 <script src="{{ url_for('static', filename='recording.js') }}"></script>
+
 {% endblock %}
+
+
+
+
+
+<!--<ul class="list-group" style="max-width: 380px;">-->
+<!--  {% for subsection in subsections %}-->
+<!--  <li class="list-group-item d-flex justify-content-between align-items-center">-->
+<!--    Part {{ subsection.part }}: {{ subsection.name }}-->
+<!--    {% if subsection.part == current_subsection.part %}-->
+<!--    <span class="badge bg-primary rounded-pill">You are here</span>-->
+<!--    {% elif subsection.part < current_subsection.part %}-->
+<!--    <span class="badge bg-success rounded-pill">Completed</span>-->
+<!--    {% endif %}-->
+<!--  </li>-->
+<!--  {% endfor %}-->
+<!--</ul>-->
+
+<!--<p class="lead fs-2">-->
+<!--  In the Speaking section's first part, answer questions about yourself, family, job, and more.-->
+<!--  Simply use your voice and a microphone.-->
+<!--</p>-->
+<!--<button class="btn btn-primary btn-lg" id="microphoneButton">-->
+<!--  <i class="bi bi-mic-fill"></i> Turn on the microphone-->
+<!--</button>-->
+
 
 
 

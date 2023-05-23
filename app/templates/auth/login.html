@@ -1,35 +1,46 @@
 {% extends "layout.html" %}
-{% block title %}Sing In{% endblock %}
-{% block h1 %}Sing In{% endblock %}
-{% block row_classes %}justify-content-center{% endblock %}
-{% block h1_classes %}text-center{% endblock %}
-{% block h2_classes %}text-center{% endblock %}
+{% block title %}
+   Sing In
+{% endblock %}
+{% block h1 %}
+   Sing In
+{% endblock %}
+{% block row_classes %}
+   justify-content-center
+{% endblock %}
+{% block h1_classes %}
+   text-center
+{% endblock %}
+
 {% block content %}
-<form method="POST" action="{{ url_for('auth.login') }}" id="login-form" novalidate>
-   {{ form.csrf_token }}
-   <div class="form-floating mb-3">
-      {{ form.email(id="floatingInput", class="form-control " + ('is-invalid' if form.email.errors else ''), placeholder="name@example.com", required=True) }}
-      <label for="floatingInput">Email address</label>
-      {% for error in form.email.errors %}
-      <div class="invalid-feedback">
-         {{ error }}
+
+<div class="custom-form-container">
+   <form method="POST" action="{{ url_for('auth.login') }}" id="login-form" novalidate>
+      {{ form.csrf_token }}
+      <div class="form-floating mb-3">
+         {{ form.email(id="floatingInput", class="form-control " + ('is-invalid' if form.email.errors else ''), placeholder="name@example.com", required=True) }}
+         <label for="floatingInput">Email address</label>
+         {% for error in form.email.errors %}
+         <div class="invalid-feedback">
+            {{ error }}
+         </div>
+         {% endfor %}
       </div>
-      {% endfor %}
-   </div>
-   <div class="form-floating">
-      {{ form.password(id="floatingPassword", class="form-control " + ('is-invalid' if form.password.errors else ''), placeholder="Password", required=True) }}
-      <label for="floatingPassword">Password</label>
-      {% for error in form.password.errors %}
-      <div class="invalid-feedback">
-         {{ error }}
+      <div class="form-floating">
+         {{ form.password(id="floatingPassword", class="form-control " + ('is-invalid' if form.password.errors else ''), placeholder="Password", required=True) }}
+         <label for="floatingPassword">Password</label>
+         {% for error in form.password.errors %}
+         <div class="invalid-feedback">
+            {{ error }}
+         </div>
+         {% endfor %}
       </div>
-      {% endfor %}
-   </div>
-   <div class="d-grid gap-2 mt-3">
-      {{ form.submit(class="btn btn-primary btn-lg") }}
-      {% include 'elements/google_login_button.html' %}
-   </div>
-</form>
+      <div class="d-grid gap-2 mt-3">
+         {{ form.submit(class="btn btn-primary btn-lg") }}
+         {% include 'elements/google_login_button.html' %}
+      </div>
+   </form>
+</div>
 <!-- From validation scripts-->
 <script src="{{ url_for('static', filename='validation.js') }}"></script>
 {% endblock %}

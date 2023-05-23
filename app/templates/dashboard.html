@@ -1,21 +1,16 @@
 {% extends "layout.html" %}
-
 {% block title %}
-Select practice
+   Main page
 {% endblock %}
-
 {% block h1 %}
-{% if current_user.is_authenticated %}
-Hello {{ current_user.first_name or 'there' }} 👋
-{% endif %}
+   {% if current_user.is_authenticated %}
+      Hello {{ current_user.first_name or 'there' }} 👋
+   {% endif %}
 {% endblock %}
-
 {% block h2 %}
-What skill do you want to practice today?
+   What skill do you want to practice today?
 {% endblock %}
-
-{% block main %}
-
+{% block content %}
 
 <div class="row">
    <div class="col">

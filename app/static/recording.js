@@ -1,14 +1,34 @@
-const button = document.getElementById('microphoneButton');
+const microphoneButton = document.getElementById('microphoneButton');
+const startSpeakingButton = document.getElementById('start_speaking_practice');
 
-// asking user permission to use microphone
-button.addEventListener('click', function () {
-navigator.mediaDevices.getUserMedia({ audio: true })
-  .then(function(stream) {
-    // здесь вы можете использовать поток
-    console.log('Access granted');
-  })
-  .catch(function(err) {
-    // ошибка обработки запроса
-    console.log('Access denied');
-  });
+// Button click event listener
+microphoneButton.addEventListener('click', function() {
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(function(stream) {
+      // Microphone access granted
+      console.log('Access granted');
+      toggleButtons();
+    })
+    .catch(function(err) {
+      // Microphone access denied or error occurred
+      console.log('Access denied');
+    });
 });
+
+// Checking if microphone access was already granted
+if (navigator.permissions) {
+  navigator.permissions.query({ name: 'microphone' })
+    .then(function(permissionStatus) {
+      if (permissionStatus.state === 'granted') {
+        // Microphone access already granted
+        console.log('Access granted');
+        toggleButtons();
+      }
+    });
+}
+
+// Function to toggle buttons
+function toggleButtons() {
+  microphoneButton.style.display = 'none';
+  startSpeakingButton.style.display = 'block';
+}

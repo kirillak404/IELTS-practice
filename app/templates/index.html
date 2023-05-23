@@ -1,15 +1,24 @@
 {% extends "layout.html" %}
-
 {% block title %}
-Select practice
+  Main page
 {% endblock %}
-
-
 {% block h1 %}
-Main page
+  Register for free
+{% endblock %}
+{% block row_classes %}
+  justify-content-center
+{% endblock %}
+{% block h1_classes %}
+  text-center
+{% endblock %}
+{% block h2_classes %}
+  text-center
 {% endblock %}
 
-
-{% block main %}
-<a href="{{ url_for('auth.register') }}" class="btn btn-primary">Register for Free</a>
+{% block content %}
+<div class="custom-form-container">
+  <div class="d-grid gap-2 mt-3">
+    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Register for Free</a>
+  </div>
+</div>
 {% endblock %}

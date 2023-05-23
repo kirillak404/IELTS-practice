@@ -52,14 +52,13 @@
       </header>
       {% endif %}
       <main class="container">
-       <div class="row {% block row_classes %}{% endblock %}">
-        <div class="col-6">
-            <h1 class="mt-5 mb-4 {% block h1_classes %}{% endblock %}">{% block h1 %}{% endblock %}</h1>
-            <h2 class="mb-5 {% block h2_classes %}{% endblock %}"><small class="text-muted">{% block h2 %}{% endblock %}</small></h2>
-            {% block content %}{% endblock %}
-        </div>
-    </div>
-</main>
-
+         <div class="row {% block row_classes %}{% endblock %}">
+            <div class="col-12">
+               <h1 class="mt-5 mb-4 {% block h1_classes %}{% endblock %}">{% block h1 %}{% endblock %}</h1>
+               <h2 class="mb-5 {% block h2_classes %}{% endblock %}"><small class="text-muted">{% block h2 %}{% endblock %}</small></h2>
+               {% block content %}{% endblock %}
+            </div>
+         </div>
+      </main>
    </body>
 </html>

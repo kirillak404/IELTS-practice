@@ -28,6 +28,7 @@
 </div>
 
 <div id="centred-container">
+   <p class="text-muted small mt-2" id="questionCount" style="display: none;"></p>
    <p class="lead fs-2" id="questionText">
       In the Speaking section's first part, answer questions about yourself, family, job, and more.
       Simply use your voice and a microphone.
@@ -44,9 +45,19 @@
    <button class="btn btn btn-success btn-lg" id="completePracticeButton" style="display: none;">
    Complete speaking practice
    </button>
-   <p class="text-muted small mt-2" id="timeLimitText">Time limit: 5 minutes</p>
-   <span class="recording-dot" style="display: none;"></span>
+   <div class="time-container">
+      <span class="recording-dot" style="display: none;"></span>
+      <p class="text-muted small mt-2" id="timeLimitText">Time limit: 5 minutes</p>
+   </div>
 </div>
+
+
+<!--timer-->
+<div class="timer-container" id="timerContainer" style="visibility: hidden;">
+    <span id="timer">05:00</span>
+</div>
+
+
 
 <script>
    const questionSet = {{ question_list|tojson|safe }};

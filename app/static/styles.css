@@ -65,17 +65,22 @@ nav .navbar-brand .green
     height: 100%;
     max-width: 750px; /* Ограничение ширины до 400 пикселей */
     margin: 0 auto; /* Центрирование блока по горизонтали */
+    margin-top: 50px
 }
 
 #centred-container p {
     text-align: center; /* Выравнивание текста по центру */
 }
 
+.time-container {
+  display: flex;
+  align-items: center;
+}
 
 .recording-dot {
-  display: inline-block;
   width: 10px;
   height: 10px;
+  margin-top: -7px; /* Отрицательный отступ сверху */
   margin-right: 3px;
   border-radius: 50%;
   background-color: red;
@@ -89,3 +94,17 @@ nav .navbar-brand .green
 }
 
 
+.timer-container {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}

@@ -37,6 +37,7 @@ class IELTSExaminer:
         self.about = "You are a professional IELTS Examiner."
         self.model = model
 
+    # TODO move to utils
     @staticmethod
     def convert_list_to_string(string_list: list) -> str:
         return "\n".join(f"{s[0]}. {s[1]}" for s in enumerate(string_list,

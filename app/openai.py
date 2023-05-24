@@ -4,7 +4,24 @@ import json
 import time
 
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+def transcribe_audio(audio_file):
+    audio_file.name = "audio.webm"
+    transcript = openai.Audio.transcribe("whisper-1",
+                                         file=audio_file,
+                                         language="en")
+    return transcript["text"]
+
+
+
+
+
+
+
+
+
+
+
+
 
 questions = [
     "Can you tell me your full name, please?",

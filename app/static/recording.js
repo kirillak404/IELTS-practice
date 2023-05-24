@@ -46,6 +46,31 @@ function initializeMediaRecorder() {
       mediaRecorder.ondataavailable = function(e) {
         recordedChunks.push(e.data);
       };
+
+      // Event triggered when recording is stopped
+      mediaRecorder.onstop = function() {
+        // Create a blob from the recorded audio data
+        const recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+
+        // Create a FormData instance
+        let formData = new FormData();
+
+        // Append the audio file and question_set_id to the form
+        formData.append('audio', recordedBlob);
+        formData.append('question_set_id', questionSet['question_id']);
+
+        // Send the POST request
+        fetch('/section/speaking/practice', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (response.redirected) {
+            window.location.href = response.url;
+          }
+        })
+        .catch(error => console.error(error));
+      };
     })
     .catch(function(err) {
       // Microphone access denied or error occurred
@@ -127,29 +152,6 @@ nextQuestionButton.addEventListener('click', function() {
 completePracticeButton.addEventListener('click', function() {
   // Stop recording
   mediaRecorder.stop();
-
-  // Create a blob from the recorded audio data
-  const recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
-
-  // Create a FormData instance
-  let formData = new FormData();
-
-  // Appendhe audio file and question_set_id to the form
-  formData.append('audio', recordedBlob);
-  formData.append('question_set_id', questionSet['question_id']);
-
-  // Send the POST request
-  fetch('/section/speaking/practice', {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => {
-    if (response.redirected) {
-      window.location.href = response.url;
-    }
-  })
-  .catch(error => console.error(error));
-
 
   // Reset time limit text, and stop the timer
   timeLimitText.textContent = "Time limit: 5 minutes";

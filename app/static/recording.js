@@ -8,21 +8,15 @@ const recordingDot = document.querySelector('.recording-dot');
 const questionCount = document.getElementById('questionCount');
 const timer = document.getElementById('timer');
 const timerContainer = document.getElementById('timerContainer');
+
 let currentQuestionIndex = 0;
 let timerInterval;
+let mediaRecorder;
+let recordedChunks = [];
 
 // Button click event listener
 microphoneButton.addEventListener('click', function() {
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(function(stream) {
-      // Microphone access granted
-      console.log('Access granted');
-      toggleButtons();
-    })
-    .catch(function(err) {
-      // Microphone access denied or error occurred
-      console.log('Access denied');
-    });
+  initializeMediaRecorder();
 });
 
 // Checking if microphone access was already granted
@@ -32,8 +26,30 @@ if (navigator.permissions) {
       if (permissionStatus.state === 'granted') {
         // Microphone access already granted
         console.log('Access granted');
+        initializeMediaRecorder();
         toggleButtons();
       }
+    });
+}
+
+// Function to initialize MediaRecorder
+function initializeMediaRecorder() {
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(function(stream) {
+      // Microphone access granted
+      console.log('Access granted');
+
+      // Create MediaRecorder instance
+      mediaRecorder = new MediaRecorder(stream);
+
+      // Collect recorded audio data
+      mediaRecorder.ondataavailable = function(e) {
+        recordedChunks.push(e.data);
+      };
+    })
+    .catch(function(err) {
+      // Microphone access denied or error occurred
+      console.log('Access denied');
     });
 }
 
@@ -45,14 +61,17 @@ function toggleButtons() {
 
 // Start speaking button click event listener
 startSpeakingButton.addEventListener('click', function() {
+  // Start recording
+  mediaRecorder.start();
+
   // Change the time limit text and show the recording dot
   timeLimitText.textContent = "Recording in progress...";
   recordingDot.style.display = 'inline-block';
 
   // Display question count and first question
   questionCount.style.display = 'block';
-  questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${questionSet.length}`;
-  questionText.textContent = questionSet[currentQuestionIndex];
+  questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${questionSet.questions.length}`;
+  questionText.textContent = questionSet.questions[currentQuestionIndex];
 
   // Hide start speaking button and show next question button
   startSpeakingButton.style.display = 'none';
@@ -90,15 +109,15 @@ nextQuestionButton.addEventListener('click', function() {
   currentQuestionIndex++;
 
   // Display question count and next question
-  questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${questionSet.length}`;
+  questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${questionSet.questions.length}`;
 
-  if (currentQuestionIndex < questionSet.length) {
+  if (currentQuestionIndex < questionSet.questions.length) {
     // Display next question
-    questionText.textContent = questionSet[currentQuestionIndex];
+    questionText.textContent = questionSet.questions[currentQuestionIndex];
   }
 
   // Show complete practice button if we are at the last question
-  if (currentQuestionIndex == questionSet.length - 1) {
+  if (currentQuestionIndex == questionSet.questions.length - 1) {
     nextQuestionButton.style.display = 'none';
     completePracticeButton.style.display = 'block';
   }
@@ -106,7 +125,33 @@ nextQuestionButton.addEventListener('click', function() {
 
 // Complete practice button click event listener
 completePracticeButton.addEventListener('click', function() {
-  // Stop recording, reset time limit text, and stop the timer
+  // Stop recording
+  mediaRecorder.stop();
+
+  // Create a blob from the recorded audio data
+  const recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
+
+  // Create a FormData instance
+  let formData = new FormData();
+
+  // Appendhe audio file and question_set_id to the form
+  formData.append('audio', recordedBlob);
+  formData.append('question_set_id', questionSet['question_id']);
+
+  // Send the POST request
+  fetch('/section/speaking/practice', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    }
+  })
+  .catch(error => console.error(error));
+
+
+  // Reset time limit text, and stop the timer
   timeLimitText.textContent = "Time limit: 5 minutes";
   recordingDot.style.display = 'none';
   clearInterval(timerInterval);

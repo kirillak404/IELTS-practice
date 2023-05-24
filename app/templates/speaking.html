@@ -58,9 +58,8 @@
 </div>
 
 
-
 <script>
-   const questionSet = {{ question_list|tojson|safe }};
+   const questionSet = {{ question_dict|tojson|safe }};
 </script>
 
 <script src="{{ url_for('static', filename='recording.js') }}"></script>

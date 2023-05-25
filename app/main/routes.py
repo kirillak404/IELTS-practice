@@ -49,11 +49,13 @@ def speaking_practice():
             subsection, last_topic_id)
         question_dict = {"question_id": question_set.id,
                          "questions": [q.text for q in question_set.questions]}
+        topic = question_set.topic.name if question_set.topic else None
 
         return render_template("speaking.html",
                                subsections=section.subsections,
                                current_subsection=subsection,
-                               question_dict=question_dict)
+                               question_dict=question_dict,
+                               topic=topic)
 
     # POST request processing
 

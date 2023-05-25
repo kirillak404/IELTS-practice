@@ -39,6 +39,7 @@ function initializeMediaRecorder() {
     .then(function(stream) {
       // Microphone access granted
       console.log('Access granted');
+      toggleButtons();
 
       // Create MediaRecorder instance
       mediaRecorder = new MediaRecorder(stream);

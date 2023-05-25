@@ -116,26 +116,3 @@ def speaking_practice():
         abort(500, "Database operational error")
 
     return redirect(url_for('main.speaking_practice'))
-
-
-
-
-# @login_required
-# @bp.route("/upload_audio", methods=["POST"])
-# def upload_audio():
-#     if "audio" not in request.files:
-#         return jsonify({"error": "No audio file found in request"}), 400
-#
-#     audio_file = request.files["audio"]
-#
-#     if audio_file.filename == "":
-#         return jsonify({"error": "No audio file selected"}), 400
-#
-#     file_name = f"recording_{int(time.time())}.webm"
-#     audio_path = os.path.join(bp.config["UPLOAD_FOLDER"], file_name)
-#     audio_file.save(audio_path)
-#
-#     # transcription audio
-#     transcript = transcript_file(audio_path)
-#
-#     return render_template("result.html", transcript=transcript)

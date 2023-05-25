@@ -153,6 +153,12 @@ completePracticeButton.addEventListener('click', function() {
   // Stop recording
   mediaRecorder.stop();
 
+  // Add spinner to the button
+  completePracticeButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing your answers...';
+  completePracticeButton.classList.add("disabled");
+  completePracticeButton.setAttribute("disabled", "disabled");
+
+
   // Reset time limit text, and stop the timer
   timeLimitText.textContent = "Time limit: 5 minutes";
   recordingDot.style.display = 'none';

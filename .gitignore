@@ -175,4 +175,5 @@ cython_debug/
 
 # Project
 flask_session/
-app/uploaded_audio/
+/commitlint.config.js
+/.husky/

@@ -15,7 +15,7 @@
     <tr>
       <th scope="col">Part</th>
       <th scope="col">Description</th>
-      <th scope="col">Approximate Time</th>
+      <th scope="col">Approximate time</th>
     </tr>
   </thead>
   <tbody>
@@ -23,7 +23,7 @@
     <tr>
       <td>Part {{ subsection.part }}: {{ subsection.name }}</td>
       <td>{{ subsection.description }}</td>
-      <td>{{ subsection.approx_time }}</td>
+      <td>{{ subsection.time_limit_minutes }} minutes</td>
     </tr>
   {% endfor %}
   </tbody>

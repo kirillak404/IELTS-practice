@@ -7,6 +7,7 @@ const timeLimitText = document.getElementById('timeLimitText');
 const recordingDot = document.querySelector('.recording-dot');
 const questionCount = document.getElementById('questionCount');
 const timer = document.getElementById('timer');
+const timeLimit = parseInt(timer.dataset.timeLimit, 10);
 const timerContainer = document.getElementById('timerContainer');
 
 let currentQuestionIndex = 0;
@@ -104,7 +105,7 @@ startSpeakingButton.addEventListener('click', function() {
 
   // Show timer and start countdown
   timerContainer.style.visibility = 'visible';
-  startTimer(5 * 60, timer);
+  startTimer(timeLimit * 60, timer);
 });
 
 // Timer function

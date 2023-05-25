@@ -77,7 +77,7 @@ class Subsection(db.Model):
     name = db.Column(db.String(128), nullable=False)
     part = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    approx_time = db.Column(db.String(128), nullable=False)
+    time_limit_minutes = db.Column(db.Integer, nullable=False)
 
     section_id = db.Column(db.Integer, db.ForeignKey('sections.id'),
                            nullable=False)

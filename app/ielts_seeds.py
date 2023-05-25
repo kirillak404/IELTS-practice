@@ -16,19 +16,19 @@ SUBSECTIONS = [
     {"name": "Introduction and Interview",
      "part": 1,
      "description": "The examiner asks questions about yourself, family, work/study, hobbies, etc.",
-     "approx_time": "4-5 minutes",
+     "time_limit_minutes": 5,
      "section": "Speaking"},
 
     {"name": "Individual Long Turn",
      "part": 2,
      "description": "You are given a topic, prepare for 1-2 minutes, and speak for 1-2 minutes on the topic",
-     "approx_time": "3-4 minutes",
+     "time_limit_minutes": 4,
      "section": "Speaking"},
 
     {"name": "Two-way Discussion",
      "part": 3,
      "description": "The examiner asks broader questions related to the topic in Part 2, and you discuss and express your opinions",
-     "approx_time": "4-5 minutes",
+     "time_limit_minutes": 5,
      "section": "Speaking"}
 ]
 

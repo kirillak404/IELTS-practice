@@ -44,18 +44,20 @@ def speaking_practice():
             subsection = Subsection.get_by_section_and_part(section, 1)
             last_topic_id = None
 
-        # creating a dictionary with questions
+        # data for the practice page
         question_set = QuestionSet.get_random_for_subsection(
             subsection, last_topic_id)
-        question_dict = {"question_id": question_set.id,
-                         "questions": [q.text for q in question_set.questions]}
         topic = question_set.topic.name if question_set.topic else None
+        practice = {"part": subsection.part,
+                    "topic": topic,
+                    "answer_time_limit": subsection.time_limit_minutes,
+                    "question_id": question_set.id,
+                    "questions": [q.text for q in question_set.questions]}
 
         return render_template("speaking.html",
                                subsections=section.subsections,
                                current_subsection=subsection,
-                               question_dict=question_dict,
-                               topic=topic)
+                               practice=practice)
 
     # POST request processing
 
@@ -118,3 +120,8 @@ def speaking_practice():
         abort(500, "Database operational error")
 
     return redirect(url_for('main.speaking_practice'))
+
+
+@bp.route('/test')
+def test():
+    return render_template("test.html")

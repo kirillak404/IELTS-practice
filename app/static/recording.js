@@ -1,14 +1,22 @@
+// Button elements
 const microphoneButton = document.getElementById('microphoneButton');
 const startSpeakingButton = document.getElementById('startSpeakingButton');
 const nextQuestionButton = document.getElementById('nextQuestionButton');
 const completePracticeButton = document.getElementById('completePracticeButton');
-const questionText = document.getElementById('questionText');
-const timeLimitText = document.getElementById('timeLimitText');
-const recordingDot = document.querySelector('.recording-dot');
-const questionCount = document.getElementById('questionCount');
+const startCardAnswerButton = document.getElementById('startCardAnswerButton');
+
+// Timer elements
+const cardFooterText = document.getElementById('cardFooterText');
 const timer = document.getElementById('timer');
-const timeLimit = parseInt(timer.dataset.timeLimit, 10);
 const timerContainer = document.getElementById('timerContainer');
+const timeLimit = practice['answer_time_limit']
+
+// Card elements
+const cardHeader = document.getElementById('cardHeader');
+const cardTitle = document.getElementById('cardTitle');
+const cardText = document.getElementById('cardText');
+const topicQuestions = document.getElementById('topicQuestions');
+const recordingIndicator = document.getElementById('recordingIndicator');
 
 let currentQuestionIndex = 0;
 let timerInterval;
@@ -44,6 +52,13 @@ function initializeMediaRecorder() {
       // Create MediaRecorder instance
       mediaRecorder = new MediaRecorder(stream);
 
+      // Start event
+      mediaRecorder.onstart = function() {
+        // Show the recording dot
+        cardFooterText.style.display = 'none';
+        recordingIndicator.style.display = 'block';
+      };
+
       // Collect recorded audio data
       mediaRecorder.ondataavailable = function(e) {
         recordedChunks.push(e.data);
@@ -51,6 +66,9 @@ function initializeMediaRecorder() {
 
       // Event triggered when recording is stopped
       mediaRecorder.onstop = function() {
+        // Hide the recording dot
+        recordingIndicator.style.display = 'none';
+
         // Create a blob from the recorded audio data
         const recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
 
@@ -59,7 +77,7 @@ function initializeMediaRecorder() {
 
         // Append the audio file and question_set_id to the form
         formData.append('audio', recordedBlob);
-        formData.append('question_set_id', questionSet['question_id']);
+        formData.append('question_set_id', practice['question_id']);
 
         // Send the POST request
         fetch('/section/speaking/practice', {
@@ -83,48 +101,86 @@ function initializeMediaRecorder() {
 // Function to toggle buttons
 function toggleButtons() {
   microphoneButton.style.display = 'none';
-  startSpeakingButton.style.display = 'block';
+  startSpeakingButton.style.display = 'inline-block';
 }
 
 // Start speaking button click event listener
 startSpeakingButton.addEventListener('click', function() {
+  if (practice.part == 1) {
+    // Start recording
+    mediaRecorder.start();
+
+    // Display question count and first question
+    cardHeader.textContent = `Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
+    cardTitle.textContent = practice.questions[currentQuestionIndex];
+
+    // Hide start speaking button and show next question button
+    startSpeakingButton.style.display = 'none';
+    nextQuestionButton.style.display = 'inline-block';
+    cardText.style.display = 'none';
+
+    // Show timer and start countdown
+    timerContainer.style.visibility = 'visible';
+    startTimer(timeLimit * 60, timer);
+  }
+  else if (practice.part == 2) {
+  // Display card and hide other elements
+    startCardAnswerButton.style.display = 'inline-block';
+    topicQuestions.style.display = 'block';
+    cardTitle.textContent = practice.topic
+    cardText.textContent = "You should say:"
+    startSpeakingButton.style.display = 'none';
+
+    // Show timer and start countdown
+    clearInterval(timerInterval);
+    timerContainer.style.visibility = 'visible';
+    startTimer(60, timer);
+
+  }
+});
+
+// Start cue card answer button click event listener
+startCardAnswerButton.addEventListener('click', function() {
+  // Update button
+  startCardAnswerButton.style.display = 'none';
+  completePracticeButton.style.display = 'inline-block';
+
+  // Show timer and start countdown
+  clearInterval(timerInterval);
+  timerContainer.style.visibility = 'visible';
+  startTimer(120, timer);
+  cardFooterText.textContent = "Recording in progress...";
+
   // Start recording
   mediaRecorder.start();
 
-  // Change the time limit text and show the recording dot
-  timeLimitText.textContent = "Recording in progress...";
-  recordingDot.style.display = 'inline-block';
-
-  // Display question count and first question
-  questionCount.style.display = 'block';
-  questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${questionSet.questions.length}`;
-  questionText.textContent = questionSet.questions[currentQuestionIndex];
-
-  // Hide start speaking button and show next question button
-  startSpeakingButton.style.display = 'none';
-  nextQuestionButton.style.display = 'block';
-
-  // Show timer and start countdown
-  timerContainer.style.visibility = 'visible';
-  startTimer(timeLimit * 60, timer);
 });
 
 // Timer function
 function startTimer(duration, display) {
   let timer = duration, minutes, seconds;
+
+  // Calculate and display initial time
+  minutes = parseInt(timer / 60, 10);
+  seconds = parseInt(timer % 60, 10);
+  minutes = minutes < 10 ? "0" + minutes : minutes;
+  seconds = seconds < 10 ? "0" + seconds : seconds;
+  display.textContent = minutes + ":" + seconds;
+
+  // Start countdown
   timerInterval = setInterval(function () {
+    // Decrement timer first before recalculating minutes and seconds
+    --timer;
+
     minutes = parseInt(timer / 60, 10);
     seconds = parseInt(timer % 60, 10);
-
     minutes = minutes < 10 ? "0" + minutes : minutes;
     seconds = seconds < 10 ? "0" + seconds : seconds;
-
     display.textContent = minutes + ":" + seconds;
 
-    if (--timer < 0) {
+    if (timer < 0) {
       // Timer has finished
       clearInterval(timerInterval);
-
       // Place for your code to execute after the timer finishes
     }
   }, 1000);
@@ -136,17 +192,17 @@ nextQuestionButton.addEventListener('click', function() {
   currentQuestionIndex++;
 
   // Display question count and next question
-  questionCount.textContent = `Question ${currentQuestionIndex + 1} of ${questionSet.questions.length}`;
+  cardHeader.textContent = `Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
 
-  if (currentQuestionIndex < questionSet.questions.length) {
+  if (currentQuestionIndex < practice.questions.length) {
     // Display next question
-    questionText.textContent = questionSet.questions[currentQuestionIndex];
+    cardTitle.textContent = practice.questions[currentQuestionIndex];
   }
 
   // Show complete practice button if we are at the last question
-  if (currentQuestionIndex == questionSet.questions.length - 1) {
+  if (currentQuestionIndex == practice.questions.length - 1) {
     nextQuestionButton.style.display = 'none';
-    completePracticeButton.style.display = 'block';
+    completePracticeButton.style.display = 'inline-block';
   }
 });
 
@@ -162,8 +218,8 @@ completePracticeButton.addEventListener('click', function() {
 
 
   // Reset time limit text, and stop the timer
-  timeLimitText.textContent = "Time limit: 5 minutes";
-  recordingDot.style.display = 'none';
+  cardFooterText.style.display = 'inline-block';
+  cardFooterText.textContent = "Just in time!";
   clearInterval(timerInterval);
 
   // Here goes the rest of your code for completing the practice...

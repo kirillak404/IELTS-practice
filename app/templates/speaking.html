@@ -9,7 +9,7 @@ Speaking practice
 text-center
 {% endblock %}
 {% block content %}
-
+<!--Subsections list-->
 <div class="container text-center">
    <ul class="list-group" style="max-width: 380px; margin: 0 auto;">
       {% for subsection in subsections %}
@@ -24,50 +24,37 @@ text-center
       {% endfor %}
    </ul>
 </div>
-
-{% if topic %}
-<div class="container mt-5" style="display: none;">
-   <div class="card">
-      <div class="card-body">
-         <h5 class="card-title mt-2 mb-4">{{ topic }}</h5>
-         <h6 class="card-subtitle mb-2 text-muted">You should say:</h6>
-         <ul>
-            {% for question in question_dict.questions %}
-            <li>{{ question }}</li>
-            {% endfor %}
-         </ul>
+<div class="card text-center bg-white mt-5">
+   <div class="card-header" id="cardHeader">
+      Part {{ current_subsection.part }}: {{ current_subsection.name }}
+   </div>
+   <div class="card-body">
+      <h5 class="card-title" id="cardTitle">{{ current_subsection.description }}</h5>
+      <p class="card-text" id="cardText">Simply use your voice and a microphone.</p>
+      {% if practice.topic %}
+      <ul style="text-align: left; display: none;" id="topicQuestions">
+         {% for question in practice.questions %}
+         <li>{{ question }}</li>
+         {% endfor %}
+      </ul>
+      {% endif %}
+      <a class="btn btn-primary" id="microphoneButton" style="display: inline-block;">Turn on the microphone</a>
+      <a class="btn btn-primary" id="startSpeakingButton" style="display: none;">Start Speaking Practice</a>
+      <a class="btn btn-primary" id="nextQuestionButton" style="display: none;">Next question</a>
+      <a class="btn btn-primary" id="startCardAnswerButton" style="display: none;">I'm ready to answer</a>
+      <a class="btn btn-success" id="completePracticeButton" style="display: none;">Complete speaking practice</a>
+   </div>
+   <div class="card-footer text-muted">
+      <div id="cardFooterText" style="display: inline-block;">Time limit: {{ current_subsection.time_limit_minutes }} minutes</div>
+      <div id="recordingIndicator" style="display: none;">
+         <div class="blinking-dot"></div>
+         <span>Recording in progress...</span>
       </div>
    </div>
 </div>
-{% endif %}
-
-<div id="centred-container">
-   <p class="text-muted small mt-2" id="questionCount" style="display: none;"></p>
-   <p class="lead fs-2" id="questionText">
-      {{ current_subsection.description }}
-   </p>
-   <button class="btn btn-primary btn-lg" id="microphoneButton" style="display: block;">
-   <i class="bi bi-mic-fill"></i> Turn on the microphone
-   </button>
-   <button class="btn btn btn-primary btn-lg" id="startSpeakingButton" style="display: none;">
-   <i class="bi bi-headset"></i> Start speaking practice
-   </button>
-   <button class="btn btn btn-primary btn-lg" id="nextQuestionButton" style="display: none;">
-   Next question
-   </button>
-   <button class="btn btn btn-success btn-lg" id="completePracticeButton" style="display: none;">
-   Complete speaking practice
-   </button>
-   <div class="time-container">
-      <span class="recording-dot" style="display: none;"></span>
-      <p class="text-muted small mt-2" id="timeLimitText">Time limit: {{ current_subsection.time_limit_minutes }} minutes</p>
-   </div>
-</div>
-
 <div class="timer-container" id="timerContainer" style="visibility: hidden;">
-   <span id="timer" data-time-limit="{{ current_subsection.time_limit_minutes }}">0{{ current_subsection.time_limit_minutes }}:00</span>
+   <span id="timer"></span>
 </div>
-
-<script>const questionSet = {{ question_dict|tojson|safe }};</script>
+<script>const practice = {{ practice|tojson|safe }};</script>
 <script src="{{ url_for('static', filename='recording.js') }}"></script>
 {% endblock %}

@@ -6,7 +6,6 @@ const completePracticeButton = document.getElementById('completePracticeButton')
 const startCardAnswerButton = document.getElementById('startCardAnswerButton');
 
 // Timer elements
-const cardFooterText = document.getElementById('cardFooterText');
 const timer = document.getElementById('timer');
 const timerContainer = document.getElementById('timerContainer');
 const timeLimit = practice['answer_time_limit']
@@ -15,6 +14,7 @@ const timeLimit = practice['answer_time_limit']
 const cardHeader = document.getElementById('cardHeader');
 const cardTitle = document.getElementById('cardTitle');
 const cardText = document.getElementById('cardText');
+const cardFooterText = document.getElementById('cardFooterText');
 const topicQuestions = document.getElementById('topicQuestions');
 const recordingIndicator = document.getElementById('recordingIndicator');
 

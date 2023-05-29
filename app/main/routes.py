@@ -8,7 +8,7 @@ from app import db
 from app.main import bp
 from app.models import *
 
-from app.openai import transcribe_audio
+from app.openai_tools import transcribe_audio
 
 
 @bp.route('/')

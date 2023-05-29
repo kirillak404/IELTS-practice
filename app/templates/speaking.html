@@ -29,9 +29,10 @@ text-center
       Part {{ current_subsection.part }}: {{ current_subsection.name }}
    </div>
    <div class="card-body">
-      <h5 class="card-title" id="cardTitle">{{ current_subsection.description }}</h5>
+      <h5 class="card-title" id="cardTitle">
+         {{ current_subsection.description }}</h5>
       <p class="card-text" id="cardText">Simply use your voice and a microphone.</p>
-      {% if practice.topic %}
+      {% if practice.topic_name %}
       <ul style="text-align: left; display: none;" id="topicQuestions">
          {% for question in practice.questions %}
          <li>{{ question }}</li>

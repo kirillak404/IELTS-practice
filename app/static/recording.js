@@ -127,7 +127,8 @@ startSpeakingButton.addEventListener('click', function() {
   // Display card and hide other elements
     startCardAnswerButton.style.display = 'inline-block';
     topicQuestions.style.display = 'block';
-    cardTitle.textContent = practice.topic
+    cardHeader.textContent = practice.topic_name
+    cardTitle.textContent = practice.topic_desc
     cardText.textContent = "You should say:"
     startSpeakingButton.style.display = 'none';
 
@@ -136,6 +137,26 @@ startSpeakingButton.addEventListener('click', function() {
     timerContainer.style.visibility = 'visible';
     startTimer(60, timer);
 
+  }
+    else if (practice.part == 3) {
+    // Start recording
+    mediaRecorder.start();
+
+    // Display question count and first question
+    cardHeader.textContent = `${practice.topic_name}: Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
+    cardTitle.textContent = practice.questions[currentQuestionIndex];
+
+    // Hide start speaking button and show next question button
+    startSpeakingButton.style.display = 'none';
+    nextQuestionButton.style.display = 'inline-block';
+    cardText.style.display = 'none';
+
+    // Show topic name
+
+
+    // Show timer and start countdown
+    timerContainer.style.visibility = 'visible';
+    startTimer(timeLimit * 60, timer);
   }
 });
 
@@ -191,8 +212,13 @@ nextQuestionButton.addEventListener('click', function() {
   // Increment question index
   currentQuestionIndex++;
 
+  if (practice.topic_name) {
   // Display question count and next question
+  cardHeader.textContent = `${practice.topic_name}: Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
+  }
+  else {
   cardHeader.textContent = `Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
+  }
 
   if (currentQuestionIndex < practice.questions.length) {
     // Display next question

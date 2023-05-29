@@ -60,7 +60,8 @@ QUESTIONS = [
 
 TOPICS = [
     {"subsection": "Individual Long Turn",
-     "name": "Describe a time you had to make a difficult decision.",
+     "name": "Difficult decision",
+     "description": "Describe a time you had to make a difficult decision.",
      "general_questions": [
          "When this was",
          "What the decision was",
@@ -74,11 +75,9 @@ TOPICS = [
          "Do you think it's always good to take your time when making decisions?"
      ]},
 
-
-
-
     {"subsection": "Individual Long Turn",
-     "name": "I'd like you to describe a memorable event that happened in your life.",
+     "name": "Memorable event",
+     "description": "I'd like you to describe a memorable event that happened in your life.",
      "general_questions": [
          "What the event was",
          "Where it happened",

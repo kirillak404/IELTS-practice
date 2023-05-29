@@ -47,9 +47,11 @@ def speaking_practice():
         # data for the practice page
         question_set = QuestionSet.get_random_for_subsection(
             subsection, last_topic_id)
-        topic = question_set.topic.name if question_set.topic else None
+        topic_name = question_set.topic.name if question_set.topic else None
+        topic_desc = question_set.topic.description if question_set.topic else None
         practice = {"part": subsection.part,
-                    "topic": topic,
+                    "topic_name": topic_name,
+                    "topic_desc": topic_desc,
                     "answer_time_limit": subsection.time_limit_minutes,
                     "question_id": question_set.id,
                     "questions": [q.text for q in question_set.questions]}

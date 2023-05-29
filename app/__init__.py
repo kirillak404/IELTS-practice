@@ -71,7 +71,8 @@ def create_app(config_class=Config):
                     name=topic["subsection"]).first()
 
                 # inserting new topic
-                new_topic = models.Topic(name=topic["name"])
+                new_topic = models.Topic(name=topic["name"],
+                                         description=topic["description"])
                 db.session.add(new_topic)
 
                 # inserting topic GENERAL questions

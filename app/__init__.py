@@ -3,7 +3,7 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from authlib.integrations.flask_client import OAuth
 
-from app.utils import validation_class
+from app.utils import validation_class, highlight_errors
 from app.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
 from config import Config
 
@@ -105,5 +105,5 @@ def create_app(config_class=Config):
     app.register_blueprint(main_bp)
 
     app.jinja_env.filters['validation_class'] = validation_class
-
+    app.jinja_env.globals.update(highlight_errors=highlight_errors)
     return app

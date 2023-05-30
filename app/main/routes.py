@@ -8,7 +8,7 @@ from app import db
 from app.main import bp
 from app.models import *
 
-from app.openai_tools import transcribe_audio
+from app.openai_tools import transcribe_audio, json_example
 
 
 @bp.route('/')
@@ -124,6 +124,8 @@ def speaking_practice():
     return redirect(url_for('main.speaking_practice'))
 
 
-@bp.route('/test')
+@bp.route('/section_results')
 def test():
-    return render_template("test.html")
+    with open('data.json') as json_file:
+        data = json.load(json_file)
+    return render_template('section_results.html', data=data)

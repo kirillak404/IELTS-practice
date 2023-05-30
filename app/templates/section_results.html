@@ -1,34 +1,32 @@
 {% extends "layout.html" %}
 {% block title %}
-  Speaking practice
+Speaking practice
 {% endblock %}
 {% block h1 %}
-  Speaking practice
+Speaking practice
 {% endblock %}
-{% block h2 %}
-  {{ section.description }}
+{% block h1_classes %}
+text-center
 {% endblock %}
 {% block content %}
 
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Part</th>
-      <th scope="col">Description</th>
-      <th scope="col">Approximate time</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for subsection in subsections %}
-    <tr>
-      <td>Part {{ subsection.part }}: {{ subsection.name }}</td>
-      <td>{{ subsection.description }}</td>
-      <td>{{ subsection.time_limit_minutes }} minutes</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="container col-md-8 offset-md-2 rounded shadow p-3 mb-5 bg-white">
+    {% for item in data.data %}
+        <h5>{{item.question}}</h5>
+        <p class="text-justify">{{item.answer|safe}}</p>
+        <hr/>
+    {% endfor %}
+</div>
 
-<a href="/section/{{ section.name|lower }}/practice" class="btn btn-primary">Start {{ section.name }} practice</a>
+
+<script>
+$(document).ready(function() {
+    $('.error').each(function() {
+        var errorExplanation = $(this).data('error-explanation');
+        $(this).tooltip({title: errorExplanation, placement: 'top', html: true});
+    });
+});
+</script>
+
 
 {% endblock %}

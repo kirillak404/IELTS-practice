@@ -1,117 +1,27 @@
 {
-	"Fluency_and_Coherence": 6,
-	"Lexical_Resource": 6,
-	"Grammatical_Range_and_Accuracy": 5,
-	"Pronunciation": 7,
-	"QuestionAnswerPairs": [{
-		"Question": "What is your favorite hobby?",
-		"Answer": {
-			"Content": "My favorite hobby is play football. I like to play it with my friends every weekend.",
-			"Mistakes": [{
-				"Type": "Verb form",
-				"IncorrectText": "play",
-				"CorrectText": "playing",
-				"Explanation": "After the verb 'is', we need to use the gerund form of the verb, which is 'playing' in this case."
-			}]
+	"fluency_and_coherence": 7,
+	"lexical_resource": 8,
+	"grammatical_range_and_accuracy": 5,
+	"pronunciation": 8,
+	"data": [{
+			"question": "What is your favorite hobby?",
+			"answer": "My favorite hobby is playing football. I <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It appears that the subject pronoun <b>I</b> and the verb <b>likes</b> are not in agreement.\" data-corrected-text=\"like\">likes</span> to play football every weekend with my friends. It's very fun and <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It seems that the verb <b>keep</b> does not agree with the subject.\" data-corrected-text=\"keeps\">keep</span> me active."
+		},
+		{
+			"question": "Do you enjoy cooking?",
+			"answer": "Yes, I enjoy cooking sometimes. I often <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;appears that the subject pronoun <b>I</b> and the verb <b>cooks</b> are not in&nbsp;agreement.\" data-corrected-text=\"cook\">cooks</span> dinner for my family. My mother <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"The plural verb <b>teach</b> does not appear to&nbsp;agree with the singular subject <b>My mother</b>.\" data-corrected-text=\"teaches\">teach</span> me some recipes and I <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;appears that the subject pronoun <b>I</b> and the verb <b>tries</b> are not in&nbsp;agreement.\" data-corrected-text=\"try\">tries</span> to cook them. It's a good way to relax."
+		},
+		{
+			"question": "How often do you exercise?",
+			"answer": "I don't exercise very <span class=\"error\" data-error-type=\"spelling\" data-error-explanation=\"The word <b>regular</b> doesn’t seem to&nbsp;fit this context.\" data-corrected-text=\"regularly\">regular</span>. I <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;appears that the subject pronoun <b>I</b> and the verb <b>tries</b> are not in&nbsp;agreement.\" data-corrected-text=\"try\">tries</span> to go to the gym once a week, but sometimes I'm too busy and <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;seems that you are missing a&nbsp;verb.\" data-corrected-text=\"do not\">not</span> have enough time. I know it's important to stay healthy, so I need to make more time for it."
+		},
+		{
+			"question": "What kind of music do you like?",
+			"answer": "I <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It appears that the subject pronoun <b>I</b> and the verb <b>likes</b> are not in agreement.\" data-corrected-text=\"like\">likes</span> all kinds of music. I <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;appears that the subject pronoun <b>I</b> and the verb <b>listens</b> are not in&nbsp;agreement.\" data-corrected-text=\"listen\">listens</span> to pop, rock, and sometimes <span class=\"error\" data-error-type=\"spelling\" data-error-explanation=\"The word <b>classic</b> doesn’t seem to&nbsp;fit this context.\" data-corrected-text=\"classical\">classic</span> music. Music helps me to relax and forget about problems. I usually <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;appears that the subject pronoun <b>I</b> and the verb <b>listens</b> are not in&nbsp;agreement.\" data-corrected-text=\"listen\">listens</span> to music when I am <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;appears that your sentence or&nbsp;clause uses an&nbsp;incorrect form of&nbsp;the verb <b>study</b>.\" data-corrected-text=\"studying\">study</span> or cleaning the house."
+		},
+		{
+			"question": "What is your favorite season?",
+			"answer": "My favorite season is summer. I <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It appears that the subject pronoun <b>I</b> and the verb <b>likes</b> are not in agreement.\" data-corrected-text=\"like\">likes</span> the hot weather and go to the beach. I can <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It&nbsp;appears that your sentence or&nbsp;clause uses an&nbsp;incorrect form of&nbsp;the verb <b>swims</b>.\" data-corrected-text=\"swim\">swims</span> in the ocean and gets a nice tan. Summer is the best time of the year for me."
 		}
-	}, {
-		"Question": "Do you prefer living in a city or in the countryside?",
-		"Answer": {
-			"Content": "I prefer living in a city because there are more opportunities for work and have many entertainments.",
-			"Mistakes": [{
-				"Type": "Subject-verb agreement",
-				"IncorrectText": "have",
-				"CorrectText": "it has",
-				"Explanation": "The city is referred to as 'it'. So, we need to use 'it has' instead of 'have'."
-			}, {
-				"Type": "Noun form",
-				"IncorrectText": "entertainments",
-				"CorrectText": "entertainment",
-				"Explanation": "'Entertainment' is uncountable in English and it's incorrect to use it in the plural form."
-			}]
-		}
-	}, {
-		"Question": "How often do you exercise?",
-		"Answer": {
-			"Content": "I don't exercise often. Sometimes I go to the gym, but most of the time I'm too busy with my work.",
-			"Mistakes": []
-		}
-	}, {
-		"Question": "What kind of music do you like?",
-		"Answer": {
-			"Content": "I like listen to rock music. It makes me feel relax and it have a lot of energy.",
-			"Mistakes": [{
-				"Type": "Verb form",
-				"IncorrectText": "like listen",
-				"CorrectText": "like listening",
-				"Explanation": "After 'like', the verb should be in gerund form, so 'listen' should be 'listening'."
-			}, {
-				"Type": "Verb form",
-				"IncorrectText": "relax",
-				"CorrectText": "relaxed",
-				"Explanation": "In this context, the verb 'feel' should be followed by an adjective. The correct adjective form is 'relaxed'."
-			}, {
-				"Type": "Subject-verb agreement",
-				"IncorrectText": "it have",
-				"CorrectText": "it has",
-				"Explanation": "The subject 'it' (referring to rock music) is singular, so the verb should be 'has' instead of 'have'."
-			}]
-		}
-	}, {
-		"Question": "How often do you eat fast food?",
-		"Answer": {
-			"Content": "I eat fast food very often. It's cheap and easy for me, and I don't have much time to cook.",
-			"Mistakes": []
-		}
-	}, {
-		"Question": "What is your favorite season?",
-		"Answer": {
-			"Content": "My favorite season is spring because the weather is not too hot or cold, and the flowers blossom.",
-			"Mistakes": [{
-				"Type": "Verb form",
-				"IncorrectText": "blossoms",
-				"CorrectText": "blossom",
-				"Explanation": "In this context, 'blossoms' should be used as a verb in the present tense, not as a noun or a third-person singular verb. Therefore, it should be 'blossom'."
-			}]
-		}
-	}, {
-		"Question": "How often do you go to the cinema?",
-		"Answer": {
-			"Content": "I don't go to the cinema often. Tickets are very expensive and I can watch movies at home.",
-			"Mistakes": []
-		}
-	}, {
-		"Question": "What is your favorite book?",
-		"Answer": {
-			"Content": "My favorite book is \"Pride and Prejudice\" by Jane Austen. It's a very interesting story about love and romance.",
-			"Mistakes": [{
-				"Type": "Spelling",
-				"IncorrectText": "Jane Austin",
-				"CorrectText": "Jane Austen",
-				"Explanation": "The correct spelling of the author's name is 'Jane Austen'."
-			}]
-		}
-	}, {
-		"Question": "How do you usually spend your weekends?",
-		"Answer": {
-			"Content": "I usually spend my weekends sleeping late and hanging out with my friends. We go shopping or watch a movie.",
-			"Mistakes": [{
-				"Type": "Verb form",
-				"IncorrectText": "sleep",
-				"CorrectText": "sleeping",
-				"Explanation": "The verb after 'spend' should be in the gerund form, so 'sleep' should be 'sleeping'."
-			}, {
-				"Type": "Preposition",
-				"IncorrectText": "go to shopping",
-				"CorrectText": "go shopping",
-				"Explanation": "The correct expression is 'go shopping', not 'go to shopping'."
-			}]
-		}
-	}, {
-		"Question": "What is your favorite food?",
-		"Answer": {
-			"Content": "My favorite food is pizza. It's delicious and I like the taste of cheese and toppings.",
-			"Mistakes": []
-		}
-	}]
+	]
 }

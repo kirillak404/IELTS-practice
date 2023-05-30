@@ -1,0 +1,117 @@
+{
+	"Fluency_and_Coherence": 6,
+	"Lexical_Resource": 6,
+	"Grammatical_Range_and_Accuracy": 5,
+	"Pronunciation": 7,
+	"QuestionAnswerPairs": [{
+		"Question": "What is your favorite hobby?",
+		"Answer": {
+			"Content": "My favorite hobby is play football. I like to play it with my friends every weekend.",
+			"Mistakes": [{
+				"Type": "Verb form",
+				"IncorrectText": "play",
+				"CorrectText": "playing",
+				"Explanation": "After the verb 'is', we need to use the gerund form of the verb, which is 'playing' in this case."
+			}]
+		}
+	}, {
+		"Question": "Do you prefer living in a city or in the countryside?",
+		"Answer": {
+			"Content": "I prefer living in a city because there are more opportunities for work and have many entertainments.",
+			"Mistakes": [{
+				"Type": "Subject-verb agreement",
+				"IncorrectText": "have",
+				"CorrectText": "it has",
+				"Explanation": "The city is referred to as 'it'. So, we need to use 'it has' instead of 'have'."
+			}, {
+				"Type": "Noun form",
+				"IncorrectText": "entertainments",
+				"CorrectText": "entertainment",
+				"Explanation": "'Entertainment' is uncountable in English and it's incorrect to use it in the plural form."
+			}]
+		}
+	}, {
+		"Question": "How often do you exercise?",
+		"Answer": {
+			"Content": "I don't exercise often. Sometimes I go to the gym, but most of the time I'm too busy with my work.",
+			"Mistakes": []
+		}
+	}, {
+		"Question": "What kind of music do you like?",
+		"Answer": {
+			"Content": "I like listen to rock music. It makes me feel relax and it have a lot of energy.",
+			"Mistakes": [{
+				"Type": "Verb form",
+				"IncorrectText": "like listen",
+				"CorrectText": "like listening",
+				"Explanation": "After 'like', the verb should be in gerund form, so 'listen' should be 'listening'."
+			}, {
+				"Type": "Verb form",
+				"IncorrectText": "relax",
+				"CorrectText": "relaxed",
+				"Explanation": "In this context, the verb 'feel' should be followed by an adjective. The correct adjective form is 'relaxed'."
+			}, {
+				"Type": "Subject-verb agreement",
+				"IncorrectText": "it have",
+				"CorrectText": "it has",
+				"Explanation": "The subject 'it' (referring to rock music) is singular, so the verb should be 'has' instead of 'have'."
+			}]
+		}
+	}, {
+		"Question": "How often do you eat fast food?",
+		"Answer": {
+			"Content": "I eat fast food very often. It's cheap and easy for me, and I don't have much time to cook.",
+			"Mistakes": []
+		}
+	}, {
+		"Question": "What is your favorite season?",
+		"Answer": {
+			"Content": "My favorite season is spring because the weather is not too hot or cold, and the flowers blossom.",
+			"Mistakes": [{
+				"Type": "Verb form",
+				"IncorrectText": "blossoms",
+				"CorrectText": "blossom",
+				"Explanation": "In this context, 'blossoms' should be used as a verb in the present tense, not as a noun or a third-person singular verb. Therefore, it should be 'blossom'."
+			}]
+		}
+	}, {
+		"Question": "How often do you go to the cinema?",
+		"Answer": {
+			"Content": "I don't go to the cinema often. Tickets are very expensive and I can watch movies at home.",
+			"Mistakes": []
+		}
+	}, {
+		"Question": "What is your favorite book?",
+		"Answer": {
+			"Content": "My favorite book is \"Pride and Prejudice\" by Jane Austen. It's a very interesting story about love and romance.",
+			"Mistakes": [{
+				"Type": "Spelling",
+				"IncorrectText": "Jane Austin",
+				"CorrectText": "Jane Austen",
+				"Explanation": "The correct spelling of the author's name is 'Jane Austen'."
+			}]
+		}
+	}, {
+		"Question": "How do you usually spend your weekends?",
+		"Answer": {
+			"Content": "I usually spend my weekends sleeping late and hanging out with my friends. We go shopping or watch a movie.",
+			"Mistakes": [{
+				"Type": "Verb form",
+				"IncorrectText": "sleep",
+				"CorrectText": "sleeping",
+				"Explanation": "The verb after 'spend' should be in the gerund form, so 'sleep' should be 'sleeping'."
+			}, {
+				"Type": "Preposition",
+				"IncorrectText": "go to shopping",
+				"CorrectText": "go shopping",
+				"Explanation": "The correct expression is 'go shopping', not 'go to shopping'."
+			}]
+		}
+	}, {
+		"Question": "What is your favorite food?",
+		"Answer": {
+			"Content": "My favorite food is pizza. It's delicious and I like the taste of cheese and toppings.",
+			"Mistakes": []
+		}
+	}]
+}

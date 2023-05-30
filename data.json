@@ -1,8 +1,8 @@
 {
-	"fluency_and_coherence": 7,
-	"lexical_resource": 8,
-	"grammatical_range_and_accuracy": 5,
-	"pronunciation": 8,
+	"fluency_and_coherence": 7.0,
+	"lexical_resource": 8.0,
+	"grammatical_range_and_accuracy": 5.0,
+	"pronunciation": 8.0,
 	"data": [{
 			"question": "What is your favorite hobby?",
 			"answer": "My favorite hobby is playing football. I <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It appears that the subject pronoun <b>I</b> and the verb <b>likes</b> are not in agreement.\" data-corrected-text=\"like\">likes</span> to play football every weekend with my friends. It's very fun and <span class=\"error\" data-error-type=\"grammar\" data-error-explanation=\"It seems that the verb <b>keep</b> does not agree with the subject.\" data-corrected-text=\"keeps\">keep</span> me active."

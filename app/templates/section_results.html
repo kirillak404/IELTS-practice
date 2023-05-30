@@ -10,13 +10,42 @@ text-center
 {% endblock %}
 {% block content %}
 
-<div class="container col-md-8 offset-md-2 rounded shadow p-3 mb-5 bg-white">
-    {% for item in data.data %}
-        <h5>{{item.question}}</h5>
-        <p class="text-justify">{{item.answer|safe}}</p>
-        <hr/>
-    {% endfor %}
+<div class="container">
+    <div class="content">
+       <div class="d-flex justify-content-between flex-wrap mb-5">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Fluency and Coherence</h5>
+                    <p class="card-score">{{data.fluency_and_coherence}}</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Lexical Resource</h5>
+                    <p class="card-score">{{data.lexical_resource}}</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Grammatical range and Accuracy</h5>
+                    <p class="card-score">{{data.grammatical_range_and_accuracy}}</p>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Pronunciation</h5>
+                    <p class="card-score">{{data.pronunciation}}</p>
+                </div>
+            </div>
+        </div>
+        {% for item in data.data %}
+            <h5>{{item.question}}</h5>
+            <p class="text-justify lead">{{item.answer|safe}}</p>
+            <hr/>
+        {% endfor %}
+    </div>
 </div>
+
 
 
 <script>

@@ -94,3 +94,34 @@ nav .navbar-brand .green
 .error {
     position: relative;
 }
+
+.card {
+    width: 185px;
+    height: 175px;
+    border-radius: 10px;
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 1.5rem 0.5rem;
+    text-align: center;
+}
+.card-title {
+    font-size: 18px;
+}
+.card-score {
+    font-size: 40px;
+    font-weight: bold;
+}
+.content {
+    width: 860px; /* 190px * 4 (cards) + 10px * 8 (margins) */
+    margin: auto;
+}

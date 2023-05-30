@@ -47,12 +47,39 @@ text-center
 </div>
 
 
+<div class="toast">
+    <div class="toast-header">
+        <strong class="mr-auto"></strong> <!-- data-error-type will be inserted here -->
+    </div>
+    <div class="toast-body">
+        <!-- Error explanation, wrong and corrected text will be inserted here -->
+    </div>
+</div>
+
 
 <script>
 $(document).ready(function() {
-    $('.error').each(function() {
-        var errorExplanation = $(this).data('error-explanation');
-        $(this).tooltip({title: errorExplanation, placement: 'top', html: true});
+    $('.error').on('mouseenter', function(e) {
+        $('.toast').stop();
+        var top = e.pageY;
+        var left = e.pageX;
+
+        $('.toast').css({top: (top - $('.toast').height() - 10) + 'px', left: (left + 10) + 'px'});
+
+        var errorType = $(this).data('error-type').charAt(0).toUpperCase() + $(this).data('error-type').slice(1);
+        $('.toast-header strong').html(errorType);
+
+        var struckText = '<span class="struck">' + $(this).text() + '</span>';
+        var arrowIcon = '<i class="bi bi-arrow-right"></i>';
+        var correctedText = '<span class="corrected">' + $(this).data('corrected-text') + '</span>';
+        var explanation = '<br>' + $(this).data('error-explanation');
+        $('.toast-body').html(struckText + ' ' + arrowIcon + ' ' + correctedText + explanation);
+
+        $('.toast').fadeIn(250);
+    });
+
+    $('.error').on('mouseleave', function() {
+        $('.toast').fadeOut(250);
     });
 });
 </script>

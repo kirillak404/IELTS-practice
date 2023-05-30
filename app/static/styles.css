@@ -125,3 +125,20 @@ nav .navbar-brand .green
     width: 860px; /* 190px * 4 (cards) + 10px * 8 (margins) */
     margin: auto;
 }
+
+.toast {
+    position: absolute;
+    pointer-events: none;
+    background-color: #fff;
+    opacity: 0.95;
+}
+.struck {
+    text-decoration: line-through;
+    color: red;
+    font-size: 1.15em;
+}
+.corrected {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 1.15em;
+}

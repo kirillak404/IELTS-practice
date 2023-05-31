@@ -1,0 +1,27 @@
+{
+	"fluency_and_coherence": 5.0,
+	"lexical_resource": 6.0,
+	"grammatical_range_and_accuracy": 4.0,
+	"pronunciation": 5.0,
+	"data": [{
+			"q": "Can you tell me a little about yourself?",
+			"a": "I am have a work in company, it called 'TechNova'. I lives in Moscow. I has a big family. They is very kind and smart."
+		},
+		{
+			"q": "Where are you from?",
+			"a": "I from Russia. Is very big country. Have lot of cities. I lives in capital, Moscow. Is big and crowded city."
+		},
+		{
+			"q": "What do you do in your spare time?",
+			"a": "In free time, I likes play computer games, read books, sometimes goes to cinema. I enjoy do these activities."
+		},
+		{
+			"q": "What kind of food do you like?",
+			"a": "I very likes eat pizza and pasta. Also, I enjoys sushi. I don't likes vegetables. They taste not good."
+		},
+		{
+			"q": "Do you prefer the city or the countryside?",
+			"a": "I prefers city. City have many things for do. In countryside, there not much things for do."
+		}
+	]
+}

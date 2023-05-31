@@ -1,0 +1,22 @@
+prompt = f"""
+Carry out the following tasks:
+
+1. Pair the examiner's questions with the corresponding student's responses.
+2. As an AI examiner, similar to an IELTS professional, evaluate the student's answers in terms of "fluency and coherence", "lexical resource", "grammatical range and accuracy", and "pronunciation". Assign scores on a scale from 0 to 9 for each criterion, as per the IELTS scoring guidelines.
+3. Then, with the precision of a Grammarly AI, identify all textual errors in the student's responses. These errors could be, but are not limited to, spelling, grammar, punctuation, and verb form mistakes. For each mistake, provide a suggested correction and a brief explanation.
+4. Compile the IELTS scores, examiner's questions, student's responses, and identified mistakes into a JSON object. Use the following structure for the JSON object:
+'''
+{json_example}
+'''
+Remember, your response should only contain the requested JSON object and no additional text. Additionally, please remove unnecessary whitespace and line breaks from the JSON object as JSON does not require formatting with indentation and line breaks.
+
+Examiner's questions:
+'''
+{questions}
+'''
+
+Student's answers:
+'''
+{answers}
+'''
+"""

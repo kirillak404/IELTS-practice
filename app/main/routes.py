@@ -126,6 +126,6 @@ def speaking_practice():
 
 @bp.route('/section_results')
 def test():
-    with open('data.json') as json_file:
+    with open('app/gpt_response.json') as json_file:
         data = json.load(json_file)
     return render_template('section_results.html', data=data)

@@ -39,8 +39,8 @@ text-center
             </div>
         </div>
         {% for item in data.data %}
-            <h5>{{item.question}}</h5>
-            <p class="text-justify lead">{{item.answer|safe}}</p>
+            <h5>{{item.q}}</h5>
+            <p class="text-justify lead">{{item.a|safe}}</p>
             <hr/>
         {% endfor %}
     </div>

@@ -31,7 +31,7 @@ class ChatGPT:
     def __init__(self, model="gpt-3.5-turbo"):  # gpt-4 | gpt-3.5-turbo
         self.model = model
 
-    def get_response(self, messages: list) -> dict:
+    def get_completion(self, messages: list) -> dict:
         gpt_response_dict = None
         start = time.time()
         for _ in range(10):
@@ -39,7 +39,7 @@ class ChatGPT:
                 completion = openai.ChatCompletion.create(
                     model=self.model,
                     messages=messages,
-                    top_p=0.1
+                    temperature=0,  # degree of randomness of the output
                 )
                 gpt_response_json_string = completion.choices[0].message["content"]
                 gpt_response_dict = json.loads(gpt_response_json_string)
@@ -103,7 +103,7 @@ Student's answers:
             {"role": "user", "content": prompt}
         ]
 
-        speaking = self.get_response(messages)
+        speaking = self.get_completion(messages)
         answers = [pair['a'] for pair in speaking['data']]
         for a in answers:
             print(a)
@@ -240,7 +240,7 @@ Please analyze the text below:
             {"role": "user", "content": text}
         ]
 
-        return self.get_response(messages)
+        return self.get_completion(messages)
 
     def check_multiple_texts_for_errors(self, texts: list) -> list:
         with concurrent.futures.ThreadPoolExecutor() as executor:

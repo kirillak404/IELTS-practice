@@ -1,9 +1,14 @@
-{"fluency_and_coherence": 7, "lexical_resource": 6, "grammatical_range_and_accuracy": 5, "pronunciation": 7,
- "data": [
-    {"q": "What is your favorite hobby?", "a": "My favorite hobby is playing football. I likes to play football every weekend with my friends. It's very fun and keeps me active."},
-    {"q": "Do you enjoy cooking?", "a": "Yes, I enjoy cooking sometimes. I often cook dinner for my family. My mother taught me some recipes and I try to cook them. It's a good way to relax."},
-    {"q": "How often do you exercise?", "a": "I don't exercise very regularly. I try to go to the gym once a week, but sometimes I'm too busy and don't have enough time. I know it's important to stay healthy, so I need to make more time for it."},
-    {"q": "What kind of music do you like?", "a": "I like all kinds of music. I listen to pop, rock, and sometimes classic music. Music helps me to relax and forget about problems. I usually listen to music when I am studying or cleaning the house."},
-    {"q": "What is your favorite season?", "a": "My favorite season is summer. I like the hot weather and going to the beach. I can swim in the ocean and get a nice tan. Summer is the best time of the year for me."}
-  ]
+{
+	"text": "<err>We</err> was driving down the highway when we <err>seen</err> a huge accident.",
+	"errors": [{
+		"err": "We",
+		"type": "grammar",
+		"desc": "It seems that the subject pronoun should be capitalized.",
+		"corr": "We"
+	}, {
+		"err": "seen",
+		"type": "grammar",
+		"desc": "It appears that the correct past participle form of the verb see has not been used here.",
+		"corr": "saw"
+	}]
 }

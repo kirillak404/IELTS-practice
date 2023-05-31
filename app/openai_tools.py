@@ -34,17 +34,14 @@ class ChatGPT:
     def __init__(self, model="gpt-3.5-turbo"):  # gpt-4 | gpt-3.5-turbo
         self.model = model
 
-    def get_response(self, system: str, prompt: str):
+    def get_response(self, messages: list):
         start = time.time()
 
         for _ in range(10):
             try:
                 completion = openai.ChatCompletion.create(
                     model=self.model,
-                    messages=[
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": prompt}
-                    ]
+                    messages=messages
                 )
                 result = completion.choices[0].message["content"]
                 result_json = json.loads(result)
@@ -52,6 +49,7 @@ class ChatGPT:
                 print(e.error['message'])
                 time.sleep(1)
             except json.decoder.JSONDecodeError as e:
+                print(result)
                 print("JSON decoding error, message::", str(e))
             else:
                 with open('gpt_response_check_answers.json', "w") as file:
@@ -89,42 +87,116 @@ Student's answers:
 """
         self.get_response(system, prompt)
 
-    def find_grammar_errors(self, texts: list):
-        texts = json.dumps(texts)
-        json_example = """{"data":[{"text":"I <err>from</err> Russia. Is <err>very</err> big country. Have <err>lot</err> of cities. I <err>lives</err> in <err>capital</err>, Moscow. Is <err>big</err> and crowded city.","errors":[{"err":"from","type":"grammar","desc":"It seems that you are missing a verb.","corr":"am from"},{"err":"very","type":"grammar","desc":"It seems that there is an article usage problem here.","corr":"a very"},{"err":"lot","type":"grammar","desc":"It appears that the phrase lot does not contain the correct article usage.","corr":"a lot"},{"err":"lives","type":"grammar","desc":"It appears that the subject pronoun I and the verb lives are not in agreement.","corr":"live"},{"err":"capital","type":"grammar","desc":"The noun phrase capital seems to be missing a determiner before it.","corr":"the capital"},{"err":"big","type":"grammar","desc":"It seems that there is an article usage problem here.","corr":"a big"}]},{"text":"I <err>likes</err> rock music. Sometimes, I <err>listens</err> to pop. I don't <err>enjoys</err> <err>classic</err> music. It is boring.","errors":[{"err":"likes","type":"grammar","desc":"It appears that the subject pronoun I and the verb likes are not in agreement.","corr":"like"},{"err":"listens","type":"grammar","desc":"It appears that the subject pronoun I and the verb listens are not in agreement.","corr":"listen"},{"err":"enjoys","type":"grammar","desc":"It appears that the verb enjoys is incorrectly used with the helping verb do.","corr":"enjoy"},{"err":"classic","type":"spelling","desc":"The word classic doesn’t seem to fit this context.","corr":"classical"}]}]}"""
-
-        prompt = f"""
-Your task is to perform the following actions:
-
-1. Examine the following list of texts given in JSON format. Identify any spelling, grammar, punctuation, or word usage errors present in each text.
-2. In each text, place <err> and </err> tags around the words or phrases where you find an error. This is an important step and must not be skipped. For example, if "I is happy" is the text, you should rewrite it as "I <err>is</err> happy" to indicate the error.
-3. For each identified error, provide a detailed explanation. This should include the type of the error (spelling, grammar, punctuation, or word usage), a brief description explaining why it is considered an error, and the correct version of the word or phrase.
-4. Compile all of the analyzed texts, the marked errors within the texts, and their descriptions into a JSON object.
-
-Here is an example of a completed JSON object:
-'''
-{json_example}
-'''
-
-Please analyze the following list of texts provided in the JSON format below:
-'''
-{texts}
-'''
-"""
+    def find_grammar_errors(self, text: str):
         system = "You are an AI language model similar to Grammarly. Your primary task is to analyze text data and identify any language errors present. This includes, but is not limited to, spelling, grammar, punctuation, and word usage errors. You must respond in a JSON format. The identified errors within the original text must be indicated with tags, like this: <err>error_here</err>. Your output should strictly adhere to this format."
-        self.get_response(system, prompt)
+
+        text_example1 = "I likes rock music. Sometimes, I listens to pop. I don't enjoys classic music. It is boring."
+        json_example = """
+{
+	"text": "I <err>likes</err> rock music. Sometimes, I <err>listens</err> to pop. I don't <err>enjoys</err> <err>classic</err> music. It is boring.",
+	"errors": [{
+		"err": "likes",
+		"type": "grammar",
+		"desc": "It appears that the subject pronoun I and the verb likes are not in agreement.",
+		"corr": "like"
+	}, {
+		"err": "listens",
+		"type": "grammar",
+		"desc": "It appears that the subject pronoun I and the verb listens are not in agreement.",
+		"corr": "listen"
+	}, {
+		"err": "enjoys",
+		"type": "grammar",
+		"desc": "It appears that the verb enjoys is incorrectly used with the helping verb do.",
+		"corr": "enjoy"
+	}, {
+		"err": "classic",
+		"type": "spelling",
+		"desc": "The word classic doesn’t seem to fit this context.",
+		"corr": "classical"
+	}]
+}
+        """
+        prompt_example1 = f"""
+        Your task is to perform the following actions:
+
+        1. Examine the following text and identify any spelling, grammar, punctuation, or word usage errors present it.
+        2. In text, place <err> and </err> tags around the words or phrases where you find an error. This is an important step and must not be skipped. For example, if "I is happy" is the text, you should rewrite it as "I <err>is</err> happy" to indicate the error.
+        3. For each identified error, provide a detailed explanation. This should include the type of the error (spelling, grammar, punctuation, or word usage), a brief description explaining why it is considered an error, and the correct version of the word or phrase.
+        4. Compile the analyzed text, the marked errors in the text and their descriptions into a JSON object.
+
+        Here is an example of a completed JSON object:
+        '''
+        {json_example}
+        '''
+
+        Please analyze the text below:
+        '''
+        {text_example1}
+        '''
+        """
+
+        text_example2 = "I from Russia. Is very big country. Have lot of cities. I lives in capital, Moscow. Is big and crowded city."
+        json_example2 = """
+{
+	"text": "I <err>from</err> Russia. Is <err>very</err> big country. Have <err>lot</err> of cities. I <err>lives</err> in <err>capital</err>, Moscow. Is <err>big</err> and crowded city.",
+	"errors": [{
+		"err": "from",
+		"type": "grammar",
+		"desc": "It seems that you are missing a verb.",
+		"corr": "am from"
+	}, {
+		"err": "very",
+		"type": "grammar",
+		"desc": "It seems that there is an article usage problem here.",
+		"corr": "a very"
+	}, {
+		"err": "lot",
+		"type": "grammar",
+		"desc": "It appears that the phrase lot does not contain the correct article usage.",
+		"corr": "a lot"
+	}, {
+		"err": "lives",
+		"type": "grammar",
+		"desc": "It appears that the subject pronoun I and the verb lives are not in agreement.",
+		"corr": "live"
+	}, {
+		"err": "capital",
+		"type": "grammar",
+		"desc": "The noun phrase capital seems to be missing a determiner before it.",
+		"corr": "the capital"
+	}, {
+		"err": "big",
+		"type": "grammar",
+		"desc": "It seems that there is an article usage problem here.",
+		"corr": "a big"
+	}]
+}
+"""
+
+        messages = [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": prompt_example1},
+                        {"role": "assistant", "content": json_example},
+                        {"role": "user", "content": text_example2},
+                        {"role": "assistant", "content": json_example2},
+                        {"role": "user", "content": text},
+                    ]
+
+        self.get_response(messages)
 
 
 answer_texts = ["I ain't got no time to waste on meaningless tasks.",
-"The weather be so hot today, I can't even handle it.",
-"She don't know nothing about cars, but she acts like she's an expert.",
-"Me and my friends, we was hanging out at the mall and we saw this really cool band playing.",
-"He don't want to go to the party 'cause he says it's gonna be boring.",
-"They was talking all loud and stuff, disturbing everyone in the restaurant.",
-"We was driving down the highway when we seen a huge accident.",
-"My boss don't appreciate all the hard work I do for this company.",
-"She ain't never been to Europe before, so she's really excited about the trip.",
-"They don't got no idea what they're talking about, but they act like they're experts on the subject."]
+                "The weather be so hot today, I can't even handle it.",
+                "She don't know nothing about cars, but she acts like she's an expert.",
+                "Me and my friends, we was hanging out at the mall and we saw this really cool band playing.",
+                "He don't want to go to the party 'cause he says it's gonna be boring.",
+                "They was talking all loud and stuff, disturbing everyone in the restaurant.",
+                "We was driving down the highway when we seen a huge accident.",
+                "My boss don't appreciate all the hard work I do for this company.",
+                "She ain't never been to Europe before, so she's really excited about the trip.",
+                "They don't got no idea what they're talking about, but they act like they're experts on the subject."]
 
-# chat_gpt = ChatGPT()
-# chat_gpt.evaluate_speaking(questions, answers)
+chat_gpt = ChatGPT()
+chat_gpt.find_grammar_errors(answer_texts[-4])
+

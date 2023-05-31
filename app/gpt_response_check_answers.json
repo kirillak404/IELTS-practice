@@ -1,14 +1,24 @@
 {
-	"text": "<err>We</err> was driving down the highway when we <err>seen</err> a huge accident.",
+	"text": "<err>We was</err> walking in the park when we <err>seen</err> a <err>squirrels</err> chasing <err>its</err> tails.",
 	"errors": [{
-		"err": "We",
+		"err": "We was",
 		"type": "grammar",
-		"desc": "It seems that the subject pronoun should be capitalized.",
-		"corr": "We"
+		"desc": "It appears that the correct verb form is missing here.",
+		"corr": "We were"
 	}, {
 		"err": "seen",
 		"type": "grammar",
-		"desc": "It appears that the correct past participle form of the verb see has not been used here.",
+		"desc": "It appears that the correct verb form is missing here.",
 		"corr": "saw"
+	}, {
+		"err": "squirrels",
+		"type": "grammar",
+		"desc": "It appears the plural form of the word 'squirrel' is incorrect.",
+		"corr": "squirrel"
+	}, {
+		"err": "its",
+		"type": "grammar",
+		"desc": "It appears that the personal pronoun 'its' is incorrectly used here.",
+		"corr": "their"
 	}]
 }

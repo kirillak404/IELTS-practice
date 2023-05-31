@@ -2,6 +2,7 @@ import json
 import time
 
 import openai
+import concurrent.futures
 
 from app.utils import convert_list_to_string
 
@@ -52,6 +53,7 @@ class ChatGPT:
                 print(result)
                 print("JSON decoding error, message::", str(e))
             else:
+                print(result)
                 with open('gpt_response_check_answers.json', "w") as file:
                     file.write(result)
                 break
@@ -87,11 +89,11 @@ Student's answers:
 """
         self.get_response(system, prompt)
 
-    def find_grammar_errors(self, text: str):
-        system = "You are an AI language model similar to Grammarly. Your primary task is to analyze text data and identify any language errors present. This includes, but is not limited to, spelling, grammar, punctuation, and word usage errors. You must respond in a JSON format. The identified errors within the original text must be indicated with tags, like this: <err>error_here</err>. Your output should strictly adhere to this format."
+    def analyze_text_find_errors(self, text: str):
+        system = "As an AI language model, your role is akin to Grammarly. Your key task is to scrutinize text data for language errors including, but not limited to, spelling, grammar, punctuation, and word usage. Please respond in JSON format, using <err></err> tags to highlight the errors in the original text."
 
-        text_example1 = "I likes rock music. Sometimes, I listens to pop. I don't enjoys classic music. It is boring."
-        json_example = """
+        text_example_prompt = "I don't exercise very regular. I tries to go to the gym once a week, but sometimes I'm too busy and not have enough time."
+        json_example_prompt = """
 {
 	"text": "I <err>likes</err> rock music. Sometimes, I <err>listens</err> to pop. I don't <err>enjoys</err> <err>classic</err> music. It is boring.",
 	"errors": [{
@@ -117,27 +119,49 @@ Student's answers:
 	}]
 }
         """
-        prompt_example1 = f"""
-        Your task is to perform the following actions:
+        prompt = f"""
+Your task is to perform the following actions:
 
-        1. Examine the following text and identify any spelling, grammar, punctuation, or word usage errors present it.
-        2. In text, place <err> and </err> tags around the words or phrases where you find an error. This is an important step and must not be skipped. For example, if "I is happy" is the text, you should rewrite it as "I <err>is</err> happy" to indicate the error.
-        3. For each identified error, provide a detailed explanation. This should include the type of the error (spelling, grammar, punctuation, or word usage), a brief description explaining why it is considered an error, and the correct version of the word or phrase.
-        4. Compile the analyzed text, the marked errors in the text and their descriptions into a JSON object.
+1. Scrutinize the given text for spelling, grammar, punctuation, and word usage errors.
+2. Enclose erroneous words or phrases in <err></err> tags. For instance, "I <err>is</err> happy" indicates an error in the original text "I is happy".
+3. Provide a comprehensive explanation for each error, detailing its type, the reason it's incorrect, and the correct version.
+4. Assemble the analysed text, tagged errors, and their explanations into a JSON object.
 
-        Here is an example of a completed JSON object:
-        '''
-        {json_example}
-        '''
 
-        Please analyze the text below:
-        '''
-        {text_example1}
-        '''
+The JSON object should resemble the following example:
+'''
+{json_example_prompt}
+'''
+
+Please analyze the text below:
+'''
+{text_example_prompt}
+'''
+        """
+        json_answer_example = """
+{
+	"text": "I don't exercise very <err>regular</err>. I <err>tries</err> to go to the gym once a week, but sometimes I'm too busy and <err>not have</err> enough time.",
+	"errors": [{
+		"err": "regular",
+		"type": "spelling",
+		"desc": "The word regular doesn’t seem to fit this context.",
+		"corr": "regularly"
+	}, {
+		"err": "tries",
+		"type": "grammar",
+		"desc": "It appears that the subject pronoun I and the verb tries are not in agreement.",
+		"corr": "try"
+	}, {
+		"err": "not",
+		"type": "grammar",
+		"desc": "It seems that you are missing a verb.",
+		"corr": "do not"
+	}]
+}
         """
 
-        text_example2 = "I from Russia. Is very big country. Have lot of cities. I lives in capital, Moscow. Is big and crowded city."
-        json_example2 = """
+        text_example_2 = "I from Russia. Is very big country. Have lot of cities. I lives in capital, Moscow. Is big and crowded city."
+        json_answer_example_2 = """
 {
 	"text": "I <err>from</err> Russia. Is <err>very</err> big country. Have <err>lot</err> of cities. I <err>lives</err> in <err>capital</err>, Moscow. Is <err>big</err> and crowded city.",
 	"errors": [{
@@ -175,28 +199,33 @@ Student's answers:
 """
 
         messages = [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": prompt_example1},
-                        {"role": "assistant", "content": json_example},
-                        {"role": "user", "content": text_example2},
-                        {"role": "assistant", "content": json_example2},
-                        {"role": "user", "content": text},
-                    ]
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+            {"role": "assistant", "content": json_answer_example},
+            {"role": "user", "content": text_example_2},
+            {"role": "assistant", "content": json_answer_example_2},
+            {"role": "user", "content": text},
+        ]
 
         self.get_response(messages)
 
+    def analyze_texts(self, texts: list):
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.map(self.analyze_text_find_errors, texts)
 
-answer_texts = ["I ain't got no time to waste on meaningless tasks.",
-                "The weather be so hot today, I can't even handle it.",
-                "She don't know nothing about cars, but she acts like she's an expert.",
-                "Me and my friends, we was hanging out at the mall and we saw this really cool band playing.",
-                "He don't want to go to the party 'cause he says it's gonna be boring.",
-                "They was talking all loud and stuff, disturbing everyone in the restaurant.",
-                "We was driving down the highway when we seen a huge accident.",
-                "My boss don't appreciate all the hard work I do for this company.",
-                "She ain't never been to Europe before, so she's really excited about the trip.",
-                "They don't got no idea what they're talking about, but they act like they're experts on the subject."]
+
+sentences = [
+    "He don't knows how to cook, so he always eat out or orders takeout.",
+    "We was suppose to meet at the café, but I forgot the time and missed are appointment.",
+    "She seen the movie last night and she said it was the best she ever watched.",
+    "They don't wants to go on vacation because they thinks it's a waste of moneys.",
+    "I was talking to my friend on the phone when suddenly the call gets dropped.",
+    "He don't have no clue about the latest fashion trends, so he always wear outdated clothes.",
+    "We was walking in the park when we seen a squirrels chasing its tails.",
+    "She don't likes to read books because she finds them boring and a waste of times.",
+    "They was arguing all nights and it was driving me crazies.",
+    "I don't got no ideas how to fix a leaky faucet, so I'll have to call a plumbers."
+]
 
 chat_gpt = ChatGPT()
-chat_gpt.find_grammar_errors(answer_texts[-4])
-
+chat_gpt.analyze_texts(sentences)

@@ -59,26 +59,26 @@ text-center
 
 <script>
 $(document).ready(function() {
-    $('.error').on('mouseenter', function(e) {
+    $('.err').on('mouseenter', function(e) {
         $('.toast').stop();
         var top = e.pageY;
         var left = e.pageX;
 
         $('.toast').css({top: (top - $('.toast').height() - 10) + 'px', left: (left + 10) + 'px'});
 
-        var errorType = $(this).data('error-type').charAt(0).toUpperCase() + $(this).data('error-type').slice(1);
+        var errorType = $(this).data('type').charAt(0).toUpperCase() + $(this).data('type').slice(1);
         $('.toast-header strong').html(errorType);
 
         var struckText = '<span class="struck">' + $(this).text() + '</span>';
         var arrowIcon = '<i class="bi bi-arrow-right"></i>';
-        var correctedText = '<span class="corrected">' + $(this).data('corrected-text') + '</span>';
-        var explanation = '<br>' + $(this).data('error-explanation');
+        var correctedText = '<span class="corrected">' + $(this).data('corr') + '</span>';
+        var explanation = '<br>' + $(this).data('expl');
         $('.toast-body').html(struckText + ' ' + arrowIcon + ' ' + correctedText + explanation);
 
         $('.toast').fadeIn(250);
     });
 
-    $('.error').on('mouseleave', function() {
+    $('.err').on('mouseleave', function() {
         $('.toast').fadeOut(250);
     });
 });

@@ -1,6 +1,9 @@
-import openai
 import json
 import time
+
+import openai
+
+from app.utils import convert_list_to_string
 
 
 def transcribe_audio(audio_file):
@@ -26,23 +29,43 @@ I likes all kinds of music. I listens to pop, rock, and sometimes classic music.
 My favorite season is summer. I likes the hot weather and go to the beach. I can swims in the ocean and gets a nice tan. Summer is the best time of the year for me.
 """
 
-# json_example = '''{"fluency_and_coherence":5,"lexical_resource":6,"grammatical_range_and_accuracy":4,"pronunciation":5,"data":[{"q":"Can you tell me a little about yourself?","a":"I <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the form of the verb <b>have</b> does not work with <b>am</b> in this sentence.\" data-corr=\"have\">am have</span> a work in <span class=\"err\" data-type=\"grammar\" data-expl=\"The noun phrase <b>company</b> seems to be missing a determiner before it.\" data-corr=\"the company OR a company\">company</span>, it called \"TechNova\". I <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>I</b> and the verb <b>lives</b> are not in agreement.\" data-corr=\"live\">lives</span> in Moscow. I <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>I</b> and the verb <b>has</b> are not in agreement.\" data-corr=\"have\">has</span>\n a big family. They <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>They</b> and the verb <b>is</b> are not in agreement.\" data-corr=\"are\">is</span> very kind and smart."},{"q":"Where are you from?","a":"I <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that you are missing a verb.\" data-corr=\"am from\">from</span>\n Russia. Is <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that there is an article usage problem here.\" data-corr=\"a very\">very</span> big country. Have <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the phrase <b>lot</b> does not contain the correct article usage.\" data-corr=\"a lot\">lot</span> of cities. I <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>I</b> and the verb <b>lives</b> are not in agreement.\" data-corr=\"live\">lives</span> in <span class=\"err\" data-type=\"grammar\" data-expl=\"The noun phrase <b>capital</b> seems to be missing a determiner before it.\" data-corr=\"the capital\">capital</span>, Moscow. Is <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that there is an article usage problem here.\" data-corr=\"a big\">big</span> and crowded city."},{"q":"What do you do in your spare time?","a":"In <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that there is a pronoun problem here.\" data-corr=\"my free\">free</span> time, I <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>I</b> and the verb <b>likes</b> are not in agreement.\" data-corr=\"like\">likes</span> <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that your sentence or clause uses an incorrect form of the verb <b>play</b>.\" data-corr=\"playing\">play</span> computer games, <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that your sentence or clause uses an incorrect form of the verb <b>read</b>.\" data-corr=\"reading\">read</span> books, <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that conjunction use may be incorrect here.\" data-corr=\"and sometimes\">sometimes</span> <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that your sentence or clause uses an incorrect form of the verb <b>goes</b>.\" data-corr=\"going\">goes</span> to <span class=\"err\" data-type=\"grammar\" data-expl=\"The noun phrase <b>cinema</b> seems to be missing a determiner before it.\" data-corr=\"the cinema\">cinema</span>\n. I enjoy <span class=\"err\" data-type=\"grammar\" data-expl=\"The verb <b>do</b> is usually in the gerund form when following the word <b>enjoy</b>.\" data-corr=\"doing\">do</span>\n these activities."},{"q":"What kind of food do you like?","a":"I very <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>I</b> and the verb <b>likes</b> are not in agreement.\" data-corr=\"like\">likes</span> eat pizza and pasta. Also, I <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>I</b> and the verb <b>enjoys</b> are not in agreement.\" data-corr=\"enjoy\">enjoys</span> sushi. I don't <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that the verb <b>likes</b> does not agree with the subject.\" data-corr=\"like\">likes</span> vegetables. They taste not good."},{"q":"Do you prefer the city or the countryside?","a":"I <span class=\"err\" data-type=\"grammar\" data-expl=\"It appears that the subject pronoun <b>I</b> and the verb <b>prefers</b> are not in agreement.\" data-corr=\"prefer\">prefers</span> <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that there is an article usage problem here.\" data-corr=\"the city\">city</span>. <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that there is an article usage problem here.\" data-corr=\"The city\">City</span> <span class=\"err\" data-type=\"grammar\" data-expl=\"The plural verb <b>have</b> does not appear to agree with the singular subject <b>City</b>.\" data-corr=\"has\">have</span> many things <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that preposition use may be incorrect here.\" data-corr=\"to\">for</span> do. In <span class=\"err\" data-type=\"grammar\" data-expl=\"The noun phrase <b>countryside</b> seems to be missing a determiner before it.\" data-corr=\"the countryside\">countryside</span>, there <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that you are missing a verb.\" data-corr=\"are not\">not</span> <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that quantifier use may be incorrect here.\" data-corr=\"many\">much</span> things <span class=\"err\" data-type=\"grammar\" data-expl=\"It seems that preposition use may be incorrect here.\" data-corr=\"to\">for</span> do."}]}'''
-json_example = '''{"fluency_and_coherence":5,"lexical_resource":6,"grammatical_range_and_accuracy":4,"pronunciation":5,"data":[{"q":"Can you tell me a little about yourself?","a":"I lives in Moscow. I has a big family. They is very kind and smart."},{"q":"Where are you from?","a":"I from Russia. Is very big country."}]}'''
 
-
-class IELTSExaminer:
+class ChatGPT:
     def __init__(self, model="gpt-3.5-turbo"):  # gpt-4 | gpt-3.5-turbo
-        # self.about = "You are an AI evaluator and corrector. Your output should be a valid JSON object only, without any extra text."
-        self.about = "You are an AI functioning as a professional IELTS examiner. Your output will consist solely of a JSON object, without any additional text."
         self.model = model
 
-    @staticmethod
-    def convert_list_to_string(string_list: list) -> str:
-        return "\n".join(f"{s[0]}. {s[1]}" for s in enumerate(string_list,
-                                                              start=1))
+    def get_response(self, system: str, prompt: str):
+        start = time.time()
 
-    def evaluate_speaking(self, questions, answers):
-        questions = IELTSExaminer.convert_list_to_string(questions)
+        for _ in range(10):
+            try:
+                completion = openai.ChatCompletion.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                result = completion.choices[0].message["content"]
+                result_json = json.loads(result)
+            except openai.error.APIError as e:
+                print(e.error['message'])
+                time.sleep(1)
+            except json.decoder.JSONDecodeError as e:
+                print("JSON decoding error, message::", str(e))
+            else:
+                with open('gpt_response_check_answers.json', "w") as file:
+                    file.write(result)
+                break
+
+        finish = time.time()
+        time_result = f"Execution time: {int(finish - start)} seconds"
+        print(time_result)
+
+    def evaluate_speaking(self, questions: list, answers: str):
+        system = "You are an AI functioning as a professional IELTS examiner. Your output will consist solely of a JSON object, without any additional text."
+        json_example = '''{"fluency_and_coherence":5,"lexical_resource":6,"grammatical_range_and_accuracy":4,"pronunciation":5,"data":[{"q":"Can you tell me a little about yourself?","a":"I lives in Moscow. I has a big family. They is very kind and smart."},{"q":"Where are you from?","a":"I from Russia. Is very big country."}]}'''
+        questions = convert_list_to_string(questions)
         prompt = f"""
 Your task is to perform the following actions: 
 
@@ -64,70 +87,10 @@ Student's answers:
 {answers}
 '''
 """
-        for _ in range(10):
-            try:
-                start_time = time.perf_counter()
-                completion = openai.ChatCompletion.create(
-                    model=self.model,
-                    messages=[
-                        {"role": "system", "content": self.about},
-                        {"role": "user", "content": prompt}
-                    ]
-                )
-                result = completion.choices[0].message["content"]
-                result_json = json.loads(result)
-            except openai.error.APIError as e:
+        self.get_response(system, prompt)
 
-                end_time = time.perf_counter()
-                execution_time = end_time - start_time
-                print(f"Время выполнения: {execution_time} секунд")
-                print(e.error['message'])
-
-                time.sleep(1)
-            except json.decoder.JSONDecodeError as e:
-
-                end_time = time.perf_counter()
-                execution_time = end_time - start_time
-                print(f"Время выполнения: {execution_time} секунд")
-                print(result)
-
-                print("JSON decoding error, message::", str(e))
-            else:
-
-                end_time = time.perf_counter()
-                execution_time = end_time - start_time
-                print(f"Время выполнения: {execution_time} секунд")
-
-                print(result_json)
-                with open('gpt_response.json', "w") as file:
-                    file.write(result)
-                break
-
-    def get_gpt_response(self, system, prompt):
-        for _ in range(10):
-            try:
-                completion = openai.ChatCompletion.create(
-                    model=self.model,
-                    messages=[
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": prompt}
-                    ]
-                )
-                result = completion.choices[0].message["content"]
-                result_json = json.loads(result)
-            except openai.error.APIError as e:
-                print(e.error['message'])
-                time.sleep(1)
-            except json.decoder.JSONDecodeError as e:
-                print("JSON decoding error, message::", str(e))
-            else:
-                print(result_json)
-                with open('gpt_response_check_answers.json', "w") as file:
-                    file.write(result)
-                break
-
-    def find_grammar_errors(self):
-        answers = """{"data":[{"text":"My favorite hobby is playing football. I likes to play football every weekend with my friends. It's very fun and keep me active."},{"text":"Yes, I enjoy cooking sometimes. I often cooks dinner for my family. My mother teach me some recipes and I tries to cook them. It's a good way to relax."},{"text":"I don't exercise very regular. I tries to go to the gym once a week, but sometimes I'm too busy and not have enough time. I know it's important to stay healthy, so I need to make more time for it."},{"text":"I likes all kinds of music. I listens to pop, rock, and sometimes classic music. Music helps me to relax and forget about problems. I usually listens to music when I am study or cleaning the house."},{"text":"My favorite season is summer. I likes the hot weather and go to the beach. I can swims in the ocean and gets a nice tan. Summer is the best time of the year for me."}]}"""
+    def find_grammar_errors(self, texts: list):
+        texts = json.dumps(texts)
         json_example = """{"data":[{"text":"I <err>from</err> Russia. Is <err>very</err> big country. Have <err>lot</err> of cities. I <err>lives</err> in <err>capital</err>, Moscow. Is <err>big</err> and crowded city.","errors":[{"err":"from","type":"grammar","desc":"It seems that you are missing a verb.","corr":"am from"},{"err":"very","type":"grammar","desc":"It seems that there is an article usage problem here.","corr":"a very"},{"err":"lot","type":"grammar","desc":"It appears that the phrase lot does not contain the correct article usage.","corr":"a lot"},{"err":"lives","type":"grammar","desc":"It appears that the subject pronoun I and the verb lives are not in agreement.","corr":"live"},{"err":"capital","type":"grammar","desc":"The noun phrase capital seems to be missing a determiner before it.","corr":"the capital"},{"err":"big","type":"grammar","desc":"It seems that there is an article usage problem here.","corr":"a big"}]},{"text":"I <err>likes</err> rock music. Sometimes, I <err>listens</err> to pop. I don't <err>enjoys</err> <err>classic</err> music. It is boring.","errors":[{"err":"likes","type":"grammar","desc":"It appears that the subject pronoun I and the verb likes are not in agreement.","corr":"like"},{"err":"listens","type":"grammar","desc":"It appears that the subject pronoun I and the verb listens are not in agreement.","corr":"listen"},{"err":"enjoys","type":"grammar","desc":"It appears that the verb enjoys is incorrectly used with the helping verb do.","corr":"enjoy"},{"err":"classic","type":"spelling","desc":"The word classic doesn’t seem to fit this context.","corr":"classical"}]}]}"""
 
         prompt = f"""
@@ -145,12 +108,23 @@ Here is an example of a completed JSON object:
 
 Please analyze the following list of texts provided in the JSON format below:
 '''
-{answers}
+{texts}
 '''
 """
         system = "You are an AI language model similar to Grammarly. Your primary task is to analyze text data and identify any language errors present. This includes, but is not limited to, spelling, grammar, punctuation, and word usage errors. You must respond in a JSON format. The identified errors within the original text must be indicated with tags, like this: <err>error_here</err>. Your output should strictly adhere to this format."
-        self.get_gpt_response(system, prompt)
+        self.get_response(system, prompt)
 
 
-examiner = IELTSExaminer()
-examiner.find_grammar_errors()
+answer_texts = ["I ain't got no time to waste on meaningless tasks.",
+"The weather be so hot today, I can't even handle it.",
+"She don't know nothing about cars, but she acts like she's an expert.",
+"Me and my friends, we was hanging out at the mall and we saw this really cool band playing.",
+"He don't want to go to the party 'cause he says it's gonna be boring.",
+"They was talking all loud and stuff, disturbing everyone in the restaurant.",
+"We was driving down the highway when we seen a huge accident.",
+"My boss don't appreciate all the hard work I do for this company.",
+"She ain't never been to Europe before, so she's really excited about the trip.",
+"They don't got no idea what they're talking about, but they act like they're experts on the subject."]
+
+# chat_gpt = ChatGPT()
+# chat_gpt.evaluate_speaking(questions, answers)

@@ -16,66 +16,76 @@ def transcribe_audio(audio_file):
 
 
 questions = [
-    "What is your favorite hobby?",
-    "Do you enjoy cooking?",
-    "How often do you exercise?",
-    "What kind of music do you like?",
-    "What is your favorite season?"
+    "What is your favorite childhood memory?",
+    "How do you envision your life in 10 years?",
+    "What is the most challenging experience you've faced?",
+    "If you could travel anywhere in the world, where would you go?",
+    "What is your favorite book and why?"
 ]
-answers = """
-My favorite hobby is playing football. I likes to play football every weekend with my friends. It's very fun and keep me active. \
-Yes, I enjoy cooking sometimes. I often cooks dinner for my family. My mother teach me some recipes and I tries to cook them. It's a good way to relax.\
-I don't exercise very regular. I tries to go to the gym once a week, but sometimes I'm too busy and not have enough time. I know it's important to stay healthy, so I need to make more time for it.\
-I likes all kinds of music. I listens to pop, rock, and sometimes classic music. Music helps me to relax and forget about problems. I usually listens to music when I am study or cleaning the house.\
-My favorite season is summer. I likes the hot weather and go to the beach. I can swims in the ocean and gets a nice tan. Summer is the best time of the year for me.
-"""
+
+
+answers = "My favorit childhood memory is when me and my friend goes to the beach and we builds sand castles. In 10 years, I envision myself living in a big houses with a successful careers. The most challenging experience I've faced was when I had to gives a presentation in front of a large audiences. If I could travel anywheres in the worlds, I would goes to Parises because of its rich historys and beautiful landmarks. My favorit book is 'Harry Potter' because it takes me to a magical worlds fulls of adventures and friendships."
 
 
 class ChatGPT:
     def __init__(self, model="gpt-3.5-turbo"):  # gpt-4 | gpt-3.5-turbo
         self.model = model
 
-    def get_response(self, messages: list):
+    def get_response(self, messages: list) -> dict:
+        gpt_response_dict = None
         start = time.time()
-
         for _ in range(10):
             try:
                 completion = openai.ChatCompletion.create(
                     model=self.model,
-                    messages=messages
+                    messages=messages,
+                    top_p=0.1
                 )
-                result = completion.choices[0].message["content"]
-                result_json = json.loads(result)
-            except openai.error.APIError as e:
+                gpt_response_json_string = completion.choices[0].message["content"]
+                gpt_response_dict = json.loads(gpt_response_json_string)
+            except (openai.error.APIError, openai.error.RateLimitError) as e:
                 print(e.error['message'])
                 time.sleep(1)
             except json.decoder.JSONDecodeError as e:
-                print(result)
+                print(gpt_response_json_string)
                 print("JSON decoding error, message::", str(e))
             else:
-                print(result)
-                with open('gpt_response_check_answers.json', "w") as file:
-                    file.write(result)
+                with open('gpt_last_response.json', "w") as file:
+                    file.write(gpt_response_json_string)
                 break
 
         finish = time.time()
         time_result = f"Execution time: {int(finish - start)} seconds"
         print(time_result)
+        return gpt_response_dict
 
     def evaluate_speaking(self, questions: list, answers: str):
         system = "You are an AI functioning as a professional IELTS examiner. Your output will consist solely of a JSON object, without any additional text."
-        json_example = '''{"fluency_and_coherence":5,"lexical_resource":6,"grammatical_range_and_accuracy":4,"pronunciation":5,"data":[{"q":"Can you tell me a little about yourself?","a":"I lives in Moscow. I has a big family. They is very kind and smart."},{"q":"Where are you from?","a":"I from Russia. Is very big country."}]}'''
+        json_example = '''
+{
+	"fluency_and_coherence": 5,
+	"lexical_resource": 6,
+	"grammatical_range_and_accuracy": 4,
+	"pronunciation": 5,
+	"data": [{
+		"q": "Can you tell me a little about yourself?",
+		"a": "I lives in Moscow. I has a big family. They is very kind and smart."
+	}, {
+		"q": "Where are you from?",
+		"a": "I from Indonesia. Is very big country."
+	}]
+}
+'''
         questions = convert_list_to_string(questions)
         prompt = f"""
 Your task is to perform the following actions: 
 
-1. Pair the examiner's questions with the corresponding student's responses.
+1. Pair the examiner's questions with the corresponding student's responses. Do not make any changes to the texts.
 2. As an AI examiner, similar to an IELTS professional, evaluate the student's answers in terms of "fluency and coherence", "lexical resource", "grammatical range and accuracy", and "pronunciation". Assign scores on a scale from 0 to 9 for each criterion, as per the IELTS scoring guidelines.
-3. Compile the IELTS scores, examiner's questions, student's responses into a JSON object. Use the following structure for the JSON object:
+3. Compile the IELTS scores, examiner's questions, unmodified student's responses into a JSON object. Use the following structure for the JSON object:
 '''
 {json_example}
 '''
-Additionally, please remove unnecessary whitespace and line breaks from the JSON object as JSON does not require formatting with indentation and line breaks.
 
 Examiner's questions:
 '''
@@ -87,9 +97,22 @@ Student's answers:
 {answers}
 '''
 """
-        self.get_response(system, prompt)
 
-    def analyze_text_find_errors(self, text: str):
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt}
+        ]
+
+        speaking = self.get_response(messages)
+        answers = [pair['a'] for pair in speaking['data']]
+        for a in answers:
+            print(a)
+
+        answers = self.check_multiple_texts_for_errors(answers)
+        for a in answers:
+            print(a)
+
+    def find_errors_in_text(self, text: str):
         system = "As an AI language model, your role is akin to Grammarly. Your key task is to scrutinize text data for language errors including, but not limited to, spelling, grammar, punctuation, and word usage. Please respond in JSON format, using <err></err> tags to highlight the errors in the original text."
 
         text_example_prompt = "I don't exercise very regular. I tries to go to the gym once a week, but sometimes I'm too busy and not have enough time."
@@ -160,10 +183,18 @@ Please analyze the text below:
 }
         """
 
-        text_example_2 = "I from Russia. Is very big country. Have lot of cities. I lives in capital, Moscow. Is big and crowded city."
+        text_example_2 = "My favorite hobby is playing football. I like to play football every weekend with my friends. It's very fun and keeps me active."
         json_answer_example_2 = """
 {
-	"text": "I <err>from</err> Russia. Is <err>very</err> big country. Have <err>lot</err> of cities. I <err>lives</err> in <err>capital</err>, Moscow. Is <err>big</err> and crowded city.",
+	"text": "My favorite hobby is playing football. I like to play football every weekend with my friends. It's very fun and keeps me active.",
+	"errors": []
+}
+        """
+
+        text_example_3 = "I from Indonesia. Is very big country. Have lot of cities. I lives in capital, Moscow. Is big and crowded city."
+        json_answer_example_3 = """
+{
+	"text": "I <err>from</err> Indonesia. Is <err>very</err> big country. Have <err>lot</err> of cities. I <err>lives</err> in <err>capital</err>, Moscow. Is <err>big</err> and crowded city.",
 	"errors": [{
 		"err": "from",
 		"type": "grammar",
@@ -204,14 +235,17 @@ Please analyze the text below:
             {"role": "assistant", "content": json_answer_example},
             {"role": "user", "content": text_example_2},
             {"role": "assistant", "content": json_answer_example_2},
-            {"role": "user", "content": text},
+            {"role": "user", "content": text_example_3},
+            {"role": "assistant", "content": json_answer_example_3},
+            {"role": "user", "content": text}
         ]
 
-        self.get_response(messages)
+        return self.get_response(messages)
 
-    def analyze_texts(self, texts: list):
+    def check_multiple_texts_for_errors(self, texts: list) -> list:
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            executor.map(self.analyze_text_find_errors, texts)
+            result = list(executor.map(self.find_errors_in_text, texts))
+        return result
 
 
 sentences = [
@@ -227,5 +261,6 @@ sentences = [
     "I don't got no ideas how to fix a leaky faucet, so I'll have to call a plumbers."
 ]
 
-chat_gpt = ChatGPT()
-chat_gpt.analyze_texts(sentences)
+# chat_gpt = ChatGPT()
+# chat_gpt.evaluate_speaking(questions, answers)
+# chat_gpt.analyze_multiple_texts(sentences)

@@ -1,5 +1,5 @@
 import json
-import os
+import time
 from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -8,7 +8,7 @@ from app import db
 from app.main import bp
 from app.models import *
 
-from app.openai_tools import transcribe_audio, json_example
+from app.openai_tools import transcribe_and_check_errors_in_multiple_files
 
 
 @bp.route('/')
@@ -64,9 +64,10 @@ def speaking_practice():
     # POST request processing
 
     # validating data
-    audio_file = request.files.get('audio')
-    if not audio_file:
-        abort(400, "Audio record is missing")
+    audio_files = [request.files[key] for key in request.files.keys() if key.startswith('audio_')]
+    transcribed_audio_files = transcribe_and_check_errors_in_multiple_files(audio_files)
+    for f in transcribed_audio_files:
+        print(f)
 
     question_set_id = request.form.get('question_set_id')
     if not question_set_id:
@@ -75,6 +76,8 @@ def speaking_practice():
         question_set_id = int(question_set_id)
     except ValueError:
         return abort(400, "Question set must be an integer")
+
+    return redirect(url_for('main.speaking_practice'))
 
     # transcribing user answers TODO try...
     answer_text = transcribe_audio(audio_file)

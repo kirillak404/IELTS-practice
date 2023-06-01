@@ -22,6 +22,7 @@ let currentQuestionIndex = 0;
 let timerInterval;
 let mediaRecorder;
 let recordedChunks = [];
+let recordedAudioFiles = []; // array to store recorded audio files
 
 // Button click event listener
 microphoneButton.addEventListener('click', function() {
@@ -66,42 +67,21 @@ function initializeMediaRecorder() {
 
       // Event triggered when recording is stopped
       mediaRecorder.onstop = function() {
-        // Hide the recording dot
-        recordingIndicator.style.display = 'none';
-
         // Create a blob from the recorded audio data
         const recordedBlob = new Blob(recordedChunks, { type: 'audio/webm' });
 
-        // Create a FormData instance
-        let formData = new FormData();
+        // Add blob to the array of recorded audio files
+        recordedAudioFiles.push(recordedBlob);
 
-        // Append the audio file and question_set_id to the form
-        formData.append('audio', recordedBlob);
-        formData.append('question_set_id', practice['question_id']);
-
-        // Send the POST request
-        fetch('/section/speaking/practice', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => {
-          if (response.redirected) {
-            window.location.href = response.url;
-          }
-        })
-        .catch(error => console.error(error));
+        // Clear the recorded chunks
+        recordedChunks = [];
       };
+
     })
     .catch(function(err) {
       // Microphone access denied or error occurred
       console.log('Access denied');
     });
-}
-
-// Function to toggle buttons
-function toggleButtons() {
-  microphoneButton.style.display = 'none';
-  startSpeakingButton.style.display = 'inline-block';
 }
 
 // Start speaking button click event listener
@@ -160,6 +140,76 @@ startSpeakingButton.addEventListener('click', function() {
   }
 });
 
+// Next question button click event listener
+nextQuestionButton.addEventListener('click', function() {
+  // Stop recording and save audio
+  mediaRecorder.stop();
+
+  // Increment question index
+  currentQuestionIndex++;
+
+  if (practice.topic_name) {
+  // Display question count and next question
+  cardHeader.textContent = `${practice.topic_name}: Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
+  }
+  else {
+  cardHeader.textContent = `Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
+  }
+
+  if (currentQuestionIndex < practice.questions.length) {
+    // Display next question
+    cardTitle.textContent = practice.questions[currentQuestionIndex];
+  }
+
+  // Show complete practice button if we are at the last question
+  if (currentQuestionIndex == practice.questions.length - 1) {
+    nextQuestionButton.style.display = 'none';
+    completePracticeButton.style.display = 'inline-block';
+  }
+
+  mediaRecorder.start();
+
+});
+
+// Complete practice button click event listener
+completePracticeButton.addEventListener('click', function() {
+  // Stop recording
+  mediaRecorder.stop();
+
+  // Add spinner to the button
+  completePracticeButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing your answers...';
+  completePracticeButton.classList.add("disabled");
+  completePracticeButton.setAttribute("disabled", "disabled");
+
+  // Reset time limit text, and stop the timer
+  cardFooterText.style.display = 'inline-block';
+  cardFooterText.textContent = "Just in time!";
+  clearInterval(timerInterval);
+
+  // Delay the sending of all recorded audio files to backend
+  setTimeout(function() {
+    let formData = new FormData();
+    recordedAudioFiles.forEach((recordedBlob, index) => {
+      formData.append(`audio_${index}`, recordedBlob);
+    });
+    formData.append('question_set_id', practice['question_id']);
+
+    fetch('/section/speaking/practice', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (response.redirected) {
+        window.location.href = response.url;
+      }
+    })
+    .catch(error => console.error(error));
+
+    // Here goes the rest of your code for completing the practice...
+  }, 1000);  // Delay of 2 seconds
+});
+
+
 // Start cue card answer button click event listener
 startCardAnswerButton.addEventListener('click', function() {
   // Update button
@@ -176,6 +226,12 @@ startCardAnswerButton.addEventListener('click', function() {
   mediaRecorder.start();
 
 });
+
+// Function to toggle buttons
+function toggleButtons() {
+  microphoneButton.style.display = 'none';
+  startSpeakingButton.style.display = 'inline-block';
+}
 
 // Timer function
 function startTimer(duration, display) {
@@ -206,47 +262,3 @@ function startTimer(duration, display) {
     }
   }, 1000);
 }
-
-// Next question button click event listener
-nextQuestionButton.addEventListener('click', function() {
-  // Increment question index
-  currentQuestionIndex++;
-
-  if (practice.topic_name) {
-  // Display question count and next question
-  cardHeader.textContent = `${practice.topic_name}: Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
-  }
-  else {
-  cardHeader.textContent = `Question ${currentQuestionIndex + 1} of ${practice.questions.length}`;
-  }
-
-  if (currentQuestionIndex < practice.questions.length) {
-    // Display next question
-    cardTitle.textContent = practice.questions[currentQuestionIndex];
-  }
-
-  // Show complete practice button if we are at the last question
-  if (currentQuestionIndex == practice.questions.length - 1) {
-    nextQuestionButton.style.display = 'none';
-    completePracticeButton.style.display = 'inline-block';
-  }
-});
-
-// Complete practice button click event listener
-completePracticeButton.addEventListener('click', function() {
-  // Stop recording
-  mediaRecorder.stop();
-
-  // Add spinner to the button
-  completePracticeButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing your answers...';
-  completePracticeButton.classList.add("disabled");
-  completePracticeButton.setAttribute("disabled", "disabled");
-
-
-  // Reset time limit text, and stop the timer
-  cardFooterText.style.display = 'inline-block';
-  cardFooterText.textContent = "Just in time!";
-  clearInterval(timerInterval);
-
-  // Here goes the rest of your code for completing the practice...
-});

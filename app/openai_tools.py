@@ -61,7 +61,7 @@ class ChatGPT:
 
     def match_questions_answers(self, questions: list, answers: str):
 
-        system = """You are an artificial intelligence that strictly follows the instructions given and cannot deviate from them."""
+        system = """You are an artificial intelligence that strictly follows the given instructions and responds only in JSON format."""
 
         # creating prompt and first example of GPT response
         questions_example_prompt = json.dumps([
@@ -78,14 +78,9 @@ class ChatGPT:
             "If I could travel anywhere in the world, I would go to Paris because of its rich history and beautiful landmarks.",
             "My favorite book is 'Harry Potter' because it takes me to a magical world full of adventure and friendship."])
         prompt = f"""
-I have a list of questions and a string with a series of answers. I need you to match each question with its corresponding answer from the string and produce a JSON output. 
-
-Please strictly adhere to the following rules:
-1. The number of answers in the JSON output must strictly match the number of questions asked.
-2. If there is no answer to a question in the answer string, represent the answer in the JSON as an empty string ("").
-3. The order of the answers in the JSON should match the order in which the questions were asked.
-4. The output of this task should be strictly the JSON format, with no additional text or information. You should only include the exact text from the answers, and if there was no answer for a question, strictly include an empty string ("").
-5. Check that the JSON output contains only answers from the Answer String and no other information. If any other information is included, make the corresponding answer an empty string ("").
+Generate a JSON-formatted output which maps each question from the given 'Questions' list to its corresponding answer from the provided 'Answers' text.
+If no answer is found for a question, the mapped value should be an empty string ("").
+No additional information or text should be included in the response.
 
 Questions:
 '''
@@ -97,7 +92,6 @@ Answers:
 {answers_example_prompt}      
 '''
 """
-
         # creating second example for GPT
         questions_example_2 = json.dumps([
             "What is your favorite hobby and why?",
@@ -133,7 +127,9 @@ Questions:
 
 Answers:
 '''
-{answers}      
+{answers}  
+
+Your response should contain only a JSON object with no additional text or other information.
 '''
         """
 
@@ -342,16 +338,27 @@ Please analyze the text below:
 
 
 new_questions = [
-    "What you do yesterday?",
-    "Why she don't likes the color blue?",
-    "Where he goes for lunch every day?",
-    "When they will be go to the concert?",
-    "How much books you have in your collection?"
+    "What you did on the weekend?",
+    "Why he don't like spicy food?",
+    "Where she go after work?",
+    "When you will go to the party?",
+    "How much money you have in your wallet?"
 ]
 
-new_answers = "She don't likes the color blue because it make her feel sad. He goes to the restaurante near his office. They will be go to the concert next week. I have much books in my collection."
+# new_answers = """
+# I did nothing on the weekend. I stay home and watch TV. \
+# He don't like spicy food because it hurts his tongue. \
+# She go to the gym to do exercise. \
+# I will go to the party next Saturday. \
+# I have little money in my wallet."
+# """
 
-
+new_answers = """
+I did nothing on the weekend. I stay home and watch TV. \
+He don't like spicy food because it hurts his tongue. \
+She go to the gym to do exercise. \
+I have little money in my wallet."
+"""
 
 chat_gpt = ChatGPT()
 answers_list = chat_gpt.match_questions_answers(new_questions, new_answers)

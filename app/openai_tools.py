@@ -23,7 +23,6 @@ questions = [
     "What is your favorite book and why?"
 ]
 
-
 answers = "My favorit childhood memory is when me and my friend goes to the beach and we builds sand castles. In 10 years, I envision myself living in a big houses with a successful careers. The most challenging experience I've faced was when I had to gives a presentation in front of a large audiences. If I could travel anywheres in the worlds, I would goes to Parises because of its rich historys and beautiful landmarks. My favorit book is 'Harry Potter' because it takes me to a magical worlds fulls of adventures and friendships."
 
 
@@ -31,7 +30,7 @@ class ChatGPT:
     def __init__(self, model="gpt-3.5-turbo"):  # gpt-4 | gpt-3.5-turbo
         self.model = model
 
-    def get_completion(self, messages: list) -> dict:
+    def get_completion(self, messages: list, temperature=0) -> dict:
         gpt_response_dict = None
         start = time.time()
         for _ in range(10):
@@ -39,9 +38,10 @@ class ChatGPT:
                 completion = openai.ChatCompletion.create(
                     model=self.model,
                     messages=messages,
-                    temperature=0,  # degree of randomness of the output
+                    temperature=temperature,
                 )
-                gpt_response_json_string = completion.choices[0].message["content"]
+                gpt_response_json_string = completion.choices[0].message[
+                    "content"]
                 gpt_response_dict = json.loads(gpt_response_json_string)
             except (openai.error.APIError, openai.error.RateLimitError) as e:
                 print(e.error['message'])
@@ -59,6 +59,98 @@ class ChatGPT:
         print(time_result)
         return gpt_response_dict
 
+    def match_questions_answers(self, questions: list, answers: str):
+
+        system = """You are an artificial intelligence that strictly follows the instructions given and cannot deviate from them."""
+
+        # creating prompt and first example of GPT response
+        questions_example_prompt = json.dumps([
+            "What is your favorite childhood memory?",
+            "How do you envision your life in 10 years?",
+            "What is the most challenging experience you've faced?",
+            "If you could travel anywhere in the world, where would you go?",
+            "What is your favorite book and why?"])
+        answers_example_prompt = "My favorite childhood memory is when me and my friend go to the beach and we build sand castles. In 10 years, I envision myself living in a big house with a successful career. The most challenging experience I've faced was when I had to give a presentation in front of a large audience. If I could travel anywhere in the world, I would go to Paris because of its rich history and beautiful landmarks. My favorite book is 'Harry Potter' because it takes me to a magical world full of adventure and friendship."
+        ai_response_example_prompt = json.dumps([
+            "My favorite childhood memory is when me and my friend go to the beach and we build sand castles.",
+            "In 10 years, I envision myself living in a big house with a successful career.",
+            "The most challenging experience I've faced was when I had to give a presentation in front of a large audience.",
+            "If I could travel anywhere in the world, I would go to Paris because of its rich history and beautiful landmarks.",
+            "My favorite book is 'Harry Potter' because it takes me to a magical world full of adventure and friendship."])
+        prompt = f"""
+I have a list of questions and a string with a series of answers. I need you to match each question with its corresponding answer from the string and produce a JSON output. 
+
+Please strictly adhere to the following rules:
+1. The number of answers in the JSON output must strictly match the number of questions asked.
+2. If there is no answer to a question in the answer string, represent the answer in the JSON as an empty string ("").
+3. The order of the answers in the JSON should match the order in which the questions were asked.
+4. The output of this task should be strictly the JSON format, with no additional text or information. You should only include the exact text from the answers, and if there was no answer for a question, strictly include an empty string ("").
+5. Check that the JSON output contains only answers from the Answer String and no other information. If any other information is included, make the corresponding answer an empty string ("").
+
+Questions:
+'''
+{questions_example_prompt}
+'''
+
+Answers:
+'''
+{answers_example_prompt}      
+'''
+"""
+
+        # creating second example for GPT
+        questions_example_2 = json.dumps([
+            "What is your favorite hobby and why?",
+            "If you could have any superpower, what would it be and why?",
+            "Tell me about a memorable trip or vacation you have taken.",
+            "What is your favorite cuisine and why?",
+            "If you could meet any historical figure, who would it be and why?"])
+        answer_example_2 = "My favorite hobby is painting because it allows me to express my creativity and relax. If I could meet any historical figure, it would be Albert Einstein. His contributions to science and his revolutionary ideas continue to inspire and fascinate me."
+        prompt_example_2 = f"""
+Questions:
+'''
+{questions_example_2}
+'''
+
+Answers:
+'''
+{answer_example_2}      
+'''
+"""
+        ai_response_example_2 = json.dumps([
+            "My favorite hobby is painting because it allows me to express my creativity and relax.",
+            "",
+            "",
+            "",
+            "If I could meet any historical figure, it would be Albert Einstein. His contributions to science and his revolutionary ideas continue to inspire and fascinate me."])
+
+        # creating final prompt with real data
+        real_prompt = f"""     
+Questions:
+'''
+{json.dumps(questions)}
+'''
+
+Answers:
+'''
+{answers}      
+'''
+        """
+
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": prompt},
+            {"role": "assistant", "content": ai_response_example_prompt},
+
+            {"role": "user", "content": prompt_example_2},
+            {"role": "assistant", "content": ai_response_example_2},
+
+            {"role": "user", "content": real_prompt}
+        ]
+
+        return self.get_completion(messages)
+
+    # TODO: separate func for pairing q/a and func for evaluating and recomendations
     def evaluate_speaking(self, questions: list, answers: str):
         system = "You are an AI functioning as a professional IELTS examiner. Your output will consist solely of a JSON object, without any additional text."
         json_example = '''
@@ -112,6 +204,7 @@ Student's answers:
         for a in answers:
             print(a)
 
+    # TODO: it no errors, change gpt answer, return original string
     def find_errors_in_text(self, text: str):
         system = "As an AI language model, your role is akin to Grammarly. Your key task is to scrutinize text data for language errors including, but not limited to, spelling, grammar, punctuation, and word usage. Please respond in JSON format, using <err></err> tags to highlight the errors in the original text."
 
@@ -248,19 +341,22 @@ Please analyze the text below:
         return result
 
 
-sentences = [
-    "He don't knows how to cook, so he always eat out or orders takeout.",
-    "We was suppose to meet at the café, but I forgot the time and missed are appointment.",
-    "She seen the movie last night and she said it was the best she ever watched.",
-    "They don't wants to go on vacation because they thinks it's a waste of moneys.",
-    "I was talking to my friend on the phone when suddenly the call gets dropped.",
-    "He don't have no clue about the latest fashion trends, so he always wear outdated clothes.",
-    "We was walking in the park when we seen a squirrels chasing its tails.",
-    "She don't likes to read books because she finds them boring and a waste of times.",
-    "They was arguing all nights and it was driving me crazies.",
-    "I don't got no ideas how to fix a leaky faucet, so I'll have to call a plumbers."
+new_questions = [
+    "What you do yesterday?",
+    "Why she don't likes the color blue?",
+    "Where he goes for lunch every day?",
+    "When they will be go to the concert?",
+    "How much books you have in your collection?"
 ]
 
-# chat_gpt = ChatGPT()
-# chat_gpt.evaluate_speaking(questions, answers)
-# chat_gpt.analyze_multiple_texts(sentences)
+new_answers = "She don't likes the color blue because it make her feel sad. He goes to the restaurante near his office. They will be go to the concert next week. I have much books in my collection."
+
+
+
+chat_gpt = ChatGPT()
+answers_list = chat_gpt.match_questions_answers(new_questions, new_answers)
+
+print(answers_list)
+print()
+for n, answer in enumerate(answers_list, start=1):
+    print(f"{n}. {answer}")

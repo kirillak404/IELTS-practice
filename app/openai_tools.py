@@ -65,22 +65,32 @@ class ChatGPT:
 
         # creating prompt and first example of GPT response
         questions_example_prompt = json.dumps([
-            "What is your favorite childhood memory?",
-            "How do you envision your life in 10 years?",
-            "What is the most challenging experience you've faced?",
-            "If you could travel anywhere in the world, where would you go?",
-            "What is your favorite book and why?"])
-        answers_example_prompt = "My favorite childhood memory is when me and my friend go to the beach and we build sand castles. In 10 years, I envision myself living in a big house with a successful career. The most challenging experience I've faced was when I had to give a presentation in front of a large audience. If I could travel anywhere in the world, I would go to Paris because of its rich history and beautiful landmarks. My favorite book is 'Harry Potter' because it takes me to a magical world full of adventure and friendship."
+            "What is your full name?",
+            "Can you tell me where you are from?",
+            "Do you work or are you a student?",
+            "What do you enjoy doing in your free time?",
+            "How often do you exercise?",
+            "What is your favorite type of music?",
+            "Tell me about your favorite book or movie.",
+            "Do you prefer spending time with friends or alone?",
+            "What kind of food do you like?",
+            "Describe your favorite holiday or celebration."])
+        answers_example_prompt = "My full name is John Smith. I am from London, England. I am currently a student. In my free time, I enjoy reading and playing the guitar. I try to exercise at least three times a week. My favorite type of music is rock. One of my favorite books is 'To Kill a Mockingbird' by Harper Lee. It's a powerful story about justice and equality. I enjoy spending time with both friends and alone, but sometimes I prefer to have some quiet time to myself. I love Italian cuisine, especially pasta and pizza. My favorite holiday is Christmas. I love the festive atmosphere, spending time with family, and exchanging gifts."
         ai_response_example_prompt = json.dumps([
-            "My favorite childhood memory is when me and my friend go to the beach and we build sand castles.",
-            "In 10 years, I envision myself living in a big house with a successful career.",
-            "The most challenging experience I've faced was when I had to give a presentation in front of a large audience.",
-            "If I could travel anywhere in the world, I would go to Paris because of its rich history and beautiful landmarks.",
-            "My favorite book is 'Harry Potter' because it takes me to a magical world full of adventure and friendship."])
+            "My full name is John Smith.",
+            "I am from London, England.",
+            "I am currently a student.",
+            "In my free time, I enjoy reading and playing the guitar.",
+            "I try to exercise at least three times a week.",
+            "My favorite type of music is rock.",
+            "One of my favorite books is 'To Kill a Mockingbird' by Harper Lee. It's a powerful story about justice and equality.",
+            "I enjoy spending time with both friends and alone, but sometimes I prefer to have some quiet time to myself.",
+            "I love Italian cuisine, especially pasta and pizza.",
+            "My favorite holiday is Christmas. I love the festive atmosphere, spending time with family, and exchanging gifts."])
         prompt = f"""
-Generate a JSON-formatted output which maps each question from the given 'Questions' list to its corresponding answer from the provided 'Answers' text.
-If no answer is found for a question, the mapped value should be an empty string ("").
-No additional information or text should be included in the response.
+Your task is to match each question in the provided 'Questions' list with its corresponding answer from the 'Answers' text, and then generate a JSON-formatted output. This output should be a list of answers that directly corresponds to the order of the questions. If an answer can't be found for a specific question, substitute with the string "No answer".
+
+Inputs:
 
 Questions:
 '''
@@ -92,14 +102,20 @@ Answers:
 {answers_example_prompt}      
 '''
 """
+
         # creating second example for GPT
         questions_example_2 = json.dumps([
-            "What is your favorite hobby and why?",
-            "If you could have any superpower, what would it be and why?",
-            "Tell me about a memorable trip or vacation you have taken.",
-            "What is your favorite cuisine and why?",
-            "If you could meet any historical figure, who would it be and why?"])
-        answer_example_2 = "My favorite hobby is painting because it allows me to express my creativity and relax. If I could meet any historical figure, it would be Albert Einstein. His contributions to science and his revolutionary ideas continue to inspire and fascinate me."
+            "What is your favorite type of food and why?",
+            "Tell me about a memorable trip you have taken.",
+            "Do you prefer living in a city or in the countryside?",
+            "What is your favorite season and why?",
+            "How do you usually spend your weekends?",
+            "What is your favorite sport and why?",
+            "Tell me about a hobby or activity you enjoy.",
+            "Do you prefer watching movies at home or in the cinema?",
+            "What is your favorite subject in school and why?",
+            "Describe a person who has had a great influence on you."])
+        answer_example_2 = "My favorite type of food is sushi because I love the combination of flavors and freshness of the ingredients. One memorable trip I took was to the Grand Canyon. The breathtaking views and the sense of wonder it evoked left a lasting impression on me. I prefer living in the countryside because I enjoy the peace and quiet, being close to nature, and having more space. On weekends, I usually spend time with family and friends, go for walks in the park, or relax at home with a good book or movie. My favorite sport is basketball because I enjoy the fast-paced nature of the game and the teamwork involved. I enjoy photography as a hobby. Capturing moments and exploring different perspectives through my camera brings me joy. My favorite subject in school is history because I find it fascinating to learn about past events, cultures, and how they have shaped the world. One person who has had a great influence on me is my grandfather. His wisdom, kindness, and work ethic inspire me to be a better person."
         prompt_example_2 = f"""
 Questions:
 '''
@@ -112,11 +128,16 @@ Answers:
 '''
 """
         ai_response_example_2 = json.dumps([
-            "My favorite hobby is painting because it allows me to express my creativity and relax.",
-            "",
-            "",
-            "",
-            "If I could meet any historical figure, it would be Albert Einstein. His contributions to science and his revolutionary ideas continue to inspire and fascinate me."])
+            "My favorite type of food is sushi because I love the combination of flavors and freshness of the ingredients.",
+            "One memorable trip I took was to the Grand Canyon. The breathtaking views and the sense of wonder it evoked left a lasting impression on me.",
+            "I prefer living in the countryside because I enjoy the peace and quiet, being close to nature, and having more space.",
+            "No answer",
+            "On weekends, I usually spend time with family and friends, go for walks in the park, or relax at home with a good book or movie.",
+            "My favorite sport is basketball because I enjoy the fast-paced nature of the game and the teamwork involved.",
+            "I enjoy photography as a hobby. Capturing moments and exploring different perspectives through my camera brings me joy.",
+            "No answer",
+            "My favorite subject in school is history because I find it fascinating to learn about past events, cultures, and how they have shaped the world.",
+            "One person who has had a great influence on me is my grandfather. His wisdom, kindness, and work ethic inspire me to be a better person."])
 
         # creating final prompt with real data
         real_prompt = f"""     
@@ -337,31 +358,45 @@ Please analyze the text below:
         return result
 
 
-new_questions = [
-    "What you did on the weekend?",
-    "Why he don't like spicy food?",
-    "Where she go after work?",
-    "When you will go to the party?",
-    "How much money you have in your wallet?"
+ielts_questions = [
+    "What is your favorite type of weather and why?",
+    "Tell me about a skill you would like to learn in the future.",
+    "Do you prefer reading books or watching movies?",
+    "What is your favorite way to relax and unwind?",
+    "How do you usually celebrate your birthday?",
+    "What is your favorite animal and why?",
+    "Tell me about a time when you had to overcome a difficult challenge.",
+    "Do you prefer working alone or in a team?",
+    "What is your favorite type of art (painting, sculpture, etc.)?",
+    "Describe a place you would like to visit in the future."
 ]
 
-# new_answers = """
-# I did nothing on the weekend. I stay home and watch TV. \
-# He don't like spicy food because it hurts his tongue. \
-# She go to the gym to do exercise. \
-# I will go to the party next Saturday. \
-# I have little money in my wallet."
+
+# ielts_answers = """My favorite type of weather is sunny with a gentle breeze. It makes me feel energized and uplifted. \
+# One skill I would like to learn in the future is playing the guitar. I am always fascinated by the beautiful melodies created by this instrument. \
+# I enjoy both reading books and watching movies, but if I had to choose, I would say I prefer reading books because they allow me to use my imagination. \
+# My favorite way to relax and unwind is by taking long walks in nature. The fresh air and peaceful surroundings help clear my mind and reduce stress. \
+# I usually celebrate my birthday by gathering with my close friends and family for a small party. We have a delicious meal together and enjoy each other's company. \
+# My favorite animal is the dolphin because of its intelligence, gracefulness, and playful nature. \
+# One time I had to overcome a difficult challenge was when I had to give a presentation in front of a large audience. With preparation and practice, I managed to deliver a successful presentation. \
+# I enjoy working both alone and in a team, but I find that collaboration in a team often brings fresh perspectives and encourages creativity. \
+# My favorite type of art is painting. I am fascinated by the use of colors, textures, and brushstrokes to create meaningful and visually appealing artworks. \
+# A place I would like to visit in the future is the Maldives. The pristine beaches, crystal-clear waters, and stunning coral reefs make it a dream destination for relaxation and diving.
 # """
 
-new_answers = """
-I did nothing on the weekend. I stay home and watch TV. \
-He don't like spicy food because it hurts his tongue. \
-She go to the gym to do exercise. \
-I have little money in my wallet."
+ielts_answers = """
+My favorite type of weather is sunny with a gentle breeze. It makes me feel energized and uplifted. \
+One skill I would like to learn in the future is playing the guitar. I am always fascinated by the beautiful melodies created by this instrument. \
+My favorite way to relax and unwind is by taking long walks in nature. The fresh air and peaceful surroundings help clear my mind and reduce stress. \
+I usually celebrate my birthday by gathering with my close friends and family for a small party. We have a delicious meal together and enjoy each other's company. \
+My favorite animal is the dolphin because of its intelligence, gracefulness, and playful nature. \
+One time I had to overcome a difficult challenge was when I had to give a presentation in front of a large audience. With preparation and practice, I managed to deliver a successful presentation. \
+A place I would like to visit in the future is the Maldives. The pristine beaches, crystal-clear waters, and stunning coral reefs make it a dream destination for relaxation and diving.
 """
 
+
 chat_gpt = ChatGPT()
-answers_list = chat_gpt.match_questions_answers(new_questions, new_answers)
+answers_list = chat_gpt.match_questions_answers(ielts_questions, ielts_answers)
 
 print(answers_list)
 print()

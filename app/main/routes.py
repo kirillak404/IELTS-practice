@@ -64,11 +64,6 @@ def speaking_practice():
     # POST request processing
 
     # validating data
-    audio_files = [request.files[key] for key in request.files.keys() if key.startswith('audio_')]
-    transcribed_audio_files = transcribe_and_check_errors_in_multiple_files(audio_files)
-    for f in transcribed_audio_files:
-        print(f)
-
     question_set_id = request.form.get('question_set_id')
     if not question_set_id:
         abort(400, "question_set_id is missing")
@@ -76,11 +71,15 @@ def speaking_practice():
         question_set_id = int(question_set_id)
     except ValueError:
         return abort(400, "Question set must be an integer")
+    questions_set = QuestionSet.query.get(question_set_id)
+    if not questions_set:
+        abort(400, "Invalid question_set_id")
 
-    return redirect(url_for('main.speaking_practice'))
-
-    # transcribing user answers TODO try...
-    answer_text = transcribe_audio(audio_file)
+    # audio files processing
+    audio_files = [request.files[key] for key in request.files.keys() if
+                   key.startswith('audio_')]
+    transcriptions_and_grammar_errors = transcribe_and_check_errors_in_multiple_files(
+        audio_files)
 
     section = Section.get_by_name("speaking")
     user_progress = current_user.get_section_progress(section.id)
@@ -90,8 +89,9 @@ def speaking_practice():
 
         # checking that question_set_id from POST request is valid
         subsection = Subsection.get_by_section_and_part(section, 1)
+        subsection_id = subsection.id
         question_set_is_valid = QuestionSet.valid_for_subsection(
-            question_set_id, subsection.id)
+            question_set_id, subsection_id)
         if not question_set_is_valid:
             abort(400, "Invalid question_set_id")
 
@@ -101,6 +101,8 @@ def speaking_practice():
 
     # updating user_progress record
     else:
+        subsection_id = user_progress.next_subsection_id
+
         # checking that question_set_id from POST request is valid
         question_set_is_valid = QuestionSet.valid_for_subsection(
             question_set_id, user_progress.next_subsection_id)
@@ -109,11 +111,24 @@ def speaking_practice():
 
         user_progress.update_next_subsection(section)
 
-    # inserting new user_answer
-    user_answer = UserAnswer(user_progress=user_progress,
-                             question_set_id=question_set_id,
-                             answer_text=answer_text)
-    db.session.add(user_answer)
+    # inserting new user_subsection_progress
+    user_subsection_progress = UserSubsectionProgress(
+        user_progress=user_progress,
+        subsection_id=subsection_id,
+        question_set_id=question_set_id)
+    db.session.add(user_subsection_progress)
+
+    # TODO check that files count == questions_set questions count AT TOP func
+    # inserting user_subsection_answers
+    for question, answer in zip(questions_set.questions,
+                                transcriptions_and_grammar_errors):
+        user_subsection_answers = UserSubsectionAnswer(
+            user_subsection_progress=user_subsection_progress,
+            question=question,
+            transcribed_answer=answer["transcript"],
+            grammar_marked_answer=answer["errors"]
+        )
+        db.session.add(user_subsection_answers)
 
     try:
         db.session.commit()
@@ -124,11 +139,33 @@ def speaking_practice():
         db.session.rollback()
         abort(500, "Database operational error")
 
-    return redirect(url_for('main.speaking_practice'))
+    return redirect(url_for('main.get_speaking_answer',
+                            user_subsection_progress_id=user_subsection_progress.id))
 
 
-@bp.route('/section_results')
-def test():
-    with open('app/gpt_response.json') as json_file:
-        data = json.load(json_file)
-    return render_template('section_results.html', data=data)
+@login_required
+@bp.route('/section/speaking/answer/<int:user_subsection_progress_id>/')
+def get_speaking_answer(user_subsection_progress_id):
+    user_subsection_progress = UserSubsectionProgress.query.get(user_subsection_progress_id)
+    if not user_subsection_progress:
+        abort(404)
+
+    # check that the user requests his answer
+    user_progress = user_subsection_progress.user_progress
+    if current_user != user_progress.user:
+        abort(403)
+
+    questions_and_answers = user_subsection_progress.get_questions_answer()
+    scores = {"Fluency and Coherence": 7,
+              "Lexical Resource": 8,
+              "Grammatical range and Accuracy": 5,
+              "Pronunciation": 8}
+    return render_template('section_results.html',
+                           scores=scores,
+                           questions_and_answers=questions_and_answers)
+
+
+@login_required
+@bp.route('/section/speaking/result/<int:id>/')
+def get_speaking_result():
+    pass

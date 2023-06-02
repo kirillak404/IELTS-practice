@@ -155,8 +155,9 @@ class UserProgress(db.Model):
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
     completed_on = db.Column(db.DateTime)
 
-    user_answers = db.relationship('UserAnswer', backref='user_progress',
-                                   cascade='all, delete')
+    user_subsection_progress = db.relationship('UserSubsectionProgress',
+                                               backref='user_progress',
+                                               cascade='all, delete')
 
     def __init__(self, *args, **kwargs):
         super(UserProgress, self).__init__(*args, **kwargs)
@@ -178,37 +179,65 @@ class UserProgress(db.Model):
             self.next_subsection_id = next_subsection.id
 
     def get_last_topic(self):
-        last_answer = UserAnswer.query.filter(
-            UserAnswer.user_progress_id == self.id
-        ).order_by(desc(UserAnswer.id)).first()
+        last_answer = UserSubsectionProgress.query.filter(
+            UserSubsectionProgress.user_progress_id == self.id
+        ).order_by(desc(UserSubsectionProgress.id)).first()
 
         return last_answer.question_set.topic_id
 
 
-class UserAnswer(db.Model):
-    __tablename__ = 'user_answers'
+class UserSubsectionProgress(db.Model):
+    __tablename__ = 'user_subsection_progress'
 
     id = db.Column(db.Integer, primary_key=True)
     user_progress_id = db.Column(db.Integer, db.ForeignKey('user_progress.id'),
                                  nullable=False)
+
+    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'),
+                              nullable=False)
+    subsection = db.relationship('Subsection',
+                                 backref='user_subsection_progress')
+
     question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'),
                                 nullable=False)
-    answer_text = db.Column(db.Text, nullable=False)
+    question_set = db.relationship('QuestionSet',
+                                   backref='user_subsection_progress')
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow,
                            nullable=False)
 
-    gpt_answer = db.relationship('GPTAnswer', backref='user_answer',
-                                 cascade='all, delete', uselist=False)
+    user_answers = db.relationship('UserSubsectionAnswer',
+                                   backref='user_subsection_progress',
+                                   lazy='joined')
 
-    question_set = db.relationship('QuestionSet', backref='user_answers')
+    def get_questions_answer(self):
+        user_answers = self.user_answers
+        result = []
+
+        for answer in user_answers:
+            question = answer.question.text
+            grammar_marked_answer = answer.transcribed_answer  # TODO replace on answer.grammar_marked_answer
+            result.append(
+                {"question": question, "answer": grammar_marked_answer})
+
+        return result
 
 
-class GPTAnswer(db.Model):
-    __tablename__ = 'gpt_answers'
+class UserSubsectionAnswer(db.Model):
+    __tablename__ = 'user_subsection_answers'
 
     id = db.Column(db.Integer, primary_key=True)
-    answer_text = db.Column(db.Text, nullable=False)
-    score = db.Column(db.Numeric(precision=2, scale=1), nullable=False)
+    user_subsection_progress_id = db.Column(db.Integer,
+                                            db.ForeignKey(
+                                                'user_subsection_progress.id'),
+                                            nullable=False)
 
-    user_answer_id = db.Column(db.Integer, db.ForeignKey('user_answers.id'),
-                               nullable=False, unique=True)
+    question_id = db.Column(db.Integer,
+                            db.ForeignKey('questions.id'),
+                            nullable=False)
+    question = db.relationship('Question',
+                               backref='user_subsection_answers',
+                               lazy='joined')
+
+    transcribed_answer = db.Column(db.Text, nullable=False)
+    grammar_marked_answer = db.Column(db.Text, nullable=False)

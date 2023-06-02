@@ -16,31 +16,31 @@ text-center
             <div class="card card-metric">
                 <div class="card-body card-metric-body">
                     <h5 class="card-title card-metric-title text-muted">Fluency and Coherence</h5>
-                    <p class="card-score">{{data.fluency_and_coherence}}</p>
+                    <p class="card-score">{{ scores["Fluency and Coherence"] }}</p>
                 </div>
             </div>
             <div class="card card-metric">
                 <div class="card-body card-metric-body">
                     <h5 class="card-title card-metric-title text-muted">Lexical Resource</h5>
-                    <p class="card-score">{{data.lexical_resource}}</p>
+                    <p class="card-score">{{ scores["Lexical Resource"] }}</p>
                 </div>
             </div>
             <div class="card card-metric">
                 <div class="card-body card-metric-body">
                     <h5 class="card-title card-metric-title text-muted">Grammatical range and Accuracy</h5>
-                    <p class="card-score">{{data.grammatical_range_and_accuracy}}</p>
+                    <p class="card-score">{{ scores["Grammatical range and Accuracy"] }}</p>
                 </div>
             </div>
             <div class="card card-metric">
                 <div class="card-body card-metric-body">
                     <h5 class="card-title card-metric-title text-muted">Pronunciation</h5>
-                    <p class="card-score">{{data.pronunciation}}</p>
+                    <p class="card-score">{{ scores["Pronunciation"] }}</p>
                 </div>
             </div>
         </div>
-        {% for item in data.data %}
-            <h5>{{item.q}}</h5>
-            <p class="text-justify lead">{{item.a|safe}}</p>
+        {% for item in questions_and_answers %}
+            <h5>{{item.question}}</h5>
+            <p class="text-justify lead">{{item.answer|safe}}</p>
             <hr/>
         {% endfor %}
     </div>
@@ -59,26 +59,26 @@ text-center
 
 <script>
 $(document).ready(function() {
-    $('.err').on('mouseenter', function(e) {
+    $('.error').on('mouseenter', function(e) {
         $('.toast').stop();
         var top = e.pageY;
         var left = e.pageX;
 
         $('.toast').css({top: (top - $('.toast').height() - 10) + 'px', left: (left + 10) + 'px'});
 
-        var errorType = $(this).data('type').charAt(0).toUpperCase() + $(this).data('type').slice(1);
+        var errorType = $(this).data('error-type').charAt(0).toUpperCase() + $(this).data('error-type').slice(1);
         $('.toast-header strong').html(errorType);
 
         var struckText = '<span class="struck">' + $(this).text() + '</span>';
         var arrowIcon = '<i class="bi bi-arrow-right"></i>';
-        var correctedText = '<span class="corrected">' + $(this).data('corr') + '</span>';
-        var explanation = '<br>' + $(this).data('expl');
+        var correctedText = '<span class="corrected">' + $(this).data('corrected-text') + '</span>';
+        var explanation = '<br>' + $(this).data('error-long-description');
         $('.toast-body').html(struckText + ' ' + arrowIcon + ' ' + correctedText + explanation);
 
         $('.toast').fadeIn(250);
     });
 
-    $('.err').on('mouseleave', function() {
+    $('.error').on('mouseleave', function() {
         $('.toast').fadeOut(250);
     });
 });

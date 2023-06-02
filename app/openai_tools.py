@@ -13,19 +13,19 @@ def transcribe_audio(audio_file) -> str:
     return transcript["text"]
 
 
-def transcribe_audio_and_check_errors(audio_file):
+def transcribe_audio_and_check_grammar(audio_file):
     transcript = transcribe_audio(audio_file).strip()
     if not transcript or transcript == 'Thank you.':
-        transcript_with_errors = {"text": "", "errors": []}
+        result = {"transcript": "", "errors": ""}
     else:
-        chat_gpt = ChatGPT()
-        transcript_with_errors = chat_gpt.find_errors_in_text(transcript)
-    return transcript_with_errors
+        transcript_with_errors = check_grammar(transcript)
+        result = {"transcript": transcript, "errors": transcript_with_errors}
+    return result
 
 
 def transcribe_and_check_errors_in_multiple_files(audio_files: list) -> list:
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        result = list(executor.map(transcribe_audio_and_check_errors, audio_files))
+        result = list(executor.map(transcribe_audio_and_check_grammar, audio_files))
     return result
 
 
@@ -74,7 +74,7 @@ class ChatGPT:
         return gpt_response_dict
 
     def find_errors_in_text(self, text: str):
-        system = "As an AI language model, your role is akin to Grammarly. Your key task is to scrutinize text data for language errors including, but not limited to, spelling, grammar, punctuation, and word usage. Please respond in JSON format, using <err></err> tags to highlight the errors in the original text."
+        system = "As an AI language model, your role is akin to Grammarly."
 
         text_example_prompt = "I don't exercise very regular. I tries to go to the gym once a week, but sometimes I'm too busy and not have enough time."
         json_example_prompt = """
@@ -225,3 +225,109 @@ Don't forget:
         with concurrent.futures.ThreadPoolExecutor() as executor:
             result = list(executor.map(self.find_errors_in_text, texts))
         return result
+
+
+def check_grammar(text: str) -> str:
+    text = "I don't exercise very regular. I tries to go to the gym once a week, but sometimes I'm too busy and not have enough time."
+    json_response = """{
+"status": true,
+"message": "Success",
+"timestamp": 1685690933109,
+"data": {
+"id": "bf4f5890-178a-42a8-b331-7b4dcdabb42a",
+"language": "eng",
+"text": "I don't exercise very regularly. I try to go to the gym once a week, but sometimes I'm too busy and not have enough time.",
+"engine": "Ginger",
+"truncated": false,
+"timeTaken": 670,
+"corrections": [
+  {
+    "group": "AutoCorrected",
+    "type": "Grammar",
+    "shortDescription": "Grammar Mistake",
+    "longDescription": "A wrong word form was used",
+    "startIndex": 22,
+    "endIndex": 28,
+    "mistakeText": "regular",
+    "correctionText": "regularly",
+    "suggestions": [
+      {
+        "text": "regularly",
+        "category": "Verb"
+      }
+    ]
+  },
+  {
+    "group": "AutoCorrected",
+    "type": "Grammar",
+    "shortDescription": "Grammar Mistake",
+    "longDescription": "Mismatch between the plurality of the verb and the subject",
+    "startIndex": 33,
+    "endIndex": 37,
+    "mistakeText": "tries",
+    "correctionText": "try",
+    "suggestions": [
+      {
+        "text": "try",
+        "category": "Verb"
+      },
+      {
+        "text": "am trying",
+        "category": "Verb"
+      },
+      {
+        "text": "have tried",
+        "category": "Verb"
+      },
+      {
+        "text": "have been trying",
+        "category": "Verb"
+      }
+    ]
+  }
+],
+"sentences": [
+  {
+    "startIndex": 0,
+    "endIndex": 29,
+    "status": "Corrected"
+  },
+  {
+    "startIndex": 31,
+    "endIndex": 120,
+    "status": "Corrected"
+  }
+],
+"autoReplacements": [],
+"stats": {
+  "textLength": 121,
+  "wordCount": 27,
+  "sentenceCount": 2,
+  "longestSentence": 90
+}
+}
+}"""
+    grammar = json.loads(json_response)
+    corrections = grammar["data"]["corrections"]
+    corrections = sorted(corrections, key=lambda x: x["startIndex"], reverse=True)
+    for correction in corrections:
+        # get data about mistake
+        data_error_type = correction["type"]
+        data_error_short_description = correction["shortDescription"]
+        data_error_long_description = correction["longDescription"]
+        data_corrected_text = correction["correctionText"]
+        mistake_text = correction["mistakeText"]
+
+        # updating part of text
+        prefix = text[:correction['startIndex']]
+        suffix = text[correction['endIndex'] + 1:]
+        replacement = f'''\
+<span class="error" \
+data-error-type="{data_error_type}" \
+data-error-short-description="{data_error_short_description}" \
+data-error-long-description="{data_error_long_description}" \
+data-corrected-text="{data_corrected_text}">\
+{mistake_text}\
+</span>'''
+        text = prefix + replacement + suffix
+    return text

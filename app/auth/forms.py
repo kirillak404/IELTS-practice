@@ -16,7 +16,7 @@ class LoginForm(FlaskForm):
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
-        if user and user.password_hash is None and user.google_id is not None:
+        if user and user.hashed_password is None and user.google_account_id is not None:
             raise ValidationError('Please sign in via Google since you signed '
                                   'up with them.')
 

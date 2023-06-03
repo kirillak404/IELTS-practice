@@ -90,10 +90,10 @@ def auth_google():
     # Searching for user in DB, then loging or register + login
     user = User.query.filter_by(email=google_user_info.get('email')).first()
     if user:
-        if user.google_id is None:
+        if user.google_account_id is None:
             flash('Please sign in with your email and password.')
             return redirect(url_for('auth.login'))
-        elif user.google_id != google_user_info.get('sub'):
+        elif user.google_account_id != google_user_info.get('sub'):
             flash('This email is linked to a different Google account.')
             return redirect(url_for('auth.login'))
         else:
@@ -101,8 +101,8 @@ def auth_google():
 
     else:
         user = User(email=google_user_info.get('email'),
-                    google_id=google_user_info.get('sub'),
-                    email_verified=google_user_info.get('email_verified'),
+                    google_account_id=google_user_info.get('sub'),
+                    is_email_verified=google_user_info.get('email_verified'),
                     first_name=google_user_info.get('given_name'),
                     last_name=google_user_info.get('family_name'),
                     profile_picture=google_user_info.get('picture'),

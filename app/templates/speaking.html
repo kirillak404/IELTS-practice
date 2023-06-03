@@ -14,10 +14,10 @@ text-center
    <ul class="list-group" style="max-width: 380px; margin: 0 auto;">
       {% for subsection in subsections %}
       <li class="list-group-item d-flex justify-content-between align-items-center">
-         Part {{ subsection.part }}: {{ subsection.name }}
-         {% if subsection.part == current_subsection.part %}
+         Part {{ subsection.part_number }}: {{ subsection.name }}
+         {% if subsection.part_number == current_subsection.part_number %}
          <span class="badge bg-primary rounded-pill">You are here</span>
-         {% elif subsection.part < current_subsection.part %}
+         {% elif subsection.part_number < current_subsection.part_number %}
          <span class="badge bg-success rounded-pill">Completed</span>
          {% endif %}
       </li>
@@ -26,7 +26,7 @@ text-center
 </div>
 <div class="card text-center bg-white mt-5">
    <div class="card-header" id="cardHeader">
-      Part {{ current_subsection.part }}: {{ current_subsection.name }}
+      Part {{ current_subsection.part_number }}: {{ current_subsection.name }}
    </div>
    <div class="card-body">
       <h5 class="card-title" id="cardTitle">

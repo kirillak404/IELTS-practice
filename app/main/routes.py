@@ -1,5 +1,3 @@
-import json
-import time
 from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -29,6 +27,7 @@ def render_section(name):
                            subsections=subsections)
 
 
+# TODO: refactoring
 @login_required
 @bp.route('/section/speaking/practice', methods=["GET", "POST"])
 def speaking_practice():
@@ -49,7 +48,7 @@ def speaking_practice():
             subsection, last_topic_id)
         topic_name = question_set.topic.name if question_set.topic else None
         topic_desc = question_set.topic.description if question_set.topic else None
-        practice = {"part": subsection.part,
+        practice = {"part": subsection.part_number,
                     "topic_name": topic_name,
                     "topic_desc": topic_desc,
                     "answer_time_limit": subsection.time_limit_minutes,
@@ -70,7 +69,7 @@ def speaking_practice():
     try:
         question_set_id = int(question_set_id)
     except ValueError:
-        return abort(400, "Question set must be an integer")
+        return abort(400, "question_set_id must be an integer")
     questions_set = QuestionSet.query.get(question_set_id)
     if not questions_set:
         abort(400, "Invalid question_set_id")
@@ -112,21 +111,21 @@ def speaking_practice():
         user_progress.update_next_subsection(section)
 
     # inserting new user_subsection_progress
-    user_subsection_progress = UserSubsectionProgress(
+    user_subsection_attempt = UserSubsectionAttempt(
         user_progress=user_progress,
         subsection_id=subsection_id,
         question_set_id=question_set_id)
-    db.session.add(user_subsection_progress)
+    db.session.add(user_subsection_attempt)
 
     # TODO check that files count == questions_set questions count AT TOP func
     # inserting user_subsection_answers
     for question, answer in zip(questions_set.questions,
                                 transcriptions_and_grammar_errors):
         user_subsection_answers = UserSubsectionAnswer(
-            user_subsection_progress=user_subsection_progress,
+            user_subsection_attempt=user_subsection_attempt,
             question=question,
             transcribed_answer=answer["transcript"],
-            grammar_marked_answer=answer["errors"]
+            transcribed_answer_errors=answer["errors"]
         )
         db.session.add(user_subsection_answers)
 
@@ -139,14 +138,14 @@ def speaking_practice():
         db.session.rollback()
         abort(500, "Database operational error")
 
-    return redirect(url_for('main.get_speaking_answer',
-                            user_subsection_progress_id=user_subsection_progress.id))
+    return redirect(url_for('main.get_speaking_attempt',
+                            user_subsection_progress_id=user_subsection_attempt.id))
 
 
 @login_required
-@bp.route('/section/speaking/answer/<int:user_subsection_progress_id>/')
-def get_speaking_answer(user_subsection_progress_id):
-    user_subsection_progress = UserSubsectionProgress.query.get(user_subsection_progress_id)
+@bp.route('/section/speaking/attempt/<int:user_subsection_progress_id>/')
+def get_speaking_attempt(user_subsection_progress_id):
+    user_subsection_progress = UserSubsectionAttempt.query.get(user_subsection_progress_id)
     if not user_subsection_progress:
         abort(404)
 

@@ -14,19 +14,19 @@ SECTIONS = [
 
 SUBSECTIONS = [
     {"name": "Introduction and Interview",
-     "part": 1,
+     "part_number": 1,
      "description": "You will answer questions about yourself, your background, and general topics in a conversation with the examiner.",
      "time_limit_minutes": 5,
      "section": "Speaking"},
 
     {"name": "Individual Long Turn",
-     "part": 2,
+     "part_number": 2,
      "description": "You will be given a topic on a cue card, have 1 minute to prepare, and then speak for 1-2 minutes on the topic.",
      "time_limit_minutes": 4,
      "section": "Speaking"},
 
     {"name": "Two-way Discussion",
-     "part": 3,
+     "part_number": 3,
      "description": "Discuss and justify your opinions on the topic given in Part 2 while exploring related issues in a detailed conversation with the examiner.",
      "time_limit_minutes": 5,
      "section": "Speaking"}

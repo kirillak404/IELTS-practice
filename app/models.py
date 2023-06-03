@@ -12,14 +12,14 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), index=True, unique=True, nullable=False)
-    email_verified = db.Column(db.Boolean, default=False)
+    is_email_verified = db.Column(db.Boolean, default=False)
 
-    password_hash = db.Column(db.String(128))
-    google_id = db.Column(db.String(255), unique=True)
+    hashed_password = db.Column(db.String(128))
+    google_account_id = db.Column(db.String(255), unique=True)
 
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
-    profile_picture = db.Column(db.Text)
+    profile_picture = db.Column(db.String(255))
     locale = db.Column(db.String(10))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -31,13 +31,10 @@ class User(UserMixin, db.Model):
         return '<User %r>' % self.email
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password, salt_length=16)
+        self.hashed_password = generate_password_hash(password, salt_length=16)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def set_google_id(self, google_id):
-        self.google_id = google_id
+        return check_password_hash(self.hashed_password, password)
 
     def get_section_progress(self, section_id):
         user_progress = UserProgress.query.filter(
@@ -75,7 +72,7 @@ class Subsection(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
-    part = db.Column(db.Integer, nullable=False)
+    part_number = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(255), nullable=False)
     time_limit_minutes = db.Column(db.Integer, nullable=False)
 
@@ -88,7 +85,7 @@ class Subsection(db.Model):
 
     @staticmethod
     def get_by_section_and_part(section, part):
-        return Subsection.query.filter_by(section=section, part=part).first()
+        return Subsection.query.filter_by(section=section, part_number=part).first()
 
 
 class Topic(db.Model):
@@ -153,41 +150,41 @@ class UserProgress(db.Model):
                            nullable=False)
     next_subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'))
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
-    completed_on = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
 
-    user_subsection_progress = db.relationship('UserSubsectionProgress',
-                                               backref='user_progress',
-                                               cascade='all, delete')
+    user_subsection_attempt = db.relationship('UserSubsectionAttempt',
+                                              backref='user_progress',
+                                              cascade='all, delete')
 
     def __init__(self, *args, **kwargs):
         super(UserProgress, self).__init__(*args, **kwargs)
         self.next_subsection_id = Subsection.query.filter_by(
-            section_id=self.section_id, part=2).first().id
+            section_id=self.section_id, part_number=2).first().id
 
     def update_next_subsection(self, section):
         current_subsection = Subsection.query.get(self.next_subsection_id)
-        next_part = current_subsection.part + 1
+        next_part = current_subsection.part_number + 1
         next_subsection = Subsection.query.filter_by(section=section,
-                                                     part=next_part).first()
+                                                     part_number=next_part).first()
 
         # if not next_subsection -> section completed
         if not next_subsection:
             self.is_completed = True
             self.next_subsection_id = None
-            self.completed_on = datetime.utcnow()
+            self.completed_at = datetime.utcnow()
         else:
             self.next_subsection_id = next_subsection.id
 
     def get_last_topic(self):
-        last_answer = UserSubsectionProgress.query.filter(
-            UserSubsectionProgress.user_progress_id == self.id
-        ).order_by(desc(UserSubsectionProgress.id)).first()
+        last_answer = UserSubsectionAttempt.query.filter(
+            UserSubsectionAttempt.user_progress_id == self.id
+        ).order_by(desc(UserSubsectionAttempt.id)).first()
 
         return last_answer.question_set.topic_id
 
 
-class UserSubsectionProgress(db.Model):
-    __tablename__ = 'user_subsection_progress'
+class UserSubsectionAttempt(db.Model):
+    __tablename__ = 'user_subsection_attempts'
 
     id = db.Column(db.Integer, primary_key=True)
     user_progress_id = db.Column(db.Integer, db.ForeignKey('user_progress.id'),
@@ -196,18 +193,18 @@ class UserSubsectionProgress(db.Model):
     subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'),
                               nullable=False)
     subsection = db.relationship('Subsection',
-                                 backref='user_subsection_progress')
+                                 backref='user_subsection_attempt')
 
     question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'),
                                 nullable=False)
     question_set = db.relationship('QuestionSet',
-                                   backref='user_subsection_progress')
+                                   backref='user_subsection_attempt')
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow,
                            nullable=False)
 
     user_answers = db.relationship('UserSubsectionAnswer',
-                                   backref='user_subsection_progress',
+                                   backref='user_subsection_attempt',
                                    lazy='joined')
 
     def get_questions_answer(self):
@@ -216,9 +213,10 @@ class UserSubsectionProgress(db.Model):
 
         for answer in user_answers:
             question = answer.question.text
-            grammar_marked_answer = answer.transcribed_answer  # TODO replace on answer.grammar_marked_answer
             result.append(
-                {"question": question, "answer": grammar_marked_answer})
+                {"question": question,
+                 "answer": answer.transcribed_answer,
+                 "answer_with_errors": answer.transcribed_answer_errors})
 
         return result
 
@@ -227,10 +225,10 @@ class UserSubsectionAnswer(db.Model):
     __tablename__ = 'user_subsection_answers'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_subsection_progress_id = db.Column(db.Integer,
-                                            db.ForeignKey(
-                                                'user_subsection_progress.id'),
-                                            nullable=False)
+    user_subsection_attempt_id = db.Column(db.Integer,
+                                           db.ForeignKey(
+                                               'user_subsection_attempts.id'),
+                                           nullable=False)
 
     question_id = db.Column(db.Integer,
                             db.ForeignKey('questions.id'),
@@ -240,4 +238,4 @@ class UserSubsectionAnswer(db.Model):
                                lazy='joined')
 
     transcribed_answer = db.Column(db.Text, nullable=False)
-    grammar_marked_answer = db.Column(db.Text, nullable=False)
+    transcribed_answer_errors = db.Column(db.Text, nullable=False)

@@ -1,3 +1,5 @@
+import json
+
 from flask import render_template, request, redirect, url_for, abort
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -6,7 +8,7 @@ from app import db
 from app.main import bp
 from app.models import *
 
-from app.openai_tools import transcribe_and_check_errors_in_multiple_files
+from app.openai_tools import transcribe_and_check_errors_in_multiple_files, gpt_evaluate_speaking
 
 
 @bp.route('/')
@@ -119,8 +121,13 @@ def speaking_practice():
 
     # TODO check that files count == questions_set questions count AT TOP func
     # inserting user_subsection_answers
+    questions_and_answers = []
     for question, answer in zip(questions_set.questions,
                                 transcriptions_and_grammar_errors):
+
+        questions_and_answers.append({"question": question.text,
+                                      "answer": answer["transcript"]})
+
         user_subsection_answers = UserSubsectionAnswer(
             user_subsection_attempt=user_subsection_attempt,
             question=question,
@@ -128,6 +135,10 @@ def speaking_practice():
             transcribed_answer_errors=answer["errors"]
         )
         db.session.add(user_subsection_answers)
+
+    # get scores and feedback from gpt and inserting into UserSubsectionAttempt
+    gpt_feedback_json_string = gpt_evaluate_speaking(questions_and_answers)
+    user_subsection_attempt.gpt_feedback_json = gpt_feedback_json_string
 
     try:
         db.session.commit()
@@ -139,28 +150,25 @@ def speaking_practice():
         abort(500, "Database operational error")
 
     return redirect(url_for('main.get_speaking_attempt',
-                            user_subsection_progress_id=user_subsection_attempt.id))
+                            user_subsection_attempt_id=user_subsection_attempt.id))
 
 
 @login_required
-@bp.route('/section/speaking/attempt/<int:user_subsection_progress_id>/')
-def get_speaking_attempt(user_subsection_progress_id):
-    user_subsection_progress = UserSubsectionAttempt.query.get(user_subsection_progress_id)
-    if not user_subsection_progress:
+@bp.route('/section/speaking/attempt/<int:user_subsection_attempt_id>/')
+def get_speaking_attempt(user_subsection_attempt_id):
+    user_subsection_attempt = UserSubsectionAttempt.query.get(
+        user_subsection_attempt_id)
+    if not user_subsection_attempt:
         abort(404)
 
     # check that the user requests his answer
-    user_progress = user_subsection_progress.user_progress
+    user_progress = user_subsection_attempt.user_progress
     if current_user != user_progress.user:
         abort(403)
-
-    questions_and_answers = user_subsection_progress.get_questions_answer()
-    scores = {"Fluency and Coherence": 7,
-              "Lexical Resource": 8,
-              "Grammatical range and Accuracy": 5,
-              "Pronunciation": 8}
+    results = json.loads(user_subsection_attempt.gpt_feedback_json)
+    questions_and_answers = user_subsection_attempt.get_questions_answer()
     return render_template('section_results.html',
-                           scores=scores,
+                           results=results,
                            questions_and_answers=questions_and_answers)
 
 

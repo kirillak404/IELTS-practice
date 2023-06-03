@@ -10,40 +10,38 @@ text-center
 {% endblock %}
 {% block content %}
 
+
 <div class="container">
-    <div class="content">
-       <div class="d-flex justify-content-between flex-wrap mb-5">
-            <div class="card card-metric">
-                <div class="card-body card-metric-body">
-                    <h5 class="card-title card-metric-title text-muted">Fluency and Coherence</h5>
-                    <p class="card-score">{{ scores["Fluency and Coherence"] }}</p>
-                </div>
-            </div>
-            <div class="card card-metric">
-                <div class="card-body card-metric-body">
-                    <h5 class="card-title card-metric-title text-muted">Lexical Resource</h5>
-                    <p class="card-score">{{ scores["Lexical Resource"] }}</p>
-                </div>
-            </div>
-            <div class="card card-metric">
-                <div class="card-body card-metric-body">
-                    <h5 class="card-title card-metric-title text-muted">Grammatical range and Accuracy</h5>
-                    <p class="card-score">{{ scores["Grammatical range and Accuracy"] }}</p>
-                </div>
-            </div>
-            <div class="card card-metric">
-                <div class="card-body card-metric-body">
-                    <h5 class="card-title card-metric-title text-muted">Pronunciation</h5>
-                    <p class="card-score">{{ scores["Pronunciation"] }}</p>
-                </div>
-            </div>
-        </div>
-        {% for item in questions_and_answers %}
-            <h5>{{item.question}}</h5>
-            <p class="text-justify lead">{{item.answer|safe}}</p>
-            <hr/>
-        {% endfor %}
-    </div>
+   <div class="content">
+      <div class="d-flex justify-content-between flex-wrap mb-5">
+         <p class="lead">
+            {{ results.generalFeedback }}
+         </p>
+         <table class="table">
+            <thead>
+               <tr>
+                  <th scope="col">Criterion</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">Feedback</th>
+               </tr>
+            </thead>
+            <tbody>
+               {% for item in results.criteria %}
+               <tr>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.score }}</td>
+                  <td>{{ item.feedback }} minutes</td>
+               </tr>
+               {% endfor %}
+            </tbody>
+         </table>
+      </div>
+      {% for item in questions_and_answers %}
+      <h5>{{item.question}}</h5>
+      <p class="text-justify lead">{{item.answer_with_errors|safe}}</p>
+      <hr/>
+      {% endfor %}
+   </div>
 </div>
 
 
@@ -55,7 +53,7 @@ text-center
         <!-- Error explanation, wrong and corrected text will be inserted here -->
     </div>
 </div>
-
+</div>
 
 <script>
 $(document).ready(function() {

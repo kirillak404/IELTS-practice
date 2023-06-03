@@ -200,6 +200,8 @@ class UserSubsectionAttempt(db.Model):
     question_set = db.relationship('QuestionSet',
                                    backref='user_subsection_attempt')
 
+    gpt_feedback_json = db.Column(db.Text)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow,
                            nullable=False)
 

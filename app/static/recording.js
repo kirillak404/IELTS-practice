@@ -175,6 +175,7 @@ nextQuestionButton.addEventListener('click', function() {
 completePracticeButton.addEventListener('click', function() {
   // Stop recording
   mediaRecorder.stop();
+  recordingIndicator.style.display = 'none';
 
   // Add spinner to the button
   completePracticeButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing your answers...';

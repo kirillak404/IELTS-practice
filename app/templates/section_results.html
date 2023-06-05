@@ -15,7 +15,7 @@ text-center
    <div class="content">
       <div class="d-flex justify-content-between flex-wrap mb-5">
          <p class="lead">
-            {{ results.generalFeedback }}
+            {{ result.general_feedback }}
          </p>
          <table class="table">
             <thead>
@@ -26,13 +26,26 @@ text-center
                </tr>
             </thead>
             <tbody>
-               {% for item in results.criteria %}
                <tr>
-                  <td>{{ item.name }}</td>
-                  <td>{{ item.score }}</td>
-                  <td>{{ item.feedback }} minutes</td>
+                  <td>Fluency and Coherence</td>
+                  <td>{{ result.fluency_coherence_score }}</td>
+                  <td>{{ result.fluency_coherence_feedback }}</td>
                </tr>
-               {% endfor %}
+               <tr>
+                  <td>Grammatical Range and Accuracy</td>
+                  <td>{{ result.grammatical_range_accuracy_score }}</td>
+                  <td>{{ result.grammatical_range_accuracy_feedback }}</td>
+               </tr>
+               <tr>
+                  <td>Lexical Resource</td>
+                  <td>{{ result.lexical_resource_score }}</td>
+                  <td>{{ result.lexical_resource_feedback }}</td>
+               </tr>
+               <tr>
+                  <td>Pronunciation</td>
+                  <td>{{ result.pronunciation_score }}</td>
+                  <td>{{ result.pronunciation_feedback }}</td>
+               </tr>
             </tbody>
          </table>
       </div>

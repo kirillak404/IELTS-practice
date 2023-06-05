@@ -1,16 +1,28 @@
+import concurrent.futures
 import json
 import os
 import time
-import requests
+
 import openai
-import concurrent.futures
+import requests
+
+from app.utils import measure_time
 
 
+@measure_time
 def transcribe_audio(audio_file) -> str:
-    audio_file.name = "audio.webm"
-    transcript = openai.Audio.transcribe("whisper-1",
+
+    timestamp = str(time.time()).replace(".", "")
+    audio_file.name = f"audio{timestamp}.webm"
+    prompt = "Uh, right now I'm, um... (unintelligible)... Yeah, I'm a student at Moscow State University. I'm studying... umm... Computer (unintelligible)."
+    transcript = openai.Audio.transcribe(model="whisper-1",
+                                         prompt=prompt,
                                          file=audio_file,
                                          language="en")
+
+    # save file
+    path = os.path.join("audio_files", audio_file.name)
+    audio_file.save(path)
     return transcript["text"]
 
 
@@ -24,36 +36,41 @@ def transcribe_audio_and_check_grammar(audio_file):
     return result
 
 
+@measure_time
 def transcribe_and_check_errors_in_multiple_files(audio_files: list) -> list:
     with concurrent.futures.ThreadPoolExecutor() as executor:
         result = list(executor.map(transcribe_audio_and_check_grammar, audio_files))
     return result
 
 
+@measure_time
 def check_grammar(text: str) -> str:
     grammar_check = check_grammar_via_ginger(text)
     corrections = grammar_check["data"]["corrections"]
     corrections = sorted(corrections, key=lambda x: x["startIndex"], reverse=True)
     for correction in corrections:
-        # get data about mistake
-        data_error_type = correction["type"]
-        data_error_short_description = correction["shortDescription"]
-        data_error_long_description = correction["longDescription"]
-        data_corrected_text = correction["correctionText"]
-        mistake_text = correction["mistakeText"]
+        if correction.get("correctionText"):
 
-        # updating part of text
-        prefix = text[:correction['startIndex']]
-        suffix = text[correction['endIndex'] + 1:]
-        replacement = f'''\
-<span class="error" \
-data-error-type="{data_error_type}" \
-data-error-short-description="{data_error_short_description}" \
-data-error-long-description="{data_error_long_description}" \
-data-corrected-text="{data_corrected_text}">\
-{mistake_text}\
-</span>'''
-        text = prefix + replacement + suffix
+            # get data about mistake
+            data_error_type = correction["type"]
+            data_error_short_description = correction["shortDescription"]
+            data_error_long_description = correction["longDescription"]
+            data_corrected_text = correction["correctionText"]
+            mistake_text = correction["mistakeText"]
+
+            # updating part of text
+            prefix = text[:correction['startIndex']]
+            suffix = text[correction['endIndex'] + 1:]
+            replacement = f'''\
+    <span class="error" \
+    data-error-type="{data_error_type}" \
+    data-error-short-description="{data_error_short_description}" \
+    data-error-long-description="{data_error_long_description}" \
+    data-corrected-text="{data_corrected_text}">\
+    {mistake_text}\
+    </span>'''
+            text = prefix + replacement + suffix
+
     return text
 
 
@@ -74,14 +91,10 @@ def check_grammar_via_ginger(text: str) -> dict:
             time.sleep(1)
 
 
-
-
-
 def get_gpt_json_completion(messages: list,
                             model="gpt-3.5-turbo",
                             temperature=0) -> dict:
     gpt_response_dict = None
-    start = time.time()
     for _ in range(10):
         try:
             completion = openai.ChatCompletion.create(
@@ -102,14 +115,11 @@ def get_gpt_json_completion(messages: list,
             with open('gpt_last_response.json', "w") as file:
                 file.write(gpt_response_json_string)
             break
-
-    finish = time.time()
-    time_result = f"Execution time: {int(finish - start)} seconds"
-    print(time_result)
     return gpt_response_dict
 
 
-def gpt_evaluate_speaking(questions_and_answers: list) -> str:
+@measure_time
+def gpt_evaluate_speaking(questions_and_answers: list) -> dict:
 
     # formatting questions and answer
     formatted_questions_and_answers = {}
@@ -120,29 +130,25 @@ def gpt_evaluate_speaking(questions_and_answers: list) -> str:
     system = "You act as a professional IELTS examiner."
     json_example = """\
 {
-  "generalFeedback": "Provide general feedback on the student's overall performance in this section. (string)",
-  "criteria": [
-    {
-      "name": "Fluency and Coherence",
-      "score": "Evaluate the student's fluency and coherence on a scale of 0 to 9. (float)",
-      "feedback": "Evaluate the student's ability to maintain a smooth and natural flow of speech, as well as the organization and logical connection of ideas. (string)"
-    },
-    {
-      "name": "Grammatical Range and Accuracy",
-      "score": "Evaluate the student's grammatical range and accuracy on a scale of 0 to 9. (float)",
-      "feedback": "Evaluate the student's grammatical accuracy, including the correct use of various sentence structures. Assess their command of grammar. (string)"
-    },
-    {
-      "name": "Lexical Resource",
-      "score": "Evaluate the student's lexical resource on a scale of 0 to 9. (float)",
-      "feedback": "Evaluate the student's range and appropriateness of vocabulary usage. Consider the precision and command of lexical resources. (string)"
-    },
-    {
-      "name": "Pronunciation",
-      "score": "Evaluate the student's pronunciation on a scale of 0 to 9. (float)",
-      "feedback": "Evaluate the student's pronunciation, including the clarity, accuracy, intonation, and stress patterns in their speech. (string)"
-    }
-  ]
+	"generalFeedback": "Provide general feedback on the student's overall performance in this section. (string)",
+	"criteria": {
+		"fluency": {
+			"score": "Evaluate the student's fluency and coherence on a scale of 0 to 9. (integer)",
+			"feedback": "Evaluate the student's ability to maintain a smooth and natural flow of speech, as well as the organization and logical connection of ideas. (string)"
+		},
+		"grammar": {
+			"score": "Evaluate the student's grammatical range and accuracy on a scale of 0 to 9. (integer)",
+			"feedback": "Evaluate the student's grammatical accuracy, including the correct use of various sentence structures. Assess their command of grammar. (string)"
+		},
+		"lexic": {
+			"score": "Evaluate the student's lexical resource on a scale of 0 to 9. (integer)",
+			"feedback": "Evaluate the student's range and appropriateness of vocabulary usage. Consider the precision and command of lexical resources. (string)"
+		},
+		"pron": {
+			"score": "Evaluate the student's pronunciation on a scale of 0 to 9. (integer)",
+			"feedback": "Evaluate the student's pronunciation, including the clarity, accuracy, intonation, and stress patterns in their speech. (string)"
+		}
+	}
 }
 """
     prompt = f"""
@@ -170,4 +176,4 @@ Your response should be a single JSON object following this format:
     ]
 
     result = get_gpt_json_completion(messages)
-    return json.dumps(result)
+    return result

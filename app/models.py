@@ -206,8 +206,13 @@ class UserSubsectionAttempt(db.Model):
                            nullable=False)
 
     user_answers = db.relationship('UserSubsectionAnswer',
-                                   backref='user_subsection_attempt',
+                                   backref='subsection_attempt',
                                    lazy='joined')
+
+    speaking_result = db.relationship('UserSpeakingAttemptResult',
+                                      uselist=False,
+                                      backref='subsection_attempt',
+                                      lazy='joined')
 
     def get_questions_answer(self):
         user_answers = self.user_answers
@@ -241,3 +246,20 @@ class UserSubsectionAnswer(db.Model):
 
     transcribed_answer = db.Column(db.Text, nullable=False)
     transcribed_answer_errors = db.Column(db.Text, nullable=False)
+
+
+class UserSpeakingAttemptResult(db.Model):
+    __tablename__ = 'user_speaking_attempt_results'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_subsection_attempt_id = db.Column(db.Integer, db.ForeignKey(
+        'user_subsection_attempts.id'), unique=True, nullable=False)
+    general_feedback = db.Column(db.Text, nullable=False)
+    fluency_coherence_score = db.Column(db.Integer, nullable=False)
+    fluency_coherence_feedback = db.Column(db.Text, nullable=False)
+    grammatical_range_accuracy_score = db.Column(db.Integer, nullable=False)
+    grammatical_range_accuracy_feedback = db.Column(db.Text, nullable=False)
+    lexical_resource_score = db.Column(db.Integer, nullable=False)
+    lexical_resource_feedback = db.Column(db.Text, nullable=False)
+    pronunciation_score = db.Column(db.Integer, nullable=False)
+    pronunciation_feedback = db.Column(db.Text, nullable=False)

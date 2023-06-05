@@ -113,11 +113,11 @@ def speaking_practice():
         user_progress.update_next_subsection(section)
 
     # inserting new user_subsection_progress
-    user_subsection_attempt = UserSubsectionAttempt(
+    subsection_attempt = UserSubsectionAttempt(
         user_progress=user_progress,
         subsection_id=subsection_id,
         question_set_id=question_set_id)
-    db.session.add(user_subsection_attempt)
+    db.session.add(subsection_attempt)
 
     # TODO check that files count == questions_set questions count AT TOP func
     # inserting user_subsection_answers
@@ -129,16 +129,28 @@ def speaking_practice():
                                       "answer": answer["transcript"]})
 
         user_subsection_answers = UserSubsectionAnswer(
-            user_subsection_attempt=user_subsection_attempt,
+            subsection_attempt=subsection_attempt,
             question=question,
             transcribed_answer=answer["transcript"],
             transcribed_answer_errors=answer["errors"]
         )
         db.session.add(user_subsection_answers)
 
-    # get scores and feedback from gpt and inserting into UserSubsectionAttempt
-    gpt_feedback_json_string = gpt_evaluate_speaking(questions_and_answers)
-    user_subsection_attempt.gpt_feedback_json = gpt_feedback_json_string
+    # inserting new user_speaking_attempt_results
+    gpt_speaking_result = gpt_evaluate_speaking(questions_and_answers)
+    speaking_attempt_result = UserSpeakingAttemptResult(
+        subsection_attempt=subsection_attempt,
+        general_feedback=gpt_speaking_result.get('generalFeedback'),
+        fluency_coherence_score=gpt_speaking_result['criteria']['fluency'].get('score'),
+        fluency_coherence_feedback=gpt_speaking_result['criteria']['fluency'].get('feedback'),
+        grammatical_range_accuracy_score=gpt_speaking_result['criteria']['grammar'].get('score'),
+        grammatical_range_accuracy_feedback=gpt_speaking_result['criteria']['grammar'].get('feedback'),
+        lexical_resource_score=gpt_speaking_result['criteria']['lexic'].get('score'),
+        lexical_resource_feedback=gpt_speaking_result['criteria']['lexic'].get('feedback'),
+        pronunciation_score=gpt_speaking_result['criteria']['pron'].get('score'),
+        pronunciation_feedback=gpt_speaking_result['criteria']['pron'].get('feedback')
+    )
+    db.session.add(speaking_attempt_result)
 
     try:
         db.session.commit()
@@ -150,7 +162,7 @@ def speaking_practice():
         abort(500, "Database operational error")
 
     return redirect(url_for('main.get_speaking_attempt',
-                            user_subsection_attempt_id=user_subsection_attempt.id))
+                            user_subsection_attempt_id=subsection_attempt.id))
 
 
 @login_required
@@ -165,10 +177,11 @@ def get_speaking_attempt(user_subsection_attempt_id):
     user_progress = user_subsection_attempt.user_progress
     if current_user != user_progress.user:
         abort(403)
-    results = json.loads(user_subsection_attempt.gpt_feedback_json)
+
+    speaking_result = user_subsection_attempt.speaking_result
     questions_and_answers = user_subsection_attempt.get_questions_answer()
     return render_template('section_results.html',
-                           results=results,
+                           result=speaking_result,
                            questions_and_answers=questions_and_answers)
 
 

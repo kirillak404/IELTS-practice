@@ -179,3 +179,5 @@ flask_session/
 /.husky/
 **/*.json
 *.json
+/audio_files/
+*.webm

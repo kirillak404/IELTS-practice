@@ -1,5 +1,7 @@
 from datetime import datetime
+from typing import Optional
 
+from flask import abort
 from flask_login import UserMixin
 from sqlalchemy import func, desc
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -117,10 +119,10 @@ class QuestionSet(db.Model):
         db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
 
     @staticmethod
-    def get_random_for_subsection(subsection, topic_id=None):
+    def get_random_for_subsection(subsection, last_topic):
         query = QuestionSet.query.filter_by(subsection=subsection)
-        if topic_id:
-            query = query.filter_by(topic_id=topic_id)
+        if last_topic:
+            query = query.filter_by(topic=last_topic)
         return query.order_by(func.random()).first()
 
     @staticmethod
@@ -129,6 +131,19 @@ class QuestionSet(db.Model):
         if not question_set or subsection_id != question_set.subsection_id:
             return False
         return True
+
+    @staticmethod
+    def validate_question_set(question_set_id: str) -> Optional['QuestionSet']:
+        if not question_set_id:
+            abort(400, "question_set_id is missing")
+        try:
+            question_set_id = int(question_set_id)
+        except ValueError:
+            return abort(400, "question_set_id must be an integer")
+        questions_set = QuestionSet.query.get(question_set_id)
+        if not questions_set:
+            abort(400, "Invalid question_set_id")
+        return questions_set
 
 
 class Question(db.Model):
@@ -176,11 +191,41 @@ class UserProgress(db.Model):
             self.next_subsection_id = next_subsection.id
 
     def get_last_topic(self):
-        last_answer = UserSubsectionAttempt.query.filter(
+        last_attempt = UserSubsectionAttempt.query.filter(
             UserSubsectionAttempt.user_progress_id == self.id
         ).order_by(desc(UserSubsectionAttempt.id)).first()
 
-        return last_answer.question_set.topic_id
+        return last_attempt.question_set.topic
+
+    @staticmethod
+    def create_or_update_user_progress(current_user, user_progress, section, question_set_id):
+        if not user_progress:
+
+            # checking that question_set_id from POST request is valid
+            subsection = Subsection.get_by_section_and_part(section, 1)
+            subsection_id = subsection.id
+            question_set_is_valid = QuestionSet.valid_for_subsection(
+                question_set_id, subsection_id)
+            if not question_set_is_valid:
+                abort(400, "Invalid question_set_id")
+
+            user_progress = UserProgress(user=current_user,
+                                         section_id=section.id)
+            db.session.add(user_progress)
+
+        # updating user_progress record
+        else:
+            subsection_id = user_progress.next_subsection_id
+
+            # checking that question_set_id from POST request is valid
+            question_set_is_valid = QuestionSet.valid_for_subsection(
+                question_set_id, user_progress.next_subsection_id)
+            if not question_set_is_valid:
+                abort(400, "Invalid question_set_id")
+
+            user_progress.update_next_subsection(section)
+
+        return subsection_id, user_progress
 
 
 class UserSubsectionAttempt(db.Model):
@@ -199,8 +244,6 @@ class UserSubsectionAttempt(db.Model):
                                 nullable=False)
     question_set = db.relationship('QuestionSet',
                                    backref='user_subsection_attempt')
-
-    gpt_feedback_json = db.Column(db.Text)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow,
                            nullable=False)
@@ -247,6 +290,23 @@ class UserSubsectionAnswer(db.Model):
     transcribed_answer = db.Column(db.Text, nullable=False)
     transcribed_answer_errors = db.Column(db.Text, nullable=False)
 
+    @staticmethod
+    def insert_user_answers(subsection_attempt, questions_set, transcriptions_and_grammar_errors) -> list:
+        questions_and_answers = []
+        for question, answer in zip(questions_set.questions,
+                                    transcriptions_and_grammar_errors):
+            questions_and_answers.append({"question": question.text,
+                                          "answer": answer["transcript"]})
+
+            user_subsection_answers = UserSubsectionAnswer(
+                subsection_attempt=subsection_attempt,
+                question=question,
+                transcribed_answer=answer["transcript"],
+                transcribed_answer_errors=answer["errors"]
+            )
+            db.session.add(user_subsection_answers)
+        return questions_and_answers
+
 
 class UserSpeakingAttemptResult(db.Model):
     __tablename__ = 'user_speaking_attempt_results'
@@ -263,3 +323,19 @@ class UserSpeakingAttemptResult(db.Model):
     lexical_resource_feedback = db.Column(db.Text, nullable=False)
     pronunciation_score = db.Column(db.Integer, nullable=False)
     pronunciation_feedback = db.Column(db.Text, nullable=False)
+
+    @staticmethod
+    def insert_speaking_result(subsection_attempt, gpt_speaking_result):
+        speaking_attempt_result = UserSpeakingAttemptResult(
+            subsection_attempt=subsection_attempt,
+            general_feedback=gpt_speaking_result.get('generalFeedback'),
+            fluency_coherence_score=gpt_speaking_result['criteria']['fluency'].get('score'),
+            fluency_coherence_feedback=gpt_speaking_result['criteria']['fluency'].get('feedback'),
+            grammatical_range_accuracy_score=gpt_speaking_result['criteria']['grammar'].get('score'),
+            grammatical_range_accuracy_feedback=gpt_speaking_result['criteria']['grammar'].get('feedback'),
+            lexical_resource_score=gpt_speaking_result['criteria']['lexic'].get('score'),
+            lexical_resource_feedback=gpt_speaking_result['criteria']['lexic'].get('feedback'),
+            pronunciation_score=gpt_speaking_result['criteria']['pron'].get('score'),
+            pronunciation_feedback=gpt_speaking_result['criteria']['pron'].get('feedback')
+        )
+        db.session.add(speaking_attempt_result)

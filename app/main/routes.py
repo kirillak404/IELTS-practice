@@ -1,14 +1,12 @@
-import json
-
-from flask import render_template, request, redirect, url_for, abort
+from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
-from sqlalchemy.exc import IntegrityError, OperationalError
 
-from app import db
+from app.api_utils import batch_transcribe_and_check_grammar, \
+    gpt_evaluate_speaking
 from app.main import bp
 from app.models import *
-
-from app.openai_tools import transcribe_and_check_errors_in_multiple_files, gpt_evaluate_speaking
+from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
+    get_audio_files, commit_changes
 
 
 @bp.route('/')
@@ -29,140 +27,70 @@ def render_section(name):
                            subsections=subsections)
 
 
-# TODO: refactoring
 @login_required
-@bp.route('/section/speaking/practice', methods=["GET", "POST"])
-def speaking_practice():
-    if request.method == "GET":
-        section = Section.get_by_name("speaking")
-        user_progress = current_user.get_section_progress(section.id)
+@bp.route('/section/speaking/practice', methods=["GET"])
+def speaking_practice_get():
+    # Retrieve the 'speaking' section
+    section = Section.get_by_name("speaking")
+    # Get the current user's progress in this section
+    user_progress = current_user.get_section_progress(section.id)
+    # Determine the current subsection and last topic based on user's progress
+    subsection, last_topic = get_current_subsection_and_last_topic(
+        user_progress, section)
+    # Get data required for the practice page
+    practice = get_practice_data(subsection, last_topic)
+    # Render the practice page with obtained data
+    return render_template("speaking.html",
+                           subsections=section.subsections,
+                           current_subsection=subsection,
+                           practice=practice)
 
-        if user_progress:
-            subsection = Subsection.query.get(
-                user_progress.next_subsection_id)
-            last_topic_id = user_progress.get_last_topic()
-        else:
-            subsection = Subsection.get_by_section_and_part(section, 1)
-            last_topic_id = None
 
-        # data for the practice page
-        question_set = QuestionSet.get_random_for_subsection(
-            subsection, last_topic_id)
-        topic_name = question_set.topic.name if question_set.topic else None
-        topic_desc = question_set.topic.description if question_set.topic else None
-        practice = {"part": subsection.part_number,
-                    "topic_name": topic_name,
-                    "topic_desc": topic_desc,
-                    "answer_time_limit": subsection.time_limit_minutes,
-                    "question_id": question_set.id,
-                    "questions": [q.text for q in question_set.questions]}
-
-        return render_template("speaking.html",
-                               subsections=section.subsections,
-                               current_subsection=subsection,
-                               practice=practice)
-
-    # POST request processing
-
-    # validating data
+@login_required
+@bp.route('/section/speaking/practice', methods=["POST"])
+def speaking_practice_post():
+    # Validate the question set ID from the request
     question_set_id = request.form.get('question_set_id')
-    if not question_set_id:
-        abort(400, "question_set_id is missing")
-    try:
-        question_set_id = int(question_set_id)
-    except ValueError:
-        return abort(400, "question_set_id must be an integer")
-    questions_set = QuestionSet.query.get(question_set_id)
-    if not questions_set:
-        abort(400, "Invalid question_set_id")
+    questions_set = QuestionSet.validate_question_set(question_set_id)
 
-    # audio files processing
-    audio_files = [request.files[key] for key in request.files.keys() if
-                   key.startswith('audio_')]
-    transcriptions_and_grammar_errors = transcribe_and_check_errors_in_multiple_files(
+    # Process audio files from the request
+    audio_files = get_audio_files(questions_set)
+    # Transcribe the audio files and check for grammar errors
+    transcriptions_and_grammar_errors = batch_transcribe_and_check_grammar(
         audio_files)
 
+    # Get the 'speaking' section
     section = Section.get_by_name("speaking")
+    # Get the current user's progress in this section
     user_progress = current_user.get_section_progress(section.id)
 
-    # creating new user_progress record
-    if not user_progress:
+    # Update or create user's progress based on previous section progress
+    subsection_id, user_progress = UserProgress.create_or_update_user_progress(
+        current_user, user_progress, section, question_set_id)
 
-        # checking that question_set_id from POST request is valid
-        subsection = Subsection.get_by_section_and_part(section, 1)
-        subsection_id = subsection.id
-        question_set_is_valid = QuestionSet.valid_for_subsection(
-            question_set_id, subsection_id)
-        if not question_set_is_valid:
-            abort(400, "Invalid question_set_id")
-
-        user_progress = UserProgress(user=current_user,
-                                     section_id=section.id)
-        db.session.add(user_progress)
-
-    # updating user_progress record
-    else:
-        subsection_id = user_progress.next_subsection_id
-
-        # checking that question_set_id from POST request is valid
-        question_set_is_valid = QuestionSet.valid_for_subsection(
-            question_set_id, user_progress.next_subsection_id)
-        if not question_set_is_valid:
-            abort(400, "Invalid question_set_id")
-
-        user_progress.update_next_subsection(section)
-
-    # inserting new user_subsection_progress
+    # Create a new record for the user's attempt at this subsection
     subsection_attempt = UserSubsectionAttempt(
         user_progress=user_progress,
         subsection_id=subsection_id,
         question_set_id=question_set_id)
     db.session.add(subsection_attempt)
 
-    # TODO check that files count == questions_set questions count AT TOP func
-    # inserting user_subsection_answers
-    questions_and_answers = []
-    for question, answer in zip(questions_set.questions,
-                                transcriptions_and_grammar_errors):
+    # Insert user's answers for this attempt
+    questions_and_answers = UserSubsectionAnswer.insert_user_answers(
+        subsection_attempt,
+        questions_set,
+        transcriptions_and_grammar_errors)
 
-        questions_and_answers.append({"question": question.text,
-                                      "answer": answer["transcript"]})
-
-        user_subsection_answers = UserSubsectionAnswer(
-            subsection_attempt=subsection_attempt,
-            question=question,
-            transcribed_answer=answer["transcript"],
-            transcribed_answer_errors=answer["errors"]
-        )
-        db.session.add(user_subsection_answers)
-
-    # inserting new user_speaking_attempt_results
+    # Evaluate user's speaking ability and insert the result
     gpt_speaking_result = gpt_evaluate_speaking(questions_and_answers)
-    speaking_attempt_result = UserSpeakingAttemptResult(
-        subsection_attempt=subsection_attempt,
-        general_feedback=gpt_speaking_result.get('generalFeedback'),
-        fluency_coherence_score=gpt_speaking_result['criteria']['fluency'].get('score'),
-        fluency_coherence_feedback=gpt_speaking_result['criteria']['fluency'].get('feedback'),
-        grammatical_range_accuracy_score=gpt_speaking_result['criteria']['grammar'].get('score'),
-        grammatical_range_accuracy_feedback=gpt_speaking_result['criteria']['grammar'].get('feedback'),
-        lexical_resource_score=gpt_speaking_result['criteria']['lexic'].get('score'),
-        lexical_resource_feedback=gpt_speaking_result['criteria']['lexic'].get('feedback'),
-        pronunciation_score=gpt_speaking_result['criteria']['pron'].get('score'),
-        pronunciation_feedback=gpt_speaking_result['criteria']['pron'].get('feedback')
-    )
-    db.session.add(speaking_attempt_result)
+    UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt, gpt_speaking_result)
 
-    try:
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
-        abort(400, "Database integrity error")
-    except OperationalError:
-        db.session.rollback()
-        abort(500, "Database operational error")
-
+    # Commit changes to the database
+    commit_changes()
+    # Redirect to the page displaying the results of the speaking attempt
     return redirect(url_for('main.get_speaking_attempt',
                             user_subsection_attempt_id=subsection_attempt.id))
+
 
 
 @login_required

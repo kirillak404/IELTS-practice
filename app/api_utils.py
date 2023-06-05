@@ -6,28 +6,23 @@ import time
 import openai
 import requests
 
+from werkzeug.datastructures import FileStorage
 from app.utils import measure_time
 
 
 @measure_time
-def transcribe_audio(audio_file) -> str:
-
-    timestamp = str(time.time()).replace(".", "")
-    audio_file.name = f"audio{timestamp}.webm"
+def transcribe_audio_file(audio_file: FileStorage) -> str:
+    audio_file.name = "audio.webm"
     prompt = "Uh, right now I'm, um... (unintelligible)... Yeah, I'm a student at Moscow State University. I'm studying... umm... Computer (unintelligible)."
     transcript = openai.Audio.transcribe(model="whisper-1",
                                          prompt=prompt,
                                          file=audio_file,
                                          language="en")
-
-    # save file
-    path = os.path.join("audio_files", audio_file.name)
-    audio_file.save(path)
     return transcript["text"]
 
 
-def transcribe_audio_and_check_grammar(audio_file):
-    transcript = transcribe_audio(audio_file).strip()
+def transcribe_and_check_grammar(audio_file: FileStorage) -> dict:
+    transcript = transcribe_audio_file(audio_file).strip()
     if not transcript or transcript == 'Thank you.':
         result = {"transcript": "", "errors": ""}
     else:
@@ -37,9 +32,9 @@ def transcribe_audio_and_check_grammar(audio_file):
 
 
 @measure_time
-def transcribe_and_check_errors_in_multiple_files(audio_files: list) -> list:
+def batch_transcribe_and_check_grammar(audio_files: list) -> list:
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        result = list(executor.map(transcribe_audio_and_check_grammar, audio_files))
+        result = list(executor.map(transcribe_and_check_grammar, audio_files))
     return result
 
 

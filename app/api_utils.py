@@ -1,3 +1,4 @@
+import base64
 import concurrent.futures
 import json
 import os
@@ -5,8 +6,8 @@ import time
 
 import openai
 import requests
-
 from werkzeug.datastructures import FileStorage
+
 from app.utils import measure_time
 
 
@@ -172,3 +173,46 @@ Your response should be a single JSON object following this format:
 
     result = get_gpt_json_completion(messages)
     return result
+
+
+def evaluate_speech(audio_file_name, transcript):
+
+    subscription_key = os.getenv("AZURE_API_KEY")
+    region = "southeastasia"
+    language = "en-US"
+
+    # a generator which reads audio data chunk by chunk
+    # the audio_source can be any audio input stream which provides read() method, e.g. audio file, microphone, memory stream, etc.
+    def get_chunk(audio_source, chunk_size=1024):
+        while True:
+            #time.sleep(chunk_size / 32000) # to simulate human speaking rate
+            chunk = audio_source.read(chunk_size)
+            if not chunk:
+                #global uploadFinishTime
+                #uploadFinishTime = time.time()
+                break
+            yield chunk
+
+    # build pronunciation assessment parameters
+    pronAssessmentParamsJson = "{\"ReferenceText\":\"%s\",\"GradingSystem\":\"HundredMark\",\"Dimension\":\"Comprehensive\",\"EnableMiscue\":\"True\"}" % transcript
+    pronAssessmentParamsBase64 = base64.b64encode(bytes(pronAssessmentParamsJson, 'utf-8'))
+    pronAssessmentParams = str(pronAssessmentParamsBase64, "utf-8")
+
+    # build request
+    url = "https://%s.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=%s&usePipelineVersion=0" % (region, language)
+    headers = { 'Accept': 'application/json;text/xml',
+                'Connection': 'Keep-Alive',
+                'Content-Type': 'audio/wav; codecs=audio/pcm; samplerate=16000',
+                'Ocp-Apim-Subscription-Key': subscription_key,
+                'Pronunciation-Assessment': pronAssessmentParams,
+                'Transfer-Encoding': 'chunked',
+                'Expect': '100-continue' }
+
+    # audioFile = f
+    audioFile = open(audio_file_name, 'rb')
+
+    # send request with chunked data
+    response = requests.post(url=url, data=get_chunk(audioFile), headers=headers)
+
+    audioFile.close()
+    return response.json()

@@ -181,3 +181,4 @@ flask_session/
 *.json
 /audio_files/
 *.webm
+*.wav

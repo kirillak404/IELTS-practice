@@ -266,7 +266,7 @@ class UserSubsectionAttempt(db.Model):
             result.append(
                 {"question": question,
                  "answer": answer.transcribed_answer,
-                 "answer_with_errors": answer.transcribed_answer_errors})
+                 "pronunciation": answer.pronunciation_assessment_json})
 
         return result
 
@@ -288,13 +288,13 @@ class UserSubsectionAnswer(db.Model):
                                lazy='joined')
 
     transcribed_answer = db.Column(db.Text, nullable=False)
-    transcribed_answer_errors = db.Column(db.Text, nullable=False)
+    pronunciation_assessment_json = db.Column(db.Text, nullable=False)
 
     @staticmethod
-    def insert_user_answers(subsection_attempt, questions_set, transcriptions_and_grammar_errors) -> list:
+    def insert_user_answers(subsection_attempt, questions_set, transcriptions_and_pron_assessments) -> list:
         questions_and_answers = []
         for question, answer in zip(questions_set.questions,
-                                    transcriptions_and_grammar_errors):
+                                    transcriptions_and_pron_assessments):
             questions_and_answers.append({"question": question.text,
                                           "answer": answer["transcript"]})
 
@@ -302,7 +302,7 @@ class UserSubsectionAnswer(db.Model):
                 subsection_attempt=subsection_attempt,
                 question=question,
                 transcribed_answer=answer["transcript"],
-                transcribed_answer_errors=answer["errors"]
+                pronunciation_assessment_json=answer["pronunciation"]
             )
             db.session.add(user_subsection_answers)
         return questions_and_answers

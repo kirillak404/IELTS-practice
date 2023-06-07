@@ -18,23 +18,24 @@ def transcribe_audio_file(audio_file: FileStorage) -> str:
     transcript = openai.Audio.transcribe(model="whisper-1",
                                          file=audio_file,
                                          language="en")
+    audio_file.seek(0)
     return transcript["text"]
 
 
-def transcribe_and_check_grammar(audio_file: FileStorage) -> dict:
+def transcribe_and_assess_pronunciation(audio_file: FileStorage) -> dict:
     transcript = transcribe_audio_file(audio_file).strip()
     if not transcript or transcript == 'Thank you.':
-        result = {"transcript": "", "errors": ""}
+        result = {"transcript": "", "pronunciation": ""}
     else:
-        transcript_with_errors = assess_pronunciation(audio_file, transcript)
-        result = {"transcript": transcript, "errors": transcript_with_errors}
+        pronunciation_data = assess_pronunciation(audio_file, transcript)
+        result = {"transcript": transcript, "pronunciation": pronunciation_data}
     return result
 
 
 @measure_time
-def batch_transcribe_and_check_grammar(audio_files: list) -> list:
+def batch_transcribe_and_assess_pronunciation(audio_files: list) -> list:
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        result = list(executor.map(transcribe_and_check_grammar, audio_files))
+        result = list(executor.map(transcribe_and_assess_pronunciation, audio_files))
     return result
 
 

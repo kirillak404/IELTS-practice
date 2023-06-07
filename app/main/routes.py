@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 
-from app.api_utils import batch_transcribe_and_check_grammar, \
+from app.api_utils import batch_transcribe_and_assess_pronunciation, \
     gpt_evaluate_speaking, transcribe_audio_file, assess_pronunciation
 from app.main import bp
 from app.models import *
@@ -55,13 +55,12 @@ def speaking_practice_post():
 
     # Process audio files from the request
     audio_files = get_audio_files(questions_set)
-    audio_files = [audio_files[0]]  # TODO delete
+    # audio_files = [audio_files[0]]  # TODO delete
 
-    # Transcribe the audio files and check for grammar errors
-    transcriptions_and_grammar_errors = batch_transcribe_and_check_grammar(
-        audio_files)
+    # Transcribe audio files and access pronunciation
+    transcriptions_and_pron_assessments = batch_transcribe_and_assess_pronunciation(audio_files)
 
-    return render_template(url_for('main.speaking_practice_get'))
+    # return render_template(url_for('main.speaking_practice_get'))
 
     # Get the 'speaking' section
     section = Section.get_by_name("speaking")
@@ -83,7 +82,7 @@ def speaking_practice_post():
     questions_and_answers = UserSubsectionAnswer.insert_user_answers(
         subsection_attempt,
         questions_set,
-        transcriptions_and_grammar_errors)
+        transcriptions_and_pron_assessments)
 
     # Evaluate user's speaking ability and insert the result
     gpt_speaking_result = gpt_evaluate_speaking(questions_and_answers)
@@ -130,9 +129,5 @@ def get_speaking_result():
 def upload():
     audio_file = request.files['file']
     transcript = transcribe_audio_file(audio_file)
-    audio_file.seek(0)
     pron = assess_pronunciation(audio_file, transcript)
-    print(pron)
-
-
     return redirect(url_for('main.index'))

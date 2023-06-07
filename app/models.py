@@ -5,6 +5,8 @@ from flask import abort
 from flask_login import UserMixin
 from sqlalchemy import func, desc
 from werkzeug.security import check_password_hash, generate_password_hash
+from sqlalchemy.dialects.sqlite import JSON
+
 
 from app import db, login
 
@@ -288,7 +290,7 @@ class UserSubsectionAnswer(db.Model):
                                lazy='joined')
 
     transcribed_answer = db.Column(db.Text, nullable=False)
-    pronunciation_assessment_json = db.Column(db.Text, nullable=False)
+    pronunciation_assessment_json = db.Column(JSON, nullable=False)
 
     @staticmethod
     def insert_user_answers(subsection_attempt, questions_set, transcriptions_and_pron_assessments) -> list:

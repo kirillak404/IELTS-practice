@@ -176,7 +176,7 @@ Your response should be a single JSON object following this format:
 
 
 @measure_time
-def assess_pronunciation(audio_file, transcript: str) -> str:
+def assess_pronunciation(audio_file, transcript: str) -> dict:
     audio_file = convert_audio(audio_file)
     language = "en-US"
     region = "southeastasia"
@@ -205,4 +205,4 @@ def assess_pronunciation(audio_file, transcript: str) -> str:
     response = requests.post(url=url, data=get_chunk(audio_file), headers=headers)
     if response.status_code != 200:
         abort(500)
-    return response.text
+    return response.json()

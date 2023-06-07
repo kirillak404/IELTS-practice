@@ -55,7 +55,6 @@ def speaking_practice_post():
 
     # Process audio files from the request
     audio_files = get_audio_files(questions_set)
-    # audio_files = [audio_files[0]]  # TODO delete
 
     # Transcribe audio files and access pronunciation
     transcriptions_and_pron_assessments = batch_transcribe_and_assess_pronunciation(audio_files)

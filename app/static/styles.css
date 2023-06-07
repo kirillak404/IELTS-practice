@@ -56,7 +56,7 @@ nav .navbar-brand .green
   font-size: 24px;
 }
 
-.card {
+#speaking-practice-card {
   width: 600px;
   margin: 0 auto;
 }
@@ -146,4 +146,18 @@ nav .navbar-brand .green
     color: #28a745;
     font-weight: bold;
     font-size: 1.15em;
+}
+
+/* Speaking Attempt Results */
+.score {
+font-size: 1.5em;
+}
+.good {
+color: green;
+}
+.average {
+color: orange;
+}
+.bad {
+color: red;
 }

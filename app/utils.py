@@ -1,6 +1,8 @@
 import time
+from io import BytesIO
 
 from flask import request, abort
+from pydub import AudioSegment
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from app import db
@@ -75,3 +77,33 @@ def commit_changes():
     except OperationalError:
         db.session.rollback()
         abort(500, "Database operational error")
+
+
+# for azure assess_pronunciation func
+def get_chunk(audio_source, chunk_size=1024):
+    while True:
+        chunk = audio_source.read(chunk_size)
+        if not chunk:
+            break
+        yield chunk
+
+
+def convert_audio(file_storage):
+    # Конвертировать FileStorage в Bytes
+    blob = BytesIO(file_storage.read())
+
+    # Загрузить файл в формате webm
+    audio = AudioSegment.from_file(blob, format="webm")
+
+    # Установить параметры аудио
+    audio = audio.set_frame_rate(16000)
+    audio = audio.set_channels(1)
+
+    # Конвертировать обратно в BytesIO
+    output_blob = BytesIO()
+    audio.export(output_blob, format="opus")
+
+    # Переустановить указатель в начало BytesIO, чтобы считывать с начала
+    output_blob.seek(0)
+
+    return output_blob

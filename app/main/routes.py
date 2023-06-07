@@ -2,7 +2,7 @@ from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 
 from app.api_utils import batch_transcribe_and_check_grammar, \
-    gpt_evaluate_speaking
+    gpt_evaluate_speaking, transcribe_audio_file, assess_pronunciation
 from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
@@ -55,9 +55,13 @@ def speaking_practice_post():
 
     # Process audio files from the request
     audio_files = get_audio_files(questions_set)
+    audio_files = [audio_files[0]]  # TODO delete
+
     # Transcribe the audio files and check for grammar errors
     transcriptions_and_grammar_errors = batch_transcribe_and_check_grammar(
         audio_files)
+
+    return render_template(url_for('main.speaking_practice_get'))
 
     # Get the 'speaking' section
     section = Section.get_by_name("speaking")
@@ -96,6 +100,9 @@ def speaking_practice_post():
 @login_required
 @bp.route('/section/speaking/attempt/<int:user_subsection_attempt_id>/')
 def get_speaking_attempt(user_subsection_attempt_id):
+    return render_template("results_new.html")
+
+
     user_subsection_attempt = UserSubsectionAttempt.query.get(
         user_subsection_attempt_id)
     if not user_subsection_attempt:
@@ -117,3 +124,15 @@ def get_speaking_attempt(user_subsection_attempt_id):
 @bp.route('/section/speaking/result/<int:id>/')
 def get_speaking_result():
     pass
+
+
+@bp.route('/upload', methods=["POST"])
+def upload():
+    audio_file = request.files['file']
+    transcript = transcribe_audio_file(audio_file)
+    audio_file.seek(0)
+    pron = assess_pronunciation(audio_file, transcript)
+    print(pron)
+
+
+    return redirect(url_for('main.index'))

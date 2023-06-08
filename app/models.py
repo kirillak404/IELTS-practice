@@ -252,7 +252,8 @@ class UserSubsectionAttempt(db.Model):
 
     user_answers = db.relationship('UserSubsectionAnswer',
                                    backref='subsection_attempt',
-                                   lazy='joined')
+                                   lazy='joined',
+                                   cascade='all, delete')
 
     speaking_result = db.relationship('UserSpeakingAttemptResult',
                                       uselist=False,
@@ -297,8 +298,7 @@ class UserSubsectionAnswer(db.Model):
                             nullable=False)
     question = db.relationship('Question',
                                backref='user_subsection_answers',
-                               lazy='joined',
-                               cascade='all, delete')
+                               lazy='joined')
 
     transcribed_answer = db.Column(db.Text)
     pronunciation_assessment_json = db.Column(JSON)

@@ -85,7 +85,8 @@ function initializeMediaRecorder() {
 }
 
 // Start speaking button click event listener
-startSpeakingButton.addEventListener('click', function() {
+startSpeakingButton.addEventListener('click', async function() {
+  await startCountdown();
   if (practice.part == 1) {
     // Start recording
     mediaRecorder.start();
@@ -262,4 +263,31 @@ function startTimer(duration, display) {
       // Place for your code to execute after the timer finishes
     }
   }, 1000);
+}
+
+function startCountdown() {
+  var countdownElement = document.getElementById('countdown');
+  var overlayElement = document.getElementById('overlay');
+
+  overlayElement.style.visibility = 'visible';
+
+  var count = 3;
+  countdownElement.textContent = count;
+
+  return new Promise((resolve) => {
+    var countdownInterval = setInterval(function() {
+      count--;
+      if (count >= 0) {
+        countdownElement.textContent = count;
+      }
+      if (count < 0) {
+        countdownElement.textContent = "Speak!";
+        clearInterval(countdownInterval);
+        setTimeout(() => {
+            overlayElement.style.visibility = 'hidden';
+            resolve();
+        }, 1000); // delay of 1 second before clearing "Speak!" and resolving the promise
+      }
+    }, 1000);
+  });
 }

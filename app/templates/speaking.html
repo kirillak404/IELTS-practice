@@ -53,15 +53,23 @@ text-center
       </div>
    </div>
 </div>
+
+<!--Countdown-->
+<div class="overlay" id="overlay">
+  <div class="countdown" id="countdown"></div>
+</div>
+
+<!--Timer-->
 <div class="timer-container" id="timerContainer" style="visibility: hidden;">
    <span id="timer"></span>
 </div>
 <script>const practice = {{ practice|tojson|safe }};</script>
 <script src="{{ url_for('static', filename='recording.js') }}"></script>
 
+<!--Footer-->
 <div class="sticky-footer">
   <form action="/reset-section-progress" method="POST">
-    <button type="submit" class="btn btn-outline-danger">Delete Progress</button>
+    <button type="submit" class="btn btn-outline-danger">Reset section</button>
   </form>
 </div>
 

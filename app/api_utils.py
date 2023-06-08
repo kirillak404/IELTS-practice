@@ -205,8 +205,7 @@ def assess_pronunciation(audio_file, transcript: str) -> dict:
     for i in range(1, 6):
         response = requests.post(url=url, data=get_chunk(audio_file), headers=headers)
         if response.status_code != 200:
-            print("Azure response code:", response.status_code)
-            print("Azure response text:", response.text)
+            print("Azure response:", response.status_code, response.text)
             audio_file.seek(0)
             time.sleep(i)
         else:

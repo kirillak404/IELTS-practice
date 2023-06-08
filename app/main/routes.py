@@ -134,3 +134,8 @@ def reset_section_progress():
         db.session.commit()
 
     return redirect(url_for('main.speaking_practice_get'))
+
+
+@bp.route('/test')
+def test_route():
+    return render_template('test_page.html')

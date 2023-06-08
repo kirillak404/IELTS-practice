@@ -17,28 +17,28 @@ text-center
          <tr>
             <th class="w-25 fs-5 criteria-heading">
                Accuracy Score
-               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 1"><i class="bi bi-question-circle"></i></a>
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Pronunciation accuracy of the speech. Accuracy indicates how closely the phonemes match a native speaker's pronunciation."><i class="bi bi-question-circle"></i></a>
             </th>
             <th class="w-25 fs-5 criteria-heading">
                Fluency Score
-               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 2"><i class="bi bi-question-circle"></i></a>
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Fluency of the given speech. Fluency indicates how closely the speech matches a native speaker's use of silent breaks between words."><i class="bi bi-question-circle"></i></a>
             </th>
             <th class="w-25 fs-5 criteria-heading">
                Completeness Score
-               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 3"><i class="bi bi-question-circle"></i></a>
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Completeness of the speech."><i class="bi bi-question-circle"></i></a>
             </th>
             <th class="w-25 fs-5 criteria-heading">
                Pronunciation Score
-               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 4"><i class="bi bi-question-circle"></i></a>
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Overall score indicating the pronunciation quality of the given speech. This is aggregated from AccuracyScore, FluencyScore, and CompletenessScore with weight."><i class="bi bi-question-circle"></i></a>
             </th>
          </tr>
       </thead>
       <tbody>
          <tr>
-            <td class="fs-4 score" data-score="76">76</td>
-            <td class="fs-4 score" data-score="83">83</td>
-            <td class="fs-4 score" data-score="84">84</td>
-            <td class="fs-4 score" data-score="80">80</td>
+            <td class="fs-4 score" data-score="{{ scores['accuracy_score'] }}">{{ scores['accuracy_score'] }}</td>
+            <td class="fs-4 score" data-score="{{ scores['fluency_score'] }}">{{ scores['fluency_score'] }}</td>
+            <td class="fs-4 score" data-score="{{ scores['completeness_score'] }}">{{ scores['completeness_score'] }}</td>
+            <td class="fs-4 score" data-score="{{ scores['pronunciation_score'] }}">{{ scores['pronunciation_score'] }}</td>
          </tr>
       </tbody>
    </table>
@@ -47,14 +47,12 @@ text-center
    <div class="card text-left">
       <div class="card-body">
          <div class="card-text">
+            {% for answer in answers %}
             <div class="dialogue">
-               <p class="question">What is your full name?</p>
-               <p class="answer">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit, vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus, ac blandit elit tincidunt id.</p>
+               <p class="question">{{ answer.question.text }}</p>
+               <p class="answer">{{ answer.transcribed_answer if answer.transcribed_answer else "No answer given..." }}</p>
             </div>
-            <div class="dialogue">
-               <p class="question">Where are you from?</p>
-               <p class="answer">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit, vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus, ac blandit elit tincidunt id.</p>
-            </div>
+            {% endfor %}
          </div>
       </div>
    </div>

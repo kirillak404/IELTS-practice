@@ -259,18 +259,40 @@ class UserSubsectionAttempt(db.Model):
                                       backref='subsection_attempt',
                                       lazy='joined')
 
-    def get_questions_answer(self):
-        user_answers = self.user_answers
-        result = []
+    def aggregate_scores(self) -> dict:
+        answers = [a for a in self.user_answers if a.pronunciation_assessment_json]
+        total_scores = {
+            "accuracy_score": 0,
+            "fluency_score": 0,
+            "completeness_score": 0,
+            "pronunciation_score": 0,
+        }
+        count = len(answers)
 
-        for answer in user_answers:
-            question = answer.question.text
-            result.append(
-                {"question": question,
-                 "answer": answer.transcribed_answer,
-                 "pronunciation": answer.pronunciation_assessment_json})
+        for answer in answers:
+            total_scores["accuracy_score"] += int(answer.accuracy_score)
+            total_scores["fluency_score"] += int(answer.fluency_score)
+            total_scores["completeness_score"] += int(answer.completeness_score)
+            total_scores["pronunciation_score"] += int(answer.pronunciation_score)
 
-        return result
+        # Get the average score
+        for score in total_scores:
+            total_scores[score] //= count
+
+        return total_scores
+
+    # def get_questions_answer(self):
+    #     user_answers = self.user_answers
+    #     result = []
+    #
+    #     for answer in user_answers:
+    #         question = answer.question.text
+    #         result.append(
+    #             {"question": question,
+    #              "answer": answer.transcribed_answer,
+    #              "pronunciation": answer.pronunciation_assessment_json})
+    #
+    #     return result
 
 
 class UserSubsectionAnswer(db.Model):
@@ -289,8 +311,12 @@ class UserSubsectionAnswer(db.Model):
                                backref='user_subsection_answers',
                                lazy='joined')
 
-    transcribed_answer = db.Column(db.Text, nullable=False)
-    pronunciation_assessment_json = db.Column(JSON, nullable=False)
+    transcribed_answer = db.Column(db.Text)
+    pronunciation_assessment_json = db.Column(JSON)
+    accuracy_score = db.Column(db.Float)
+    fluency_score = db.Column(db.Float)
+    completeness_score = db.Column(db.Float)
+    pronunciation_score = db.Column(db.Float)
 
     @staticmethod
     def insert_user_answers(subsection_attempt, questions_set, transcriptions_and_pron_assessments) -> list:
@@ -300,11 +326,29 @@ class UserSubsectionAnswer(db.Model):
             questions_and_answers.append({"question": question.text,
                                           "answer": answer["transcript"]})
 
+            pronunciation_assessment = answer.get("pronunciation")
+
+            if pronunciation_assessment and pronunciation_assessment.get(
+                    "RecognitionStatus") == "Success":
+                scores = pronunciation_assessment.get("NBest")[0] \
+                    if pronunciation_assessment.get("NBest") else {}
+            else:
+                scores = {}
+
+            accuracy_score = scores.get("AccuracyScore")
+            fluency_score = scores.get("FluencyScore")
+            completeness_score = scores.get("CompletenessScore")
+            pronunciation_score = scores.get("PronScore")
+
             user_subsection_answers = UserSubsectionAnswer(
                 subsection_attempt=subsection_attempt,
                 question=question,
                 transcribed_answer=answer["transcript"],
-                pronunciation_assessment_json=answer["pronunciation"]
+                pronunciation_assessment_json=pronunciation_assessment,
+                accuracy_score=accuracy_score,
+                fluency_score=fluency_score,
+                completeness_score=completeness_score,
+                pronunciation_score=pronunciation_score
             )
             db.session.add(user_subsection_answers)
         return questions_and_answers

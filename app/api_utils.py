@@ -25,7 +25,7 @@ def transcribe_audio_file(audio_file: FileStorage) -> str:
 def transcribe_and_assess_pronunciation(audio_file: FileStorage) -> dict:
     transcript = transcribe_audio_file(audio_file).strip()
     if not transcript or transcript == 'Thank you.':
-        result = {"transcript": "", "pronunciation": ""}
+        result = {"transcript": None, "pronunciation": None}
     else:
         pronunciation_data = assess_pronunciation(audio_file, transcript)
         result = {"transcript": transcript, "pronunciation": pronunciation_data}
@@ -202,7 +202,13 @@ def assess_pronunciation(audio_file, transcript: str) -> dict:
         'Expect': '100-continue'
     }
 
-    response = requests.post(url=url, data=get_chunk(audio_file), headers=headers)
-    if response.status_code != 200:
-        abort(500)
-    return response.json()
+    for i in range(1, 6):
+        response = requests.post(url=url, data=get_chunk(audio_file), headers=headers)
+        if response.status_code != 200:
+            print("Azure response code:", response.status_code)
+            print("Azure response text:", response.text)
+            audio_file.seek(0)
+            time.sleep(i)
+        else:
+            response = response.json()
+            return response if response.get("RecognitionStatus") == "Success" else None

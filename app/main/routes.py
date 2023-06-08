@@ -83,9 +83,9 @@ def speaking_practice_post():
         questions_set,
         transcriptions_and_pron_assessments)
 
-    # Evaluate user's speaking ability and insert the result
-    gpt_speaking_result = gpt_evaluate_speaking(questions_and_answers)
-    UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt, gpt_speaking_result)
+    # Evaluate user's speaking ability and insert the result TODO UNCOMMENT
+    # gpt_speaking_result = gpt_evaluate_speaking(questions_and_answers)
+    # UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt, gpt_speaking_result)
 
     # Commit changes to the database
     commit_changes()
@@ -98,9 +98,6 @@ def speaking_practice_post():
 @login_required
 @bp.route('/section/speaking/attempt/<int:user_subsection_attempt_id>/')
 def get_speaking_attempt(user_subsection_attempt_id):
-    return render_template("results_new.html")
-
-
     user_subsection_attempt = UserSubsectionAttempt.query.get(
         user_subsection_attempt_id)
     if not user_subsection_attempt:
@@ -111,11 +108,12 @@ def get_speaking_attempt(user_subsection_attempt_id):
     if current_user != user_progress.user:
         abort(403)
 
-    speaking_result = user_subsection_attempt.speaking_result
-    questions_and_answers = user_subsection_attempt.get_questions_answer()
-    return render_template('section_results.html',
-                           result=speaking_result,
-                           questions_and_answers=questions_and_answers)
+    # speaking_result = user_subsection_attempt.speaking_result
+    answers = user_subsection_attempt.user_answers
+    scores = user_subsection_attempt.aggregate_scores()
+    return render_template('results_new.html',
+                           scores=scores,
+                           answers=answers)
 
 
 @login_required

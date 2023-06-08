@@ -82,17 +82,20 @@ nav .navbar-brand .green
     100% { opacity: 1.0; }
 }
 
-.error::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: -2px;
-    height: 2px;
-    width: 100%;
-    background-color: red;
+
+.red-background {
+  background-color: red;
+  color: white; /* Выберите цвет текста, который хорошо будет виден на красном фоне */
 }
-.error {
-    position: relative;
+
+.gray-background {
+  background-color: gray;
+  color: white; /* Выберите цвет текста, который хорошо будет виден на красном фоне */
+}
+
+.yellow-background {
+  background-color: yellow;
+  color: black; /* Выберите цвет текста, который хорошо будет виден на красном фоне */
 }
 
 .card-metric {
@@ -173,3 +176,14 @@ nav .navbar-brand .green
 .answer {
   margin-top: 0;
 }
+
+
+.sticky-footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    background-color: #f8f9fa; /* Цвет фона элемента */
+    padding: 10px; /* Отступы вокруг элемента */
+  }

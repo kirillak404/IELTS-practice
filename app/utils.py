@@ -107,3 +107,29 @@ def convert_audio(file_storage):
     output_blob.seek(0)
 
     return output_blob
+
+
+def convert_answer_object_to_html(answer):
+    pronunciation_assessment_json = answer.pronunciation_assessment_json
+    if not pronunciation_assessment_json:
+        return "No answer"
+
+    words = pronunciation_assessment_json["NBest"][0]["Words"]
+
+    word_list = []
+    for word in words:
+        word_text = word["Word"]
+        error_type = word["ErrorType"]
+
+        if word["ErrorType"] == "Mispronunciation":
+            word = f"""<span class="error red-background" data-error-type="{error_type}" data-accuracy-score="{int(word["AccuracyScore"])}" data-error-long-description="The word was mispronounced">{word_text}</span>"""
+        elif word["ErrorType"] == "Omission":
+            word = f"""<span class="error gray-background" data-error-type="{error_type}" data-error-long-description="This word was omitted">{word_text}</span>"""
+        elif word["ErrorType"] == "Insertion":
+            word = f"""<span class="error yellow-background" data-error-type="{error_type}" data-error-long-description="This word is probably redundant">{word_text}</span>"""
+        else:
+            word = word_text
+
+        word_list.append(word)
+
+    return " ".join(word_list)

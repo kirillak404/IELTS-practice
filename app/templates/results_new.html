@@ -29,7 +29,7 @@ text-center
             </th>
             <th class="w-25 fs-5 criteria-heading">
                Pronunciation Score
-               <a href="#" data-toggle="tooltip" data-placement="top" title="Overall score indicating the pronunciation quality of the given speech. This is aggregated from AccuracyScore, FluencyScore, and CompletenessScore with weight."><i class="bi bi-question-circle"></i></a>
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Overall score indicating the pronunciation quality of the given speech."><i class="bi bi-question-circle"></i></a>
             </th>
          </tr>
       </thead>
@@ -50,13 +50,26 @@ text-center
             {% for answer in answers %}
             <div class="dialogue">
                <p class="question">{{ answer.question.text }}</p>
-               <p class="answer">{{ answer.transcribed_answer if answer.transcribed_answer else "No answer given..." }}</p>
+               <p class="answer">{{ convert_answer_object_to_html(answer)|safe }}</p>
             </div>
             {% endfor %}
          </div>
       </div>
    </div>
 </div>
+
+<div class="toast">
+    <div class="toast-header">
+        <strong class="mr-auto"></strong> <!-- data-error-type will be inserted here -->
+    </div>
+    <div class="toast-body">
+        <!-- Error explanation, wrong and corrected text will be inserted here -->
+    </div>
+</div>
+</div>
+
+
+
 <!-- Инициализация tooltip -->
 <script>
    $(function () {
@@ -82,6 +95,35 @@ text-center
      // Изменение цвета оценок при загрузке страницы
      setColor();
    });
+</script>
+
+<script>
+$(document).ready(function() {
+    $('.error').on('mouseenter', function(e) {
+        $('.toast').stop();
+        var top = e.pageY;
+        var left = e.pageX;
+
+        $('.toast').css({top: (top - $('.toast').height() - 10) + 'px', left: (left + 10) + 'px'});
+
+        var errorType = $(this).data('error-type').charAt(0).toUpperCase() + $(this).data('error-type').slice(1);
+        $('.toast-header strong').html(errorType);
+
+        var accuracy = '';
+        if ($(this).data('accuracy-score')) {
+            accuracy = '<b>Score: </b>' + $(this).data('accuracy-score') + '<br>';
+        }
+
+        var explanation = '<b>Description: </b>' + $(this).data('error-long-description');
+        $('.toast-body').html(accuracy + ' ' + ' ' + explanation);
+
+        $('.toast').fadeIn(250);
+    });
+
+    $('.error').on('mouseleave', function() {
+        $('.toast').fadeOut(250);
+    });
+});
 </script>
 
 

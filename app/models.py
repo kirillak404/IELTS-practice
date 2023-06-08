@@ -257,7 +257,8 @@ class UserSubsectionAttempt(db.Model):
     speaking_result = db.relationship('UserSpeakingAttemptResult',
                                       uselist=False,
                                       backref='subsection_attempt',
-                                      lazy='joined')
+                                      lazy='joined',
+                                      cascade='all, delete')
 
     def aggregate_scores(self) -> dict:
         answers = [a for a in self.user_answers if a.pronunciation_assessment_json]
@@ -281,19 +282,6 @@ class UserSubsectionAttempt(db.Model):
 
         return total_scores
 
-    # def get_questions_answer(self):
-    #     user_answers = self.user_answers
-    #     result = []
-    #
-    #     for answer in user_answers:
-    #         question = answer.question.text
-    #         result.append(
-    #             {"question": question,
-    #              "answer": answer.transcribed_answer,
-    #              "pronunciation": answer.pronunciation_assessment_json})
-    #
-    #     return result
-
 
 class UserSubsectionAnswer(db.Model):
     __tablename__ = 'user_subsection_answers'
@@ -309,7 +297,8 @@ class UserSubsectionAnswer(db.Model):
                             nullable=False)
     question = db.relationship('Question',
                                backref='user_subsection_answers',
-                               lazy='joined')
+                               lazy='joined',
+                               cascade='all, delete')
 
     transcribed_answer = db.Column(db.Text)
     pronunciation_assessment_json = db.Column(JSON)

@@ -7,6 +7,7 @@ from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
     get_audio_files, commit_changes
+from app import db
 
 
 @bp.route('/')
@@ -122,9 +123,14 @@ def get_speaking_result():
     pass
 
 
-@bp.route('/upload', methods=["POST"])
-def upload():
-    audio_file = request.files['file']
-    transcript = transcribe_audio_file(audio_file)
-    pron = assess_pronunciation(audio_file, transcript)
-    return redirect(url_for('main.index'))
+@bp.route('/reset-section-progress', methods=["POST"])
+def reset_section_progress():
+    # Retrieve the 'speaking' section
+    section = Section.get_by_name("speaking")
+    # Get the current user's progress in this section
+    user_progress = current_user.get_section_progress(section.id)
+    if user_progress:
+        db.session.delete(user_progress)
+        db.session.commit()
+
+    return redirect(url_for('main.speaking_practice_get'))

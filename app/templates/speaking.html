@@ -58,4 +58,11 @@ text-center
 </div>
 <script>const practice = {{ practice|tojson|safe }};</script>
 <script src="{{ url_for('static', filename='recording.js') }}"></script>
+
+<div class="sticky-footer">
+  <form action="/reset-section-progress" method="POST">
+    <button type="submit" class="btn btn-outline-danger">Delete Progress</button>
+  </form>
+</div>
+
 {% endblock %}

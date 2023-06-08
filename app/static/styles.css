@@ -149,15 +149,27 @@ nav .navbar-brand .green
 }
 
 /* Speaking Attempt Results */
+.container_1000px {
+  margin-top: 50px;
+  max-width: 1000px;
+}
 .score {
-font-size: 1.5em;
+  font-size: 28px;
+  font-weight: bold;
+  color: red;
 }
-.good {
-color: green;
+.criteria-heading {
+  font-size: 20px;
+  font-weight: normal;
 }
-.average {
-color: orange;
+.dialogue {
+  margin-bottom: 1rem;
 }
-.bad {
-color: red;
+.question {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+.answer {
+  margin-top: 0;
 }

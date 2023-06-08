@@ -11,58 +11,80 @@ text-center
 {% block content %}
 
 
-<div class="card mb-3">
-   <div class="card-header">
-      <h2>Fluency and Coherence</h2>
-   </div>
-   <div class="card-body">
-      <p><strong>Student's Speech Example:</strong> "Err...I live in...umm...Moscow. I...uh...I really like it..."</p>
-      <p><strong>Feedback:</strong> You frequently used fillers and pauses that disrupt the flow of your speech. Try to think and formulate your answers more quickly.</p>
-      <p><strong>Advice:</strong> Practice responses to typical Part 1 questions. This will help you to speak more smoothly and confidently.</p>
-      <p class="score bad"><strong>Score:</strong> 5/9</p>
+<div class="container container_1000px">
+   <table class="table table-bordered text-center">
+      <thead class="table-heading">
+         <tr>
+            <th class="w-25 fs-5 criteria-heading">
+               Accuracy Score
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 1"><i class="bi bi-question-circle"></i></a>
+            </th>
+            <th class="w-25 fs-5 criteria-heading">
+               Fluency Score
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 2"><i class="bi bi-question-circle"></i></a>
+            </th>
+            <th class="w-25 fs-5 criteria-heading">
+               Completeness Score
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 3"><i class="bi bi-question-circle"></i></a>
+            </th>
+            <th class="w-25 fs-5 criteria-heading">
+               Pronunciation Score
+               <a href="#" data-toggle="tooltip" data-placement="top" title="Описание критерия 4"><i class="bi bi-question-circle"></i></a>
+            </th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td class="fs-4 score" data-score="76">76</td>
+            <td class="fs-4 score" data-score="83">83</td>
+            <td class="fs-4 score" data-score="84">84</td>
+            <td class="fs-4 score" data-score="80">80</td>
+         </tr>
+      </tbody>
+   </table>
+</div>
+<div class="container d-flex justify-content-center container_1000px">
+   <div class="card text-left">
+      <div class="card-body">
+         <div class="card-text">
+            <div class="dialogue">
+               <p class="question">What is your full name?</p>
+               <p class="answer">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit, vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus, ac blandit elit tincidunt id.</p>
+            </div>
+            <div class="dialogue">
+               <p class="question">Where are you from?</p>
+               <p class="answer">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla quam velit, vulputate eu pharetra nec, mattis ac neque. Duis vulputate commodo lectus, ac blandit elit tincidunt id.</p>
+            </div>
+         </div>
+      </div>
    </div>
 </div>
-<div class="card mb-3">
-   <div class="card-header">
-      <h2>Lexical Resource</h2>
-   </div>
-   <div class="card-body">
-      <p><strong>Student's Speech Example:</strong> "I like my city very much. It's very nice. I like going to the park. It's very nice."</p>
-      <p><strong>Feedback:</strong> You repetitively use the word "nice", making your speech monotonous. Try to use a more diverse vocabulary.</p>
-      <p><strong>Advice:</strong> Try using synonyms or more complex expressions to describe your thoughts. For example, instead of "nice", you could use words like "pleasant", "relaxing", "enjoyable".</p>
-      <p class="score average"><strong>Score:</strong> 6/9</p>
-   </div>
-</div>
-<div class="card mb-3">
-   <div class="card-header">
-      <h2>Grammatical Range and Accuracy</h2>
-   </div>
-   <div class="card-body">
-      <p><strong>Student's Speech Example:</strong> "I have go to the cinema yesterday."</p>
-      <p><strong>Feedback:</strong> There are several mistakes in using tense forms. It should be: "I went to the cinema yesterday".</p>
-      <p><strong>Advice:</strong> Regularly practice using different grammatical structures and tense forms.</p>
-      <p class="score average"><strong>Score:</strong> 6/9</p>
-   </div>
-</div>
-<div class="card mb-3">
-   <div class="card-header">
-      <h2>Pronunciation</h2>
-   </div>
-   <div class="card-body">
-      <p><strong>Student's Speech Example:</strong> "I live in 'Mos-cow'" (pronounced as 'mos-cow' instead of 'mosco').</p>
-      <p><strong>Feedback:</strong> There are some mistakes in pronouncing city names. In English, the city of Moscow is pronounced as 'Mosco' ('mosco').</p>
-      <p><strong>Advice:</strong> Constant practice and listening to native speakers will help improve your pronunciation.</p>
-      <p class="score good"><strong>Score:</strong> 7/9</p>
-      <h5 class="mt-4">Transcript:</h5>
-      <pre class="p-3 bg-light">
-Examiner: Can you tell me where you are from?
-Student: I live in Moscow.
+<!-- Инициализация tooltip -->
+<script>
+   $(function () {
+     $('[data-toggle="tooltip"]').tooltip();
 
-Examiner: How long have you lived in Moscow?
-Student: I have been living in Moscow for all my life.
-        </pre>
-   </div>
-</div>
+     // Функция для изменения цвета оценки
+     function setColor() {
+       $('.score').each(function() {
+         var score = parseInt($(this).data('score'));
+
+         if (score >= 90) {
+           $(this).css('color', 'green'); // Отлично (зеленый цвет)
+         } else if (score >= 80) {
+           $(this).css('color', 'limegreen'); // Хорошо (светло-зеленый цвет)
+         } else if (score >= 70) {
+           $(this).css('color', 'orange'); // Средне (оранжевый цвет)
+         } else {
+           $(this).css('color', 'red'); // Ниже среднего (красный цвет)
+         }
+       });
+     }
+
+     // Изменение цвета оценок при загрузке страницы
+     setColor();
+   });
+</script>
 
 
 {% endblock %}

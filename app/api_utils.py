@@ -27,15 +27,17 @@ def transcribe_and_assess_pronunciation(audio_file: FileStorage) -> dict:
     if not transcript or transcript == 'Thank you.':
         result = {"transcript": None, "pronunciation": None}
     else:
-        pronunciation_data = assess_pronunciation(audio_file, transcript)
-        result = {"transcript": transcript, "pronunciation": pronunciation_data}
+        pronunciation_data = azure_assess_pronunciation(audio_file, transcript)
+        result = {"transcript": transcript,
+                  "pronunciation": pronunciation_data}
     return result
 
 
 @measure_time
 def batch_transcribe_and_assess_pronunciation(audio_files: list) -> list:
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        result = list(executor.map(transcribe_and_assess_pronunciation, audio_files))
+        result = list(
+            executor.map(transcribe_and_assess_pronunciation, audio_files))
     return result
 
 
@@ -43,10 +45,10 @@ def batch_transcribe_and_assess_pronunciation(audio_files: list) -> list:
 def check_grammar(text: str) -> str:
     grammar_check = check_grammar_via_ginger(text)
     corrections = grammar_check["data"]["corrections"]
-    corrections = sorted(corrections, key=lambda x: x["startIndex"], reverse=True)
+    corrections = sorted(corrections, key=lambda x: x["startIndex"],
+                         reverse=True)
     for correction in corrections:
         if correction.get("correctionText"):
-
             # get data about mistake
             data_error_type = correction["type"]
             data_error_short_description = correction["shortDescription"]
@@ -90,7 +92,6 @@ def check_grammar_via_ginger(text: str) -> dict:
 def get_gpt_json_completion(messages: list,
                             model="gpt-3.5-turbo",
                             temperature=0) -> dict:
-    gpt_response_dict = None
     for _ in range(10):
         try:
             completion = openai.ChatCompletion.create(
@@ -98,8 +99,8 @@ def get_gpt_json_completion(messages: list,
                 messages=messages,
                 temperature=temperature,
             )
-            gpt_response_json_string = completion.choices[0].message[
-                "content"]
+            print(completion["usage"])
+            gpt_response_json_string = completion.choices[0].message["content"]
             gpt_response_dict = json.loads(gpt_response_json_string)
         except (openai.error.APIError, openai.error.RateLimitError) as e:
             print(e.error['message'])
@@ -108,15 +109,11 @@ def get_gpt_json_completion(messages: list,
             print(gpt_response_json_string)
             print("JSON decoding error, message::", str(e))
         else:
-            with open('gpt_last_response.json', "w") as file:
-                file.write(gpt_response_json_string)
-            break
-    return gpt_response_dict
+            return gpt_response_dict
 
 
 @measure_time
 def gpt_evaluate_speaking(questions_and_answers: list) -> dict:
-
     # formatting questions and answer
     formatted_questions_and_answers = {}
     for number, qa in enumerate(questions_and_answers, start=1):
@@ -176,7 +173,7 @@ Your response should be a single JSON object following this format:
 
 
 @measure_time
-def assess_pronunciation(audio_file, transcript: str) -> dict:
+def azure_assess_pronunciation(audio_file, transcript: str) -> dict:
     audio_file = convert_audio(audio_file)
     language = "en-US"
     region = "southeastasia"
@@ -189,7 +186,8 @@ def assess_pronunciation(audio_file, transcript: str) -> dict:
         "Granularity": "Word",
         "EnableMiscue": "True"
     })
-    pron_assessment_params = base64.b64encode(pron_assessment_params.encode('utf-8')).decode("utf-8")
+    pron_assessment_params = base64.b64encode(
+        pron_assessment_params.encode('utf-8')).decode("utf-8")
 
     url = f"https://{region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={language}&usePipelineVersion=0"
     headers = {
@@ -203,11 +201,80 @@ def assess_pronunciation(audio_file, transcript: str) -> dict:
     }
 
     for i in range(1, 6):
-        response = requests.post(url=url, data=get_chunk(audio_file), headers=headers)
+        response = requests.post(url=url, data=get_chunk(audio_file),
+                                 headers=headers)
         if response.status_code != 200:
             print("Azure response:", response.status_code, response.text)
             audio_file.seek(0)
             time.sleep(i)
         else:
             response = response.json()
-            return response if response.get("RecognitionStatus") == "Success" else None
+            return response if response.get(
+                "RecognitionStatus") == "Success" else None
+
+
+# speaking evaluating v2.0
+
+@measure_time
+def gpt_evaluate_speaking_fluency(questions_and_answers: list) -> dict:
+    # formatting questions and answer
+    # formatted_questions_and_answers = {}
+    # for number, qa in enumerate(questions_and_answers, start=1):
+    #     formatted_questions_and_answers[f"Q{number}"] = qa["question"]
+    #     formatted_questions_and_answers[f"A{number}"] = qa["answer"]
+
+    formatted_questions_and_answers = '''\
+Can you tell me your full name, please?
+Hello, my name is Louisa.
+
+What should I call you?
+You can call me Lisa.
+
+Can you tell me where you're from?
+I'm from Russia.
+
+Do you work or study?
+I'm working now.
+
+What do you do at your job?
+I'm a convent.
+
+Let's talk about your hometown or city. What do you like most about it?
+I'm from a little town on the surf of Russia and I like it so much because it's clean and quiet.
+
+How have the places you've lived influenced you?
+I don't know, maybe.
+'''
+
+    system = "You act as a professional IELTS examiner."
+    json_example = """{"score":7,"feedback":"The candidate was able to maintain fluency throughout the conversation and used a range of cohesive devices effectively.","areas_for_improvement":{"errors":["Instead of 'incorrect student response', it should be 'corrected version'."],"recommendations":["In place of 'original student phrase', it could be 'suggested improvement'."]}}"""
+    prompt = f"""\
+Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Fluency and Coherence". You need to generate a JSON response with no additional text.
+
+Your response should include:
+
+1. A 'score' from 0 to 9 reflecting the student's performance.
+2. A 'feedback' string that provides a general overview of the student's performance.
+3. 'Areas for improvement' that include:
+    - 'errors': specific phrases from the student's responses that were incorrect, provided as a list of strings. Each string should be in the format: "Instead of 'incorrect student response', it should be 'corrected version'."
+    - 'recommendations': specific phrases that the student could improve, provided as a list of strings. Each string should be in the format: "In place of 'original student phrase', it could be 'suggested improvement'."
+
+Input:
+'''
+{formatted_questions_and_answers}
+'''
+
+Your response should look like this:
+'''
+{json_example}'''
+"""
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": prompt}
+    ]
+
+    result = get_gpt_json_completion(messages)
+    return result
+
+
+print(gpt_evaluate_speaking_fluency(0))

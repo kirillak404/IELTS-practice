@@ -270,6 +270,8 @@ class UserSubsectionAttempt(db.Model):
             "pronunciation_score": 0,
         }
         count = len(answers)
+        if not count:
+            return total_scores
 
         for answer in answers:
             total_scores["accuracy_score"] += int(answer.accuracy_score)

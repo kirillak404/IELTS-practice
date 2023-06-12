@@ -112,7 +112,7 @@ def convert_audio(file_storage):
 def convert_answer_object_to_html(answer):
     pronunciation_assessment_json = answer.pronunciation_assessment_json
     if not pronunciation_assessment_json:
-        return "No answer"
+        return "You didn't give an answer ❌"
 
     words = pronunciation_assessment_json["NBest"][0]["Words"]
 

@@ -1,222 +1,221 @@
 <!DOCTYPE html>
 <html lang="ru">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>IELTS Speaking Part 1 Results</title>
+      <!-- Bootstrap CSS -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+      <!-- Font Awesome for Icons -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+      <style>
+         .circle-score {
+         width: 40px;
+         height: 40px;
+         font-size: 1.15rem;
+         }
+         :root {
+         --rating-size: 3rem;
+         --bar-size: 0.5rem;
+         --background-color: #fff;
+         --rating-color-default: #2980b9;
+         --rating-color-background: #A1A2A0;
+         --rating-color-good: #27ae60;
+         --rating-color-meh: #f1c40f;
+         --rating-color-bad: #e74c3c;
+         }
+         .rating {
+         position: relative;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         border-radius: 100%;
+         overflow: hidden;
+         background: var(--rating-color-default);
+         color: var(--rating-color-default);
+         width: var(--rating-size);
+         height: var(--rating-size);
+         }
+         .rating span {
+         position: relative;
+         display: flex;
+         font-weight: bold;
+         font-size: 1.2rem;
+         z-index: 2;
+         }
+         .rating::after {
+         content: "";
+         position: absolute;
+         inset: var(--bar-size);
+         background: var(--background-color);
+         border-radius: inherit;
+         z-index: 1;
+         }
+         .rating::before {
+         content: "";
+         position: absolute;
+         inset: var(--bar-size);
+         border-radius: inherit;
+         box-shadow: 0 0 0 1rem var(--rating-color-background);
+         z-index: -1;
+         }
+         .rating.good {
+         background: var(--rating-color-good);
+         color: var(--rating-color-good);
+         }
+         .rating.meh {
+         background: var(--rating-color-meh);
+         color: var(--rating-color-meh);
+         }
+         .rating.bad {
+         background: var(--rating-color-bad);
+         color: var(--rating-color-bad);
+         }
+         .header-content {
+         margin-left: 10px;
+         }
+         .score-text {
+         display: block;
+         font-size: 0.8em;
+         }
+      </style>
+   </head>
+   <body>
+      <div class="container my-4">
+         <h1 class="text-center">IELTS Speaking Part 1 Results</h1>
+         <hr>
+         <div class="row">
+            <!-- Fluency and Coherence -->
+            <div class="col-lg-6 mb-4">
+               <div class="card">
+                  <h5 class="card-header d-flex align-items-center">
+                     <div class="rating">9</div>
+                     <div class="header-content">
+                        <span class="header-title">Fluency and Coherence</span>
+                        <span class="score-text"></span>
+                     </div>
+                  </h5>
+                  <div class="card-body">
+                     <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+                     <strong class="mt-4">Areas for Improvement:</strong>
+                     <hr/>
+                     <ul class="list-unstyled">
+                        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
+                        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+            <!-- Fluency and Coherence -->
+            <div class="col-lg-6 mb-4">
+               <div class="card">
+                  <h5 class="card-header d-flex align-items-center">
+                     <div class="rating">7</div>
+                     <div class="header-content">
+                        <span class="header-title">Fluency and Coherence</span>
+                        <span class="score-text"></span>
+                     </div>
+                  </h5>
+                  <div class="card-body">
+                     <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+                     <strong class="mt-4">Areas for Improvement:</strong>
+                     <hr/>
+                     <ul class="list-unstyled">
+                        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
+                        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+            <!-- Fluency and Coherence -->
+            <div class="col-lg-6 mb-4">
+               <div class="card">
+                  <h5 class="card-header d-flex align-items-center">
+                     <div class="rating">3</div>
+                     <div class="header-content">
+                        <span class="header-title">Fluency and Coherence</span>
+                        <span class="score-text"></span>
+                     </div>
+                  </h5>
+                  <div class="card-body">
+                     <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+                     <strong class="mt-4">Areas for Improvement:</strong>
+                     <hr/>
+                     <ul class="list-unstyled">
+                        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
+                        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+            <!-- Fluency and Coherence -->
+            <div class="col-lg-6 mb-4">
+               <div class="card">
+                  <h5 class="card-header d-flex align-items-center">
+                     <div class="rating">8</div>
+                     <div class="header-content">
+                        <span class="header-title">Fluency and Coherence</span>
+                        <span class="score-text"></span>
+                     </div>
+                  </h5>
+                  <div class="card-body">
+                     <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+                     <strong class="mt-4">Areas for Improvement:</strong>
+                     <hr/>
+                     <ul class="list-unstyled">
+                        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
+                        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+                     </ul>
+                  </div>
+               </div>
+            </div>
+            <!-- Bootstrap JS and jQuery -->
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+            <script type="text/javascript">
+               // Find all rating items
+               const ratings = document.querySelectorAll(".rating");
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IELTS Speaking Part 1 Results</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <style>
-.circle-score {
-  width: 40px;
-  height: 40px;
-  font-size: 1.15rem;
-}
-  </style>  
-</head>
+               // Iterate over all rating items
+               ratings.forEach((rating, index) => {
+                 // Get content and get score as an int
+                 const ratingContent = rating.textContent;
+                 const ratingScore = parseInt(ratingContent, 10);
 
-<body>
-    <div class="container my-4">
-    <h1 class="text-center">IELTS Speaking Part 1 Results</h1>
-    <hr>
-    <div class="row">
+                 // Define if the score is good, meh or bad according to its value
+                 const scoreClass =
+                   ratingScore < 6 ? "bad" : ratingScore < 8 ? "meh" : "good";
+
+                 // Add score class to the rating
+                 rating.classList.add(scoreClass);
+
+                 // After adding the class, get its color
+                 const ratingColor = window.getComputedStyle(rating).backgroundColor;
+
+                 // Define the background gradient according to the score and color
+                 const gradientPercentage = (ratingScore / 9) * 100; // Calculate the percentage based on 9 scale score
+                 const gradient = `background: conic-gradient(${ratingColor} ${gradientPercentage}%, var(--rating-color-background) ${gradientPercentage}% 100%)`;
+
+                 // Set the gradient as the rating background
+                 rating.setAttribute("style", gradient);
+
+                 // Find the corresponding score text element
+                 const scoreElement = rating.nextElementSibling.querySelector('.score-text');
+
+                 // Update the score text
+                 scoreElement.textContent = `Your score is ${ratingScore}/9`;
+
+                 // Update the color of the score text
+                 scoreElement.style.color = ratingColor;
+
+                 // Wrap the content in a tag to show it above the pseudo element that masks the bar
+                 rating.innerHTML = `<span>${ratingScore}</span>`;
+               });
 
 
-<!-- Fluency and Coherence -->
-<div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center">
-      <div class="circle-score bg-success text-white text-center rounded-circle d-flex align-items-center justify-content-center mr-4" style="margin-right: 8px;">
-        <span>7/9</span>
+            </script>
+         </div>
       </div>
-      <span>Fluency and Coherence</span>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-
-<div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center">
-      <div class="circle-score bg-warning text-dark text-center rounded-circle d-flex align-items-center justify-content-center mr-4" style="margin-right: 8px;">
-        <span>6/9</span>
-      </div>
-      <span>Lexical Resource</span>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div> 
-
-
-<div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center">
-      <div class="circle-score bg-success text-white text-center rounded-circle d-flex align-items-center justify-content-center mr-4" style="margin-right: 8px;">
-        <span>7/9</span>
-      </div>
-      <span>Grammatical range and accuracy</span>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div> 
-
-<div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center">
-      <div class="circle-score bg-danger text-white text-center rounded-circle d-flex align-items-center justify-content-center mr-4" style="margin-right: 8px;">
-        <span>5/9</span>
-      </div>
-      <span>Pronunciation</span>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- <div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center justify-content-between">
-      <span>Fluency and Coherence</span>
-      <div class="d-flex align-items-center">
-        <span style="margin-right: 8px;">Score</span>
-        <div class="circle-score bg-success text-white text-center rounded-circle d-flex align-items-center justify-content-center">
-          <span>7/9</span>
-        </div>
-      </div>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test 👍</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div> 
-
-
-<div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center justify-content-between">
-      <span>Fluency and Coherence</span>
-      <div class="d-flex align-items-center">
-        <span style="margin-right: 8px;">Score</span>
-        <div class="circle-score bg-success text-white text-center rounded-circle d-flex align-items-center justify-content-center">
-          <span>7/9</span>
-        </div>
-      </div>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test 👍</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div> 
-
-
-<div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center justify-content-between">
-      <span>Fluency and Coherence</span>
-      <div class="d-flex align-items-center">
-        <span style="margin-right: 8px;">Score</span>
-        <div class="circle-score bg-success text-white text-center rounded-circle d-flex align-items-center justify-content-center">
-          <span>7/9</span>
-        </div>
-      </div>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test 👍</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div> 
-
-
-<div class="col-lg-6 mb-4">
-  <div class="card">
-    <h5 class="card-header d-flex align-items-center justify-content-between">
-      <span>Fluency and Coherence</span>
-      <div class="d-flex align-items-center">
-        <span style="margin-right: 8px;">Score</span>
-        <div class="circle-score bg-success text-white text-center rounded-circle d-flex align-items-center justify-content-center">
-          <span>7/9</span>
-        </div>
-      </div>
-    </h5>
-    <div class="card-body">
-      <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test 👍</p>
-      <strong class="mt-4">Areas for Improvement:</strong>
-      <hr/>
-      <ul class="list-unstyled">
-        <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-        <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
-      </ul>
-    </div>
-  </div>
-</div>  -->
-
-
-
-
-
-  <!-- Bootstrap JS and jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-
+   </body>
 </html>

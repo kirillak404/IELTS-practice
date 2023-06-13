@@ -277,4 +277,3 @@ Your response should look like this:
     return result
 
 
-print(gpt_evaluate_speaking_fluency(0))

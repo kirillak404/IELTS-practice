@@ -137,4 +137,4 @@ def reset_section_progress():
 
 @bp.route('/test')
 def test_route():
-    return render_template('test_page.html')
+    return render_template('results_super.html')

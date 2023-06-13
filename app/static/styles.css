@@ -207,3 +207,85 @@ nav .navbar-brand .green
     color: #fff;
     font-size: 48px;
 }
+
+
+/* New subsection results page (June 13) */
+.circle-score {
+width: 40px;
+height: 40px;
+font-size: 1.15rem;
+}
+
+:root {
+--rating-size: 3rem;
+--bar-size: 0.5rem;
+--background-color: #fff;
+--rating-color-default: #2980b9;
+--rating-color-background: #A1A2A0;
+--rating-color-good: #27ae60;
+--rating-color-meh: #f1c40f;
+--rating-color-bad: #e74c3c;
+}
+
+.rating {
+position: relative;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 100%;
+overflow: hidden;
+background: var(--rating-color-default);
+color: var(--rating-color-default);
+width: var(--rating-size);
+height: var(--rating-size);
+}
+
+.rating span {
+position: relative;
+display: flex;
+font-weight: bold;
+font-size: 1.2rem;
+z-index: 2;
+}
+
+.rating::after {
+content: "";
+position: absolute;
+inset: var(--bar-size);
+background: var(--background-color);
+border-radius: inherit;
+z-index: 1;
+}
+
+.rating::before {
+content: "";
+position: absolute;
+inset: var(--bar-size);
+border-radius: inherit;
+box-shadow: 0 0 0 1rem var(--rating-color-background);
+z-index: -1;
+}
+
+.rating.good {
+background: var(--rating-color-good);
+color: var(--rating-color-good);
+}
+
+.rating.meh {
+background: var(--rating-color-meh);
+color: var(--rating-color-meh);
+}
+
+.rating.bad {
+background: var(--rating-color-bad);
+color: var(--rating-color-bad);
+}
+
+.header-content-scores {
+    margin-left: 10px;
+}
+
+.score-text {
+display: block;
+font-size: 0.8em;
+}

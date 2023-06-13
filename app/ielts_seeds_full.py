@@ -37,14 +37,24 @@ QUESTIONS = [
      "questions": [
          "Can you tell me your full name, please?",
          "Can you tell me where you're from?",
-         "Can you describe your hometown a bit?"
+         "Can you describe your hometown a bit?",
+         "What do you like most about your hometown?",
+         "Do you work or are you a student?",
+         "What subject are you studying?",
+         "Why did you choose this subject?",
+         "Do you enjoy your work/studies? Why or why not?",
+         "What do you like to do in your free time?"
      ]},
 
     {"subsection": "Introduction and Interview",
      "questions": [
          "Can you tell me your full name, please?",
          "What should I call you?",
-         "Can you tell me where you're from?"
+         "Can you tell me where you're from?",
+         "Do you work or study?",
+         "What do you do at your job?",
+         "Let's talk about your hometown or city. What do you like most about it?",
+         "How have the places you've lived influenced you?"
      ]}
 ]
 

@@ -1,11 +1,11 @@
 from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 
-from app.api_utils import batch_transcribe_and_assess_pronunciation
+from app.api_utils import batch_transcribe_and_assess_pronunciation, evaluate_speaking_new
 from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
-    get_audio_files, commit_changes
+    get_audio_files, commit_changes, get_misspelled_words
 from app import db
 
 
@@ -59,8 +59,6 @@ def speaking_practice_post():
     # Transcribe audio files and access pronunciation
     transcriptions_and_pron_assessments = batch_transcribe_and_assess_pronunciation(audio_files)
 
-    # return render_template(url_for('main.speaking_practice_get'))
-
     # Get the 'speaking' section
     section = Section.get_by_name("speaking")
     # Get the current user's progress in this section
@@ -84,8 +82,10 @@ def speaking_practice_post():
         transcriptions_and_pron_assessments)
 
     # Evaluate user's speaking ability and insert the result TODO UNCOMMENT
-    # gpt_speaking_result = gpt_evaluate_speaking(questions_and_answers)
-    # UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt, gpt_speaking_result)
+    pron_score = subsection_attempt.aggregate_scores()["pronunciation_score"]
+    misspelled_words = get_misspelled_words(transcriptions_and_pron_assessments)
+    gpt_speaking_result = evaluate_speaking_new(questions_and_answers, pron_score, misspelled_words)
+    UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt, gpt_speaking_result)
 
     # Commit changes to the database
     commit_changes()
@@ -108,12 +108,15 @@ def get_speaking_attempt(user_subsection_attempt_id):
     if current_user != user_progress.user:
         abort(403)
 
-    # speaking_result = user_subsection_attempt.speaking_result
+    # Your results
+    results = user_subsection_attempt.speaking_result
+
+    # Advanced Pronunciation Analysis
     answers = user_subsection_attempt.user_answers
-    scores = user_subsection_attempt.aggregate_scores()
-    return render_template('results_new.html',
-                           scores=scores,
-                           answers=answers)
+    pron_scores = user_subsection_attempt.aggregate_scores()
+    print(pron_scores)
+    return render_template('results_super.html', results=results,
+                           answers=answers, pron_scores=pron_scores)
 
 
 @login_required

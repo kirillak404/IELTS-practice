@@ -1,25 +1,29 @@
 import base64
-import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import time
 
 import openai
 import requests
-from flask import abort
 from werkzeug.datastructures import FileStorage
 
-from app.utils import measure_time, get_chunk, convert_audio
+from app.utils import measure_time, get_chunk, convert_audio, convert_dialogue_to_string
 
 
 @measure_time
 def transcribe_audio_file(audio_file: FileStorage) -> str:
     audio_file.name = "audio.webm"
-    transcript = openai.Audio.transcribe(model="whisper-1",
-                                         file=audio_file,
-                                         language="en")
-    audio_file.seek(0)
-    return transcript["text"]
+    try:
+        transcript = openai.Audio.transcribe(model="whisper-1",
+                                             file=audio_file,
+                                             language="en")
+        audio_file.seek(0)
+    except Exception as e:
+        print(e)
+        return ""
+    else:
+        return transcript["text"]
 
 
 def transcribe_and_assess_pronunciation(audio_file: FileStorage) -> dict:
@@ -35,7 +39,7 @@ def transcribe_and_assess_pronunciation(audio_file: FileStorage) -> dict:
 
 @measure_time
 def batch_transcribe_and_assess_pronunciation(audio_files: list) -> list:
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor() as executor:
         result = list(
             executor.map(transcribe_and_assess_pronunciation, audio_files))
     return result
@@ -215,38 +219,19 @@ def azure_assess_pronunciation(audio_file, transcript: str) -> dict:
 
 # speaking evaluating v2.0
 
-@measure_time
-def gpt_evaluate_speaking_fluency(questions_and_answers: list) -> dict:
-    # formatting questions and answer
-    # formatted_questions_and_answers = {}
-    # for number, qa in enumerate(questions_and_answers, start=1):
-    #     formatted_questions_and_answers[f"Q{number}"] = qa["question"]
-    #     formatted_questions_and_answers[f"A{number}"] = qa["answer"]
 
-    formatted_questions_and_answers = '''\
-Can you tell me your full name, please?
-Hello, my name is Louisa.
-
-What should I call you?
-You can call me Lisa.
-
-Can you tell me where you're from?
-I'm from Russia.
-
-Do you work or study?
-I'm working now.
-
-What do you do at your job?
-I'm a convent.
-
-Let's talk about your hometown or city. What do you like most about it?
-I'm from a little town on the surf of Russia and I like it so much because it's clean and quiet.
-
-How have the places you've lived influenced you?
-I don't know, maybe.
-'''
-
+def gpt_evaluate_speaking_criterion(prompt: str) -> dict:
     system = "You act as a professional IELTS examiner."
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": prompt}
+    ]
+    result = get_gpt_json_completion(messages)
+    return result
+
+
+@measure_time
+def evaluate_speaking_fluency(dialogue: str):
     json_example = """{"score":7,"feedback":"The candidate was able to maintain fluency throughout the conversation and used a range of cohesive devices effectively.","areas_for_improvement":{"errors":["Instead of 'incorrect student response', it should be 'corrected version'."],"recommendations":["In place of 'original student phrase', it could be 'suggested improvement'."]}}"""
     prompt = f"""\
 Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Fluency and Coherence". You need to generate a JSON response with no additional text.
@@ -261,19 +246,128 @@ Your response should include:
 
 Input:
 '''
-{formatted_questions_and_answers}
+{dialogue}
 '''
 
-Your response should look like this:
+Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
 '''
-{json_example}'''
-"""
-    messages = [
-        {"role": "system", "content": system},
-        {"role": "user", "content": prompt}
-    ]
-
-    result = get_gpt_json_completion(messages)
+{json_example}'''"""
+    result = gpt_evaluate_speaking_criterion(prompt)
+    result["criterion"] = "Fluency & Coherence"
     return result
 
 
+@measure_time
+def evaluate_speaking_lexis(dialogue: str):
+    json_example = """{"score":7,"feedback":"The candidate demonstrated a good command of vocabulary but could benefit from using more varied expressions.","areas_for_improvement":{"errors":["Instead of 'incorrect or inappropriate student response', it should be 'correct or more suitable version'."],"recommendations":["In place of 'original student phrase', it could be 'suggested improvement'."]}}"""
+    prompt = f"""\
+Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Lexical Resource". You need to generate a JSON response with no additional text.
+
+Your response should include:
+
+1. A 'score' from 0 to 9 reflecting the student's performance.
+2. A 'feedback' string that provides a general overview of the student's performance.
+3. 'Areas for improvement' that include:
+    - 'errors': specific phrases from the student's responses that were incorrect or inappropriate, provided as a list of strings. Each string should be in the format: "Instead of 'incorrect or inappropriate student response', it should be 'correct or more suitable version'."
+    - 'recommendations': specific phrases that the student could improve, provided as a list of strings. Each string should be in the format: "In place of 'original student phrase', it could be 'suggested improvement'."
+
+Input:
+'''
+{dialogue}
+'''
+
+Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
+'''
+{json_example}
+'''"""
+    result = gpt_evaluate_speaking_criterion(prompt)
+    result["criterion"] = "Lexical Resource"
+    return result
+
+
+@measure_time
+def evaluate_speaking_grammar(dialogue: str):
+    json_example = """{"score":7,"feedback":"The candidate demonstrated a good command of grammatical structures but made some minor errors.","areas_for_improvement":{"errors":["Instead of 'incorrect student response', it should be 'corrected version'."],"recommendations":["In place of 'original student phrase', it could be 'suggested improvement'."]}}"""
+    prompt = f"""\
+Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Grammatical Range and Accuracy". You need to generate a JSON response with no additional text.
+
+Your response should include:
+
+1. A 'score' from 0 to 9 reflecting the student's performance.
+2. A 'feedback' string that provides a general overview of the student's performance.
+3. 'Areas for improvement' that include:
+    - 'errors': specific phrases from the student's responses that were grammatically incorrect, provided as a list of strings. Each string should be in the format: "Instead of 'incorrect student response', it should be 'corrected version'."
+    - 'recommendations': specific phrases that the student could improve, provided as a list of strings. Each string should be in the format: "In place of 'original student phrase', it could be 'suggested improvement'."
+
+Input:
+'''
+{dialogue}
+'''
+
+Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
+'''
+{json_example}
+'''"""
+    result = gpt_evaluate_speaking_criterion(prompt)
+    result["criterion"] = "Grammatical Range and Accuracy"
+    return result
+
+
+@measure_time
+def evaluate_speaking_pronunciation(dialogue: str, score: int, words: list):
+    score = round((score / 100) * 9)
+    json_example = """{"score":6,"feedback":"The candidate demonstrated a good ability to be understood but struggled with certain phonetic elements.","areas_for_improvement":{"recommendations":["The candidate could improve on the pronunciation of the word 'word1' by trying phonetic exercises such as ..."]}}"""
+    prompt = f"""\
+Given the examiner's questions, the student's responses, a provided 'score', and a list of incorrectly pronounced words as input, your task as an AI model is to create feedback for the student's performance specifically on the criterion "Pronunciation". You need to generate a JSON response with no additional text.
+
+Your response should include:
+
+1. The provided 'score' from 0 to 9 reflecting the student's performance.
+2. A 'feedback' string that provides a general overview of the student's performance.
+3. 'Areas for improvement' that include:
+    - 'recommendations': specific strategies or exercises the student could use to improve their pronunciation, particularly focusing on the words they struggled with. These should be provided as a list of strings.
+
+Dialogue:
+'''
+{dialogue}
+'''
+
+Pronunciation score:
+'''
+{score}
+'''
+
+Mispronounced words:
+'''
+{words}
+'''
+
+Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
+'''
+{json_example}
+'''"""
+    result = gpt_evaluate_speaking_criterion(prompt)
+    result["criterion"] = "Pronunciation"
+    return result
+
+
+def evaluate_speaking_new(questions_and_answers: list, score: int, misspelled_words: list):
+    dialogue = convert_dialogue_to_string(questions_and_answers)
+    tasks = [
+        ("speaking_fluency", evaluate_speaking_fluency, (dialogue,)),
+        ("speaking_lexis", evaluate_speaking_lexis, (dialogue,)),
+        ("speaking_grammar", evaluate_speaking_grammar, (dialogue,)),
+        ("speaking_pronunciation", evaluate_speaking_pronunciation, (dialogue, score, misspelled_words))
+    ]
+
+    results = {}
+    futures = []
+    with ThreadPoolExecutor() as executor:
+        for name, func, args in tasks:
+            future = executor.submit(func, *args)
+            futures.append((name, future))
+
+        for name, future in futures:
+            results[name] = future.result()
+
+    return results

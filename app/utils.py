@@ -133,3 +133,20 @@ def convert_answer_object_to_html(answer):
         word_list.append(word)
 
     return " ".join(word_list)
+
+
+def convert_dialogue_to_string(questions_and_answers: list) -> str:
+    res = [f"Examiner: {qa['question']}\nStudent: {qa['answer']}" for qa in questions_and_answers]
+    return "\n\n".join(res)
+
+
+def get_misspelled_words(transcriptions_and_pron_assessments: list):
+    misspelled_words = []
+    for item in transcriptions_and_pron_assessments:
+        pron_data = item.get("pronunciation")
+        if pron_data and pron_data.get('NBest') and pron_data['NBest'][0].get('Words'):
+            words = pron_data['NBest'][0]['Words']
+            for word in words:
+                if word['ErrorType'] == 'Mispronunciation':
+                    misspelled_words.append(word['Word'])
+    return misspelled_words

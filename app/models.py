@@ -351,28 +351,27 @@ class UserSpeakingAttemptResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_subsection_attempt_id = db.Column(db.Integer, db.ForeignKey(
         'user_subsection_attempts.id'), unique=True, nullable=False)
-    general_feedback = db.Column(db.Text, nullable=False)
+    general_feedback = db.Column(db.Text)
     fluency_coherence_score = db.Column(db.Integer, nullable=False)
-    fluency_coherence_feedback = db.Column(db.Text, nullable=False)
+    fluency_coherence_json = db.Column(JSON, nullable=False)
     grammatical_range_accuracy_score = db.Column(db.Integer, nullable=False)
-    grammatical_range_accuracy_feedback = db.Column(db.Text, nullable=False)
+    grammatical_range_accuracy_json = db.Column(JSON, nullable=False)
     lexical_resource_score = db.Column(db.Integer, nullable=False)
-    lexical_resource_feedback = db.Column(db.Text, nullable=False)
+    lexical_resource_json = db.Column(JSON, nullable=False)
     pronunciation_score = db.Column(db.Integer, nullable=False)
-    pronunciation_feedback = db.Column(db.Text, nullable=False)
+    pronunciation_json = db.Column(JSON, nullable=False)
 
     @staticmethod
     def insert_speaking_result(subsection_attempt, gpt_speaking_result):
         speaking_attempt_result = UserSpeakingAttemptResult(
             subsection_attempt=subsection_attempt,
-            general_feedback=gpt_speaking_result.get('generalFeedback'),
-            fluency_coherence_score=gpt_speaking_result['criteria']['fluency'].get('score'),
-            fluency_coherence_feedback=gpt_speaking_result['criteria']['fluency'].get('feedback'),
-            grammatical_range_accuracy_score=gpt_speaking_result['criteria']['grammar'].get('score'),
-            grammatical_range_accuracy_feedback=gpt_speaking_result['criteria']['grammar'].get('feedback'),
-            lexical_resource_score=gpt_speaking_result['criteria']['lexic'].get('score'),
-            lexical_resource_feedback=gpt_speaking_result['criteria']['lexic'].get('feedback'),
-            pronunciation_score=gpt_speaking_result['criteria']['pron'].get('score'),
-            pronunciation_feedback=gpt_speaking_result['criteria']['pron'].get('feedback')
+            fluency_coherence_score=gpt_speaking_result['speaking_fluency']['score'],
+            fluency_coherence_json=gpt_speaking_result['speaking_fluency'],
+            grammatical_range_accuracy_score=gpt_speaking_result['speaking_grammar']['score'],
+            grammatical_range_accuracy_json=gpt_speaking_result['speaking_grammar'],
+            lexical_resource_score=gpt_speaking_result['speaking_lexis']['score'],
+            lexical_resource_json=gpt_speaking_result['speaking_lexis'],
+            pronunciation_score=gpt_speaking_result['speaking_pronunciation']['score'],
+            pronunciation_json=gpt_speaking_result['speaking_pronunciation']
         )
         db.session.add(speaking_attempt_result)

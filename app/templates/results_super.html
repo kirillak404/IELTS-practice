@@ -14,14 +14,14 @@ Speaking practice
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">9</div>
+            <div class="rating">{{ results.fluency_coherence_score }}</div>
             <div class="header-content header-content-scores">
                <span class="header-title">Fluency and Coherence</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+            <p class="card-text">{{ results.fluency_coherence_json.feedback }}</p>
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
@@ -31,18 +31,18 @@ Speaking practice
          </div>
       </div>
    </div>
-   <!-- Fluency and Coherence -->
+   <!-- Lexical Resource -->
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">7</div>
+            <div class="rating">{{ results.lexical_resource_score }}</div>
             <div class="header-content header-content-scores">
-               <span class="header-title">Fluency and Coherence</span>
+               <span class="header-title">Lexical Resource</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+            <p class="card-text">{{ results.lexical_resource_json.feedback }}</p>
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
@@ -52,18 +52,18 @@ Speaking practice
          </div>
       </div>
    </div>
-   <!-- Fluency and Coherence -->
+   <!-- Grammatical range and accuracy -->
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">3</div>
+            <div class="rating">{{ results.grammatical_range_accuracy_score }}</div>
             <div class="header-content header-content-scores">
-               <span class="header-title">Fluency and Coherence</span>
+               <span class="header-title">Grammatical range and accuracy</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+            <p class="card-text">{{ results.grammatical_range_accuracy_json.feedback }}</p>
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
@@ -73,18 +73,18 @@ Speaking practice
          </div>
       </div>
    </div>
-   <!-- Fluency and Coherence -->
+   <!-- Pronunciation -->
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">8</div>
+            <div class="rating">{{ results.pronunciation_score }}</div>
             <div class="header-content header-content-scores">
-               <span class="header-title">Fluency and Coherence</span>
+               <span class="header-title">Pronunciation</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">You showed a good level of fluency and coherence in your speaking test. You showed a good level of fluency and coherence in your speaking test.</p>
+            <p class="card-text">{{ results.pronunciation_json.feedback }}</p>
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
@@ -121,7 +121,6 @@ Speaking practice
             <hr/>
             <p class="card-text">Question: ....</p>
             <p class="card-text">Answer: ....</p>
-            <!-- Add more Q/A as needed -->
          </div>
       </div>
    </div>
@@ -136,19 +135,19 @@ Speaking practice
          <div class="card-body">
             <h5 class="fw-normal" data-toggle="tooltip" data-placement="right" title="Accuracy Score Explanation">Accuracy</h5>
             <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: 88%;" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100">88</div>
+               <div class="progress-bar bg-success" role="progressbar" style="width: 88%;" aria-valuenow="{{ pron_scores.accuracy_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.accuracy_score }}</div>
             </div>
             <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Fluency Score Explanation">Fluency</h5>
             <div class="progress">
-               <div class="progress-bar bg-warning" role="progressbar" style="width: 70%;" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100">70</div>
+               <div class="progress-bar bg-warning" role="progressbar" style="width: 70%;" aria-valuenow="{{ pron_scores.fluency_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.fluency_score }}</div>
             </div>
             <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Completeness Score Explanation">Completeness</h5>
             <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100">90</div>
+               <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="{{ pron_scores.completeness_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.completeness_score }}</div>
             </div>
             <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Pronunciation Score Explanation">Pronunciation</h5>
             <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85</div>
+               <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="{{ pron_scores.pronunciation_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.pronunciation_score }}</div>
             </div>
          </div>
       </div>

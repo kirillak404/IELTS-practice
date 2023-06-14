@@ -314,15 +314,18 @@ class UserSubsectionAnswer(db.Model):
         questions_and_answers = []
         for question, answer in zip(questions_set.questions,
                                     transcriptions_and_pron_assessments):
-            questions_and_answers.append({"question": question.text,
-                                          "answer": answer["transcript"]})
 
-            pronunciation_assessment = answer.get("pronunciation")
+            pronunciation_assessment = answer.get("pronunciation", {})
 
-            if pronunciation_assessment and pronunciation_assessment.get(
-                    "RecognitionStatus") == "Success":
-                scores = pronunciation_assessment.get("NBest")[0] \
-                    if pronunciation_assessment.get("NBest") else {}
+            if pronunciation_assessment.get("RecognitionStatus") == "Success":
+                n_best = pronunciation_assessment.get("NBest", [{}])
+                display_text = n_best[0].get("Display")
+
+                if display_text is not None:
+                    questions_and_answers.append(
+                        {"question": question.text, "answer": display_text})
+
+                scores = n_best[0]
             else:
                 scores = {}
 

@@ -160,7 +160,7 @@ def azure_assess_pronunciation(audio_file, transcript: str) -> dict:
 # speaking evaluating v2.0
 
 
-def gpt_evaluate_speaking_criterion(criterion: str, dialogue: str) -> dict:
+def gpt_evaluate_speaking_criterion(dialogue: str, criterion: str) -> dict:
     system = "You act as a professional IELTS examiner."
     json_schema = """{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}}},"required":["score","feedback","errors"]}"""
     prompt = f"""\
@@ -182,6 +182,7 @@ Here is the expected JSON schema:
 '''
 {json_schema}
 '''"""
+    print(prompt)
     messages = [
         {"role": "system", "content": system},
         {"role": "user", "content": prompt}

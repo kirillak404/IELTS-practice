@@ -25,8 +25,10 @@ Speaking practice
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
-               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+               {% for error in results.fluency_coherence_json.errors %}
+               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
+               {% endfor %}
+               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
             </ul>
          </div>
       </div>
@@ -46,8 +48,10 @@ Speaking practice
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
-               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+               {% for error in results.lexical_resource_json.errors %}
+               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
+               {% endfor %}
+               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
             </ul>
          </div>
       </div>
@@ -67,8 +71,10 @@ Speaking practice
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
-               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+               {% for error in results.grammatical_range_accuracy_json.errors %}
+               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
+               {% endfor %}
+               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
             </ul>
          </div>
       </div>
@@ -88,8 +94,8 @@ Speaking practice
             <strong class="mt-4">Areas for Improvement:</strong>
             <hr/>
             <ul class="list-unstyled">
-               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Instead of saying 'I goes to school', you should say 'I go to school'.</li>
-               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> In place of 'I'm very tired', you could say 'I'm exhausted'.</li>
+               <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Temporarily empty</li>
+               <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
             </ul>
          </div>
       </div>

@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 
-from app.api_utils import batch_transcribe_and_assess_pronunciation, evaluate_speaking_new
+from app.api_utils import batch_transcribe_and_assess_pronunciation, batch_gpt_evaluate_speaking_new
 from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
@@ -84,7 +84,7 @@ def speaking_practice_post():
     # Evaluate user's speaking ability and insert the result TODO UNCOMMENT
     pron_score = subsection_attempt.aggregate_scores()["pronunciation_score"]
     misspelled_words = get_misspelled_words(transcriptions_and_pron_assessments)
-    gpt_speaking_result = evaluate_speaking_new(questions_and_answers, pron_score, misspelled_words)
+    gpt_speaking_result = batch_gpt_evaluate_speaking_new(questions_and_answers, pron_score, misspelled_words)
     UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt, gpt_speaking_result)
 
     # Commit changes to the database

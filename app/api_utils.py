@@ -117,66 +117,6 @@ def get_gpt_json_completion(messages: list,
 
 
 @measure_time
-def gpt_evaluate_speaking(questions_and_answers: list) -> dict:
-    # formatting questions and answer
-    formatted_questions_and_answers = {}
-    for number, qa in enumerate(questions_and_answers, start=1):
-        formatted_questions_and_answers[f"Q{number}"] = qa["question"]
-        formatted_questions_and_answers[f"A{number}"] = qa["answer"]
-
-    system = "You act as a professional IELTS examiner."
-    json_example = """\
-{
-	"generalFeedback": "Provide general feedback on the student's overall performance in this section. (string)",
-	"criteria": {
-		"fluency": {
-			"score": "Evaluate the student's fluency and coherence on a scale of 0 to 9. (integer)",
-			"feedback": "Evaluate the student's ability to maintain a smooth and natural flow of speech, as well as the organization and logical connection of ideas. (string)"
-		},
-		"grammar": {
-			"score": "Evaluate the student's grammatical range and accuracy on a scale of 0 to 9. (integer)",
-			"feedback": "Evaluate the student's grammatical accuracy, including the correct use of various sentence structures. Assess their command of grammar. (string)"
-		},
-		"lexic": {
-			"score": "Evaluate the student's lexical resource on a scale of 0 to 9. (integer)",
-			"feedback": "Evaluate the student's range and appropriateness of vocabulary usage. Consider the precision and command of lexical resources. (string)"
-		},
-		"pron": {
-			"score": "Evaluate the student's pronunciation on a scale of 0 to 9. (integer)",
-			"feedback": "Evaluate the student's pronunciation, including the clarity, accuracy, intonation, and stress patterns in their speech. (string)"
-		}
-	}
-}
-"""
-    prompt = f"""
-Your task is to evaluate the student's responses to IELTS Speaking Part 1: Introduction and Interview using the standard criteria: "Fluency and Coherence", "Grammatical Range and Accuracy", "Lexical Resources", and "Pronunciation". For each criterion, provide a score on a scale of 0 to 9 and corresponding feedback.
-
-1. Fluency and Coherence: Evaluate the student's ability to maintain a smooth and natural flow of speech, as well as the organization and logical connection of ideas.
-2. Grammatical Range and Accuracy: Evaluate the student's grammatical accuracy, including the correct use of various sentence structures. Assess their command of grammar.
-3. Lexical Resources: Evaluate the student's range and appropriateness of vocabulary usage. Consider the precision and command of lexical resources.
-4. Pronunciation: Evaluate the student's pronunciation, including the clarity, accuracy, intonation, and stress patterns in their speech.
-
-In addition to the criterion evaluation, provide general feedback on the student's overall performance in this section. Length no longer than 280 characters.
-
-Please provide evaluations and feedback for each criterion accordingly. Length no longer than 140 characters.
-
-Here is a list of questions and answers received from the student:
-'''
-{str(formatted_questions_and_answers)}
-'''
-Your response should be a single JSON object following this format:
-{str(json_example)}
-"""
-    messages = [
-        {"role": "system", "content": system},
-        {"role": "user", "content": prompt}
-    ]
-
-    result = get_gpt_json_completion(messages)
-    return result
-
-
-@measure_time
 def azure_assess_pronunciation(audio_file, transcript: str) -> dict:
     audio_file = convert_audio(audio_file)
     language = "en-US"
@@ -220,94 +160,42 @@ def azure_assess_pronunciation(audio_file, transcript: str) -> dict:
 # speaking evaluating v2.0
 
 
-def gpt_evaluate_speaking_criterion(prompt: str) -> dict:
+def gpt_evaluate_speaking_criterion(criterion: str, dialogue: str) -> dict:
     system = "You act as a professional IELTS examiner."
+    json_schema = """{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}}},"required":["score","feedback","errors"]}"""
+    prompt = f"""\
+Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "{criterion}".
+
+You need to generate a JSON response with no additional text. Your response should include:
+
+1. A 'score' from 0 to 9 reflecting the student's performance.
+2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
+3. Generate an 'errors' array, each entry briefly outlining a specific error impacting the student's "{criterion}" score.
+
+Input:
+'''
+{dialogue}
+'''
+
+Your response should contain JSON and only JSON, with no additional text or notes.
+Here is the expected JSON schema:
+'''
+{json_schema}
+'''"""
     messages = [
         {"role": "system", "content": system},
         {"role": "user", "content": prompt}
     ]
     result = get_gpt_json_completion(messages)
+    result["criterion"] = criterion
     return result
 
 
 @measure_time
-def evaluate_speaking_fluency(dialogue: str):
-    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
-    prompt = f"""\
-Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Fluency and Coherence".
-
-You need to generate a JSON response with no additional text. Your response should include:
-
-1. A 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
-
-Input:
-'''
-{dialogue}
-'''
-
-Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
-'''
-{json_example}'''"""
-    result = gpt_evaluate_speaking_criterion(prompt)
-    result["criterion"] = "Fluency & Coherence"
-    return result
-
-
-@measure_time
-def evaluate_speaking_lexis(dialogue: str):
-    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
-    prompt = f"""\
-Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Lexical Resource".
-
-You need to generate a JSON response with no additional text. Your response should include:
-
-1. A 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
-
-Input:
-'''
-{dialogue}
-'''
-
-Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
-'''
-{json_example}
-'''"""
-    result = gpt_evaluate_speaking_criterion(prompt)
-    result["criterion"] = "Lexical Resource"
-    return result
-
-
-@measure_time
-def evaluate_speaking_grammar(dialogue: str):
-    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
-    prompt = f"""\
-Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Grammatical Range and Accuracy".
-
-You need to generate a JSON response with no additional text. Your response should include:
-
-1. A 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
-
-Input:
-'''
-{dialogue}
-'''
-
-Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
-'''
-{json_example}
-'''"""
-    result = gpt_evaluate_speaking_criterion(prompt)
-    result["criterion"] = "Grammatical Range and Accuracy"
-    return result
-
-
-@measure_time
-def evaluate_speaking_pronunciation(dialogue: str, score: int, words: list):
+def gpt_evaluate_speaking_pronunciation(dialogue: str, score: int, words: list):
     score = round((score / 100) * 9)
-    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
+    system = "You act as a professional IELTS examiner."
+    json_schema = """{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"required":["score","feedback"]}}"""
     prompt = f"""\
 Given the examiner's questions, the student's responses, a provided 'score', and a list of incorrectly pronounced words as input, your task as an AI model is to create feedback for the student's performance specifically on the criterion "Pronunciation".
 You need to generate a JSON response with no additional text.
@@ -327,25 +215,29 @@ Mispronounced words:
 {words}
 '''
 
-Your response should contain JSON and only JSON, with no additional text or notes. Here's an example:
+Your response should contain JSON and only JSON, with no additional text or notes.
+Here is the expected JSON schema:
 '''
-{json_example}
+{json_schema}
 '''"""
-    result = gpt_evaluate_speaking_criterion(prompt)
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": prompt}
+    ]
+    result = get_gpt_json_completion(messages)
     result["criterion"] = "Pronunciation"
     result["score"] = score
-    print(score)
-    print(result)
     return result
 
 
-def evaluate_speaking_new(questions_and_answers: list, score: int, misspelled_words: list):
+def batch_gpt_evaluate_speaking_new(questions_and_answers: list, score: int, misspelled_words: list):
     dialogue = convert_dialogue_to_string(questions_and_answers)
+    print(dialogue)
     tasks = [
-        ("speaking_fluency", evaluate_speaking_fluency, (dialogue,)),
-        ("speaking_lexis", evaluate_speaking_lexis, (dialogue,)),
-        ("speaking_grammar", evaluate_speaking_grammar, (dialogue,)),
-        ("speaking_pronunciation", evaluate_speaking_pronunciation, (dialogue, score, misspelled_words))
+        ("speaking_fluency", gpt_evaluate_speaking_criterion, (dialogue, "Fluency & Coherence")),
+        ("speaking_lexis", gpt_evaluate_speaking_criterion, (dialogue, "Lexical Resource")),
+        ("speaking_grammar", gpt_evaluate_speaking_criterion, (dialogue, "Grammatical Range and Accuracy")),
+        ("speaking_pronunciation", gpt_evaluate_speaking_pronunciation, (dialogue, score, misspelled_words))
     ]
 
     results = {}
@@ -357,5 +249,5 @@ def evaluate_speaking_new(questions_and_answers: list, score: int, misspelled_wo
 
         for name, future in futures:
             results[name] = future.result()
-
+    print(results)
     return results

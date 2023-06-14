@@ -141,12 +141,14 @@ def convert_dialogue_to_string(questions_and_answers: list) -> str:
 
 
 def get_misspelled_words(transcriptions_and_pron_assessments: list):
-    misspelled_words = []
+    misspelled_words = set()
     for item in transcriptions_and_pron_assessments:
-        pron_data = item.get("pronunciation")
-        if pron_data and pron_data.get('NBest') and pron_data['NBest'][0].get('Words'):
-            words = pron_data['NBest'][0]['Words']
+        try:
+            words = item["pronunciation"]['NBest'][0]['Words']
+        except (KeyError, IndexError, TypeError):
+            pass
+        else:
             for word in words:
-                if word['ErrorType'] == 'Mispronunciation':
-                    misspelled_words.append(word['Word'])
-    return misspelled_words
+                if word.get('ErrorType') == 'Mispronunciation':
+                    misspelled_words.add(word.get('Word'))
+    return list(misspelled_words)

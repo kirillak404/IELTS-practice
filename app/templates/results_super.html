@@ -96,6 +96,8 @@ Speaking practice
    </div>
 </div>
 <br>
+
+
 <h3 class="mb-4">Advanced Pronunciation Analysis</h3>
 <div class="row">
    <!-- Transcription Column (Wider) -->
@@ -107,20 +109,11 @@ Speaking practice
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">Question: ....</p>
-            <p class="card-text">Answer: ....</p>
+            {% for answer in answers %}
+            <p class="card-text">{{ answer.question.text }}</p>
+            <p class="card-text">{{ convert_answer_object_to_html(answer)|safe }}</p>
             <hr/>
-            <p class="card-text">Question: ....</p>
-            <p class="card-text">Answer: ....</p>
-            <hr/>
-            <p class="card-text">Question: ....</p>
-            <p class="card-text">Answer: ....</p>
-            <hr/>
-            <p class="card-text">Question: ....</p>
-            <p class="card-text">Answer: ....</p>
-            <hr/>
-            <p class="card-text">Question: ....</p>
-            <p class="card-text">Answer: ....</p>
+            {% endfor %}
          </div>
       </div>
    </div>
@@ -135,28 +128,35 @@ Speaking practice
          <div class="card-body">
             <h5 class="fw-normal" data-toggle="tooltip" data-placement="right" title="Accuracy Score Explanation">Accuracy</h5>
             <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: 88%;" aria-valuenow="{{ pron_scores.accuracy_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.accuracy_score }}</div>
+               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.accuracy_score }}%;" aria-valuenow="{{ pron_scores.accuracy_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.accuracy_score }}</div>
             </div>
             <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Fluency Score Explanation">Fluency</h5>
             <div class="progress">
-               <div class="progress-bar bg-warning" role="progressbar" style="width: 70%;" aria-valuenow="{{ pron_scores.fluency_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.fluency_score }}</div>
+               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.fluency_score }}%;" aria-valuenow="{{ pron_scores.fluency_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.fluency_score }}</div>
             </div>
             <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Completeness Score Explanation">Completeness</h5>
             <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: 90%;" aria-valuenow="{{ pron_scores.completeness_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.completeness_score }}</div>
+               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.completeness_score }}%;" aria-valuenow="{{ pron_scores.completeness_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.completeness_score }}</div>
             </div>
             <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Pronunciation Score Explanation">Pronunciation</h5>
             <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="{{ pron_scores.pronunciation_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.pronunciation_score }}</div>
+               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.pronunciation_score }}%;" aria-valuenow="{{ pron_scores.pronunciation_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.pronunciation_score }}</div>
             </div>
          </div>
       </div>
    </div>
 </div>
-<script>
-   $(function () {
-     $('[data-toggle="tooltip"]').tooltip()
-   })
-</script>
+
+
+<div class="toast">
+    <div class="toast-header">
+        <strong class="mr-auto"></strong> <!-- data-error-type will be inserted here -->
+    </div>
+    <div class="toast-body">
+        <!-- Error explanation, wrong and corrected text will be inserted here -->
+    </div>
+</div>
+
+
 <script src="{{ url_for('static', filename='scores.js') }}"></script>
 {% endblock %}

@@ -36,3 +36,38 @@ scoreElement.style.color = ratingColor;
 // Wrap the content in a tag to show it above the pseudo element that masks the bar
 rating.innerHTML = `<span>${ratingScore}</span>`;
 });
+
+
+// Mouseover pron errors
+$(document).ready(function() {
+    $('.error').on('mouseenter', function(e) {
+        $('.toast').stop();
+        var top = e.pageY;
+        var left = e.pageX;
+
+        $('.toast').css({top: (top - $('.toast').height() - 10) + 'px', left: (left + 10) + 'px'});
+
+        var errorType = $(this).data('error-type').charAt(0).toUpperCase() + $(this).data('error-type').slice(1);
+        $('.toast-header strong').html(errorType);
+
+        var accuracy = '';
+        if ($(this).data('accuracy-score')) {
+            accuracy = '<b>Score: </b>' + $(this).data('accuracy-score') + '<br>';
+        }
+
+        var explanation = '<b>Description: </b>' + $(this).data('error-long-description');
+        $('.toast-body').html(accuracy + ' ' + ' ' + explanation);
+
+        $('.toast').fadeIn(250);
+    });
+
+    $('.error').on('mouseleave', function() {
+        $('.toast').fadeOut(250);
+    });
+});
+
+
+// Tooltips on mouseover
+$(function () {
+ $('[data-toggle="tooltip"]').tooltip()
+})

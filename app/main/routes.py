@@ -114,7 +114,6 @@ def get_speaking_attempt(user_subsection_attempt_id):
     # Advanced Pronunciation Analysis
     answers = user_subsection_attempt.user_answers
     pron_scores = user_subsection_attempt.aggregate_scores()
-    print(pron_scores)
     return render_template('results_super.html', results=results,
                            answers=answers, pron_scores=pron_scores)
 

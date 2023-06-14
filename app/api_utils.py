@@ -94,7 +94,7 @@ def check_grammar_via_ginger(text: str) -> dict:
 
 
 def get_gpt_json_completion(messages: list,
-                            model="gpt-3.5-turbo",
+                            model="gpt-3.5-turbo-0613",
                             temperature=0) -> dict:
     for _ in range(10):
         try:
@@ -232,17 +232,14 @@ def gpt_evaluate_speaking_criterion(prompt: str) -> dict:
 
 @measure_time
 def evaluate_speaking_fluency(dialogue: str):
-    json_example = """{"score":7,"feedback":"The candidate was able to maintain fluency throughout the conversation and used a range of cohesive devices effectively.","areas_for_improvement":{"errors":["Instead of 'incorrect student response', it should be 'corrected version'."],"recommendations":["In place of 'original student phrase', it could be 'suggested improvement'."]}}"""
+    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
     prompt = f"""\
-Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Fluency and Coherence". You need to generate a JSON response with no additional text.
+Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Fluency and Coherence".
 
-Your response should include:
+You need to generate a JSON response with no additional text. Your response should include:
 
 1. A 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance.
-3. 'Areas for improvement' that include:
-    - 'errors': specific phrases from the student's responses that were incorrect, provided as a list of strings. Each string should be in the format: "Instead of 'incorrect student response', it should be 'corrected version'."
-    - 'recommendations': specific phrases that the student could improve, provided as a list of strings. Each string should be in the format: "In place of 'original student phrase', it could be 'suggested improvement'."
+2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
 
 Input:
 '''
@@ -259,17 +256,14 @@ Your response should contain JSON and only JSON, with no additional text or note
 
 @measure_time
 def evaluate_speaking_lexis(dialogue: str):
-    json_example = """{"score":7,"feedback":"The candidate demonstrated a good command of vocabulary but could benefit from using more varied expressions.","areas_for_improvement":{"errors":["Instead of 'incorrect or inappropriate student response', it should be 'correct or more suitable version'."],"recommendations":["In place of 'original student phrase', it could be 'suggested improvement'."]}}"""
+    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
     prompt = f"""\
-Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Lexical Resource". You need to generate a JSON response with no additional text.
+Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Lexical Resource".
 
-Your response should include:
+You need to generate a JSON response with no additional text. Your response should include:
 
 1. A 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance.
-3. 'Areas for improvement' that include:
-    - 'errors': specific phrases from the student's responses that were incorrect or inappropriate, provided as a list of strings. Each string should be in the format: "Instead of 'incorrect or inappropriate student response', it should be 'correct or more suitable version'."
-    - 'recommendations': specific phrases that the student could improve, provided as a list of strings. Each string should be in the format: "In place of 'original student phrase', it could be 'suggested improvement'."
+2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
 
 Input:
 '''
@@ -287,17 +281,14 @@ Your response should contain JSON and only JSON, with no additional text or note
 
 @measure_time
 def evaluate_speaking_grammar(dialogue: str):
-    json_example = """{"score":7,"feedback":"The candidate demonstrated a good command of grammatical structures but made some minor errors.","areas_for_improvement":{"errors":["Instead of 'incorrect student response', it should be 'corrected version'."],"recommendations":["In place of 'original student phrase', it could be 'suggested improvement'."]}}"""
+    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
     prompt = f"""\
-Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Grammatical Range and Accuracy". You need to generate a JSON response with no additional text.
+Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "Grammatical Range and Accuracy".
 
-Your response should include:
+You need to generate a JSON response with no additional text. Your response should include:
 
 1. A 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance.
-3. 'Areas for improvement' that include:
-    - 'errors': specific phrases from the student's responses that were grammatically incorrect, provided as a list of strings. Each string should be in the format: "Instead of 'incorrect student response', it should be 'corrected version'."
-    - 'recommendations': specific phrases that the student could improve, provided as a list of strings. Each string should be in the format: "In place of 'original student phrase', it could be 'suggested improvement'."
+2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
 
 Input:
 '''
@@ -316,25 +307,19 @@ Your response should contain JSON and only JSON, with no additional text or note
 @measure_time
 def evaluate_speaking_pronunciation(dialogue: str, score: int, words: list):
     score = round((score / 100) * 9)
-    json_example = """{"score":6,"feedback":"The candidate demonstrated a good ability to be understood but struggled with certain phonetic elements.","areas_for_improvement":{"recommendations":["The candidate could improve on the pronunciation of the word 'word1' by trying phonetic exercises such as ..."]}}"""
+    json_example = """{"score":"{integer}","feedback":"{string, 180 approx. characters}"}"""
     prompt = f"""\
-Given the examiner's questions, the student's responses, a provided 'score', and a list of incorrectly pronounced words as input, your task as an AI model is to create feedback for the student's performance specifically on the criterion "Pronunciation". You need to generate a JSON response with no additional text.
+Given the examiner's questions, the student's responses, a provided 'score', and a list of incorrectly pronounced words as input, your task as an AI model is to create feedback for the student's performance specifically on the criterion "Pronunciation".
+You need to generate a JSON response with no additional text.
 
 Your response should include:
 
-1. The provided 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance.
-3. 'Areas for improvement' that include:
-    - 'recommendations': specific strategies or exercises the student could use to improve their pronunciation, particularly focusing on the words they struggled with. These should be provided as a list of strings.
+1. The provided pronunciation 'score': {score}.
+2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
 
 Dialogue:
 '''
 {dialogue}
-'''
-
-Pronunciation score:
-'''
-{score}
 '''
 
 Mispronounced words:
@@ -348,6 +333,9 @@ Your response should contain JSON and only JSON, with no additional text or note
 '''"""
     result = gpt_evaluate_speaking_criterion(prompt)
     result["criterion"] = "Pronunciation"
+    result["score"] = score
+    print(score)
+    print(result)
     return result
 
 

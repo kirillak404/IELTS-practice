@@ -84,17 +84,17 @@ nav .navbar-brand .green
 
 
 .red-background {
-  background-color: red;
+  background-color: #dc3545;
   color: white; /* Выберите цвет текста, который хорошо будет виден на красном фоне */
 }
 
 .gray-background {
-  background-color: gray;
+  background-color: #6c757d;
   color: white; /* Выберите цвет текста, который хорошо будет виден на красном фоне */
 }
 
 .yellow-background {
-  background-color: yellow;
+  background-color: #ffc107;
   color: black; /* Выберите цвет текста, который хорошо будет виден на красном фоне */
 }
 

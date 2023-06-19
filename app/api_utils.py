@@ -106,7 +106,7 @@ def get_gpt_json_completion(messages: list,
             print(completion["usage"])
             gpt_response_json_string = completion.choices[0].message["content"]
             gpt_response_dict = json.loads(gpt_response_json_string)
-        except (openai.error.APIError, openai.error.RateLimitError) as e:
+        except (openai.error.APIError, openai.error.RateLimitError, openai.error.APIError) as e:
             print(e.error['message'])
             time.sleep(1)
         except json.decoder.JSONDecodeError as e:
@@ -159,26 +159,27 @@ def azure_assess_pronunciation(audio_file, transcript: str) -> dict:
 
 # speaking evaluating v2.0
 
-
+@measure_time
 def gpt_evaluate_speaking_criterion(dialogue: str, criterion: str) -> dict:
     system = "You act as a professional IELTS examiner."
-    json_schema = """{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}}},"required":["score","feedback","errors"]}"""
+    json_schema = """{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}},"required":["score","feedback","errors","recommendations"]}"""
     prompt = f"""\
-Given the examiner's questions and the student's responses as input, your task as an AI model is to evaluate the student's performance specifically on the criterion "{criterion}".
+As an AI model operating in the role of a professional IELTS examiner, you are tasked with evaluating a transcription of a student's dialogue from the IELTS Speaking Part 1.
+The evaluation should be specifically based on the IELTS criterion "{criterion}", using the standard IELTS assessment methodologies.
 
-You need to generate a JSON response with no additional text. Your response should include:
+Your response should be a single-line JSON object, following these specifications, and should not contain any additional text, annotations, unnecessary spaces, or line breaks:
 
-1. A 'score' from 0 to 9 reflecting the student's performance.
-2. A 'feedback' string that provides a general overview of the student's performance, limited to 180 characters.
-3. Generate an 'errors' array, each entry briefly outlining a specific error impacting the student's "{criterion}" score.
+1. "score": An integer from 0 to 9, indicating the student's performance on the "{criterion}" as per the IELTS scale.
+2. "feedback": A string of up to 200 characters, summarizing the student's performance on the "{criterion}", as per IELTS assessment criteria.
+3. "errors": An array, where each entry is a brief description (up to 140 characters long) of a specific error that impacted the student's performance on the "{criterion}", in line with IELTS assessment standards. Each entry should include the type of error, the incorrect phrase/word, and the correct version of the phrase/word.
+4. "recommendations": An array of strings, each entry offering a concise piece of advice (up to 140 characters long) for the student on how to improve their performance on the "{criterion}".
 
 Input:
 '''
 {dialogue}
 '''
 
-Your response should contain JSON and only JSON, with no additional text or notes.
-Here is the expected JSON schema:
+The expected JSON schema for your response is as follows:
 '''
 {json_schema}
 '''"""
@@ -233,7 +234,6 @@ Here is the expected JSON schema:
 
 def batch_gpt_evaluate_speaking_new(questions_and_answers: list, score: int, misspelled_words: list):
     dialogue = convert_dialogue_to_string(questions_and_answers)
-    print(dialogue)
     tasks = [
         ("speaking_fluency", gpt_evaluate_speaking_criterion, (dialogue, "Fluency & Coherence")),
         ("speaking_lexis", gpt_evaluate_speaking_criterion, (dialogue, "Lexical Resource")),

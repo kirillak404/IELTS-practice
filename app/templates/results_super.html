@@ -48,7 +48,9 @@ Speaking practice
                   <div id="collapseRecommendations" class="accordion-collapse collapse" aria-labelledby="headingRecommendations" data-bs-parent="#improvementAccordion">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
+                           {% for recommendation in results.fluency_coherence_json.recommendations %}
+                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
+                           {% endfor %}
                         </ul>
                      </div>
                   </div>
@@ -96,7 +98,9 @@ Speaking practice
                   <div id="collapseRecommendations2" class="accordion-collapse collapse" aria-labelledby="headingRecommendations2" data-bs-parent="#improvementAccordion">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
+                           {% for recommendation in results.lexical_resource_json.recommendations %}
+                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
+                           {% endfor %}
                         </ul>
                      </div>
                   </div>
@@ -145,7 +149,9 @@ Speaking practice
                   <div id="collapseRecommendations3" class="accordion-collapse collapse" aria-labelledby="headingRecommendations3" data-bs-parent="#improvementAccordion3">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
+                           {% for recommendation in results.grammatical_range_accuracy_json.recommendations %}
+                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
+                           {% endfor %}
                         </ul>
                      </div>
                   </div>

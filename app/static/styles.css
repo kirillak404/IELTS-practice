@@ -289,3 +289,9 @@ color: var(--rating-color-bad);
 display: block;
 font-size: 0.8em;
 }
+
+/* Advanced Pronunciation Analysis */
+.word_mispronunciation { background-color: #dc3545; color: white; }
+.word_omitted { background-color: #6c757d; color: white; }
+.word_insertion { background-color: #20c997; color: white; }
+.score-low { background-color: var(--rating-color-meh); color: black; }

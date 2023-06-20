@@ -59,7 +59,6 @@ Speaking practice
          </div>
       </div>
    </div>
-
    <!-- Lexical Resource -->
    <div class="col-lg-6 mb-4">
       <div class="card">
@@ -109,8 +108,6 @@ Speaking practice
          </div>
       </div>
    </div>
-
-
    <!-- Grammatical range and accuracy -->
    <div class="col-lg-6 mb-4">
       <div class="card">
@@ -160,8 +157,6 @@ Speaking practice
          </div>
       </div>
    </div>
-
-
    <!-- Pronunciation -->
    <div class="col-lg-6 mb-4">
       <div class="card">
@@ -210,8 +205,7 @@ Speaking practice
          </div>
       </div>
    </div>
-
-
+</div>
 <h3 class="mb-4 mt-4">Advanced Pronunciation Analysis</h3>
 <div class="row">
    <!-- Transcription Column (Wider) -->
@@ -222,13 +216,14 @@ Speaking practice
                <span class="header-title">Transcription</span>
             </div>
          </h5>
-         <div class="card-body">
-            {% for answer in answers %}
-            <p class="card-text"><em>{{ answer.question.text }}</em></p>
-            <p class="card-text">{{ convert_answer_object_to_html(answer)|safe }}</p>
-            <hr/>
-            {% endfor %}
-         </div>
+      <ul class="list-group list-group-flush mt-2">
+        {% for answer in answers %}
+        <li class="list-group-item">
+          <p class="question">Question: {{ answer.question.text }}</p>
+          <p>Answer: {{ convert_answer_object_to_html(answer)|safe }}</p>
+        </li>
+        {% endfor %}
+      </ul>
       </div>
    </div>
    <!-- Scores Column (Narrower) -->

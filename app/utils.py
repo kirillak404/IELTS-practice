@@ -119,16 +119,18 @@ def convert_answer_object_to_html(answer):
     word_list = []
     for word in words:
         word_text = word["Word"]
-        error_type = word["ErrorType"]
+        score = int(word["AccuracyScore"])
 
         if word["ErrorType"] == "Mispronunciation":
-            word = f"""<span class="error red-background" data-error-type="{error_type}" data-accuracy-score="{int(word["AccuracyScore"])}" data-error-long-description="The word was mispronounced">{word_text}</span>"""
+            word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%" class="word_mispronunciation">{word_text}</span>"""
         elif word["ErrorType"] == "Omission":
-            word = f"""<span class="error gray-background" data-error-type="{error_type}" data-error-long-description="This word was omitted">{word_text}</span>"""
+            word = f"""<span data-toggle="tooltip" title="This word was omitted" class="word_omitted">{word_text}</span>"""
         elif word["ErrorType"] == "Insertion":
-            word = f"""<span class="error yellow-background" data-error-type="{error_type}" data-error-long-description="This word is probably redundant">{word_text}</span>"""
+            word = f"""<span data-toggle="tooltip" title="This word is probably redundant" class="word_insertion">{word_text}</span>"""
+        elif score < 90:
+            word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%" class="score-low">{word_text}</span>"""
         else:
-            word = word_text
+            word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%">{word_text}</span>"""
 
         word_list.append(word)
 

@@ -122,7 +122,9 @@ def convert_answer_object_to_html(answer):
     word_list = []
     for word in words:
         word_text = word["Word"]
-        score = int(word["AccuracyScore"])
+        score = word.get("AccuracyScore")
+        if score:
+            score = int(score)
 
         if word["ErrorType"] == "Mispronunciation":
             word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%" class="word_mispronunciation">{word_text}</span>"""
@@ -172,11 +174,12 @@ def get_words_low_pron_accuracy(answers: list) -> tuple:
 
             for word in words:
                 word_text = word.get('Word')
-                if word.get('ErrorType') == 'Mispronunciation':
-                    mispronounced_words.add(word_text)
-                elif word.get('AccuracyScore') < LOW_PRON_ACCURACY_SCORE:
-                    if word_text not in mispronounced_words:
-                        low_accuracy_words.add(word_text)
+                if word_text and word.get('AccuracyScore'):
+                    if word.get('ErrorType') == 'Mispronunciation':
+                        mispronounced_words.add(word_text)
+                    elif word.get('AccuracyScore') < LOW_PRON_ACCURACY_SCORE:
+                        if word_text not in mispronounced_words:
+                            low_accuracy_words.add(word_text)
 
     return mispronounced_words, low_accuracy_words
 

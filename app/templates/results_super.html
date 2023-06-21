@@ -179,10 +179,7 @@ Speaking practice
                   <div id="collapseErrors4" class="accordion-collapse collapse" aria-labelledby="headingErrors4" data-bs-parent="#improvementAccordion4">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> Temporarily empty</li>
-                           {% for error in results.pronunciation_json.errors %}
-                           <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
-                           {% endfor %}
+                           <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ pron_errors.errors }}</li>
                         </ul>
                      </div>
                   </div>
@@ -196,7 +193,7 @@ Speaking practice
                   <div id="collapseRecommendations4" class="accordion-collapse collapse" aria-labelledby="headingRecommendations4" data-bs-parent="#improvementAccordion4">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> Temporarily empty</li>
+                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ pron_errors.recommendations }}</li>
                         </ul>
                      </div>
                   </div>
@@ -255,13 +252,6 @@ Speaking practice
       </div>
    </div>
 </div>
-<div class="toast">
-   <div class="toast-header">
-      <strong class="mr-auto"></strong> <!-- data-error-type will be inserted here -->
-   </div>
-   <div class="toast-body">
-      <!-- Error explanation, wrong and corrected text will be inserted here -->
-   </div>
-</div>
+
 <script src="{{ url_for('static', filename='scores.js') }}"></script>
 {% endblock %}

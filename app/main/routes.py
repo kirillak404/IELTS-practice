@@ -5,7 +5,7 @@ from app.api_utils import batch_transcribe_and_assess_pronunciation, batch_gpt_e
 from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
-    get_audio_files, commit_changes, get_misspelled_words
+    get_audio_files, commit_changes, get_misspelled_words, get_pron_errors_and_recommendations
 from app import db
 
 
@@ -114,8 +114,10 @@ def get_speaking_attempt(user_subsection_attempt_id):
     # Advanced Pronunciation Analysis
     answers = user_subsection_attempt.user_answers
     pron_scores = user_subsection_attempt.aggregate_scores()
+    pron_errors = get_pron_errors_and_recommendations(answers)
     return render_template('results_super.html', results=results,
-                           answers=answers, pron_scores=pron_scores)
+                           answers=answers, pron_scores=pron_scores,
+                           pron_errors=pron_errors)
 
 
 @login_required

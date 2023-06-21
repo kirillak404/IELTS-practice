@@ -9,6 +9,9 @@ from app import db
 from app.models import QuestionSet, Subsection
 
 
+LOW_PRON_ACCURACY_SCORE = 90
+
+
 def validation_class(field):
     if field.errors:
         return "is-invalid"
@@ -127,7 +130,7 @@ def convert_answer_object_to_html(answer):
             word = f"""<span data-toggle="tooltip" title="This word was omitted" class="word_omitted">{word_text}</span>"""
         elif word["ErrorType"] == "Insertion":
             word = f"""<span data-toggle="tooltip" title="This word is probably redundant" class="word_insertion">{word_text}</span>"""
-        elif score < 90:
+        elif score < LOW_PRON_ACCURACY_SCORE:
             word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%" class="score-low">{word_text}</span>"""
         else:
             word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%">{word_text}</span>"""
@@ -148,9 +151,47 @@ def get_misspelled_words(transcriptions_and_pron_assessments: list):
         try:
             words = item["pronunciation"]['NBest'][0]['Words']
         except (KeyError, IndexError, TypeError):
-            pass
+            continue
         else:
             for word in words:
                 if word.get('ErrorType') == 'Mispronunciation':
                     misspelled_words.add(word.get('Word'))
     return list(misspelled_words)
+
+
+def get_words_low_pron_accuracy(answers: list) -> tuple:
+    mispronounced_words, low_accuracy_words = set(), set()
+
+    for answer in answers:
+        pron_json = answer.pronunciation_assessment_json
+        if pron_json and pron_json['RecognitionStatus'] == 'Success':
+            try:
+                words = pron_json['NBest'][0]['Words']
+            except (KeyError, IndexError, TypeError):
+                continue
+
+            for word in words:
+                word_text = word.get('Word')
+                if word.get('ErrorType') == 'Mispronunciation':
+                    mispronounced_words.add(word_text)
+                elif word.get('AccuracyScore') < LOW_PRON_ACCURACY_SCORE:
+                    if word_text not in mispronounced_words:
+                        low_accuracy_words.add(word_text)
+
+    return mispronounced_words, low_accuracy_words
+
+
+def get_pron_errors_and_recommendations(answers: list) -> dict:
+    mispronounced_words, low_accuracy_words = get_words_low_pron_accuracy(answers)
+
+    if mispronounced_words:
+        mispronounced_words = f'Mispronounced words: {", ".join(mispronounced_words)}'
+    else:
+        mispronounced_words = "Wow, you don't have any errors!"
+
+    if low_accuracy_words:
+        low_accuracy_words = f'Words with low pronunciation accuracy: {", ".join(low_accuracy_words)}'
+    else:
+        low_accuracy_words = "Sorry, no recommendations in this case..."
+
+    return {'errors': mispronounced_words, 'recommendations': low_accuracy_words}

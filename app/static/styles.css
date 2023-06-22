@@ -4,23 +4,6 @@ nav .navbar-brand
     font-size: xx-large;
 }
 
-/* Colors for brand */
-nav .navbar-brand .blue
-{
-    color: #537fbe;
-}
-nav .navbar-brand .red
-{
-    color: #ea433b;
-}
-nav .navbar-brand .yellow
-{
-    color: #f5b82e;
-}
-nav .navbar-brand .green
-{
-    color: #2e944b;
-}
 
 .table-header {
   background-color: #f8f9fa;
@@ -295,3 +278,13 @@ font-size: 0.8em;
 .word_omitted { background-color: #6c757d; color: white; }
 .word_insertion { background-color: #20c997; color: white; }
 .score-low { background-color: var(--rating-color-meh); color: black; }
+
+
+.bd-lead {
+    font-size: calc(1.275rem + .3vw);
+    font-weight: 300
+}
+
+.bd-title {
+   font-size:3rem
+}

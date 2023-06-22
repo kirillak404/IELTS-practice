@@ -3,12 +3,14 @@
 Result
 {% endblock %}
 {% block h1 %}
-Speaking practice
+Speaking results
 {% endblock %}
 {% block h2 %}
+Part 1: Introduction and Interview
 {% endblock %}
 {% block content %}
-<h3 class="mb-4">Your results</h3>
+
+
 <div class="row">
    <!-- Fluency and Coherence -->
    <div class="col-lg-6 mb-4">
@@ -216,8 +218,8 @@ Speaking practice
       <ul class="list-group list-group-flush mt-2">
         {% for answer in answers %}
         <li class="list-group-item">
-          <p class="question">Question: {{ answer.question.text }}</p>
-          <p>Answer: {{ convert_answer_object_to_html(answer)|safe }}</p>
+          <p class="question">Q: {{ answer.question.text }}</p>
+          <p>A: {{ convert_answer_object_to_html(answer)|safe }}</p>
         </li>
         {% endfor %}
       </ul>

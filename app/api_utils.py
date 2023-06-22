@@ -94,7 +94,7 @@ def check_grammar_via_ginger(text: str) -> dict:
 
 
 def get_gpt_json_completion(messages: list,
-                            model="gpt-3.5-turbo-0613",
+                            model="gpt-3.5-turbo",
                             temperature=0) -> dict:
     for _ in range(10):
         try:
@@ -106,12 +106,13 @@ def get_gpt_json_completion(messages: list,
             print(completion["usage"])
             gpt_response_json_string = completion.choices[0].message["content"]
             gpt_response_dict = json.loads(gpt_response_json_string)
-        except (openai.error.APIError, openai.error.RateLimitError, openai.error.APIError) as e:
+        except (openai.error.APIError, openai.error.RateLimitError, openai.error.APIError, openai.error.ServiceUnavailableError) as e:
             print(e.error['message'])
             time.sleep(1)
         except json.decoder.JSONDecodeError as e:
             print(gpt_response_json_string)
             print("JSON decoding error, message::", str(e))
+            break
         else:
             return gpt_response_dict
 
@@ -183,7 +184,6 @@ The expected JSON schema for your response is as follows:
 '''
 {json_schema}
 '''"""
-    print(prompt)
     messages = [
         {"role": "system", "content": system},
         {"role": "user", "content": prompt}
@@ -250,5 +250,39 @@ def batch_gpt_evaluate_speaking_new(questions_and_answers: list, score: int, mis
 
         for name, future in futures:
             results[name] = future.result()
-    print(results)
+    gpt_evaluate_all_speaking_criteria(dialogue)
     return results
+
+
+@measure_time
+def gpt_evaluate_all_speaking_criteria(dialogue: str) -> dict:
+    system = "You act as a professional IELTS examiner."
+    json_schema = """{"type":"object","properties":{"Fluency and Coherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}}},"Lexical Resource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}}},"Grammatical Range and Accuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}}},"Pronunciation":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}}},"General Feedback":{"type":"string","maxLength":500}},"required":["Fluency and Coherence","Lexical Resource","Grammatical Range and Accuracy","Pronunciation","General Feedback"]}"""
+    prompt = f"""\
+As an AI model operating in the role of a professional IELTS examiner, you are tasked with evaluating a transcription of a student's dialogue from the IELTS Speaking Part 1. The evaluation should be based on the following IELTS criteria: "Fluency and Coherence", "Lexical Resource", "Grammatical Range and Accuracy", and "Pronunciation", using the standard IELTS assessment methodologies.
+
+For each criterion, your response should include:
+
+1. "score": An integer from 0 to 9, indicating the student's performance on the criterion as per the IELTS scale.
+2. "feedback": A string of up to 200 characters, summarizing the student's performance on the criterion, as per IELTS assessment criteria.
+3. "errors": An array, where each entry is a brief description (up to 140 characters long) of a specific error that impacted the student's performance on the criterion, in line with IELTS assessment standards. Each entry should include the type of error, the incorrect phrase/word, and the correct version of the phrase/word.
+4. "recommendations": An array of strings, each entry offering a concise piece of advice (up to 140 characters long) for the student on how to improve their performance on the criterion.
+
+Furthermore, you should provide a "General Feedback" section, which provides an overall evaluation of the student's performance and highlights any significant trends or issues not addressed in the individual criterion evaluations.
+
+Input:
+'''
+{dialogue}
+'''
+
+The expected JSON schema for your response is as follows:
+'''
+{json_schema}
+'''"""
+    messages = [
+        {"role": "system", "content": system},
+        {"role": "user", "content": prompt}
+    ]
+    result = get_gpt_json_completion(messages)
+    print(result)
+    return result

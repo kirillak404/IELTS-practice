@@ -103,7 +103,8 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
-    from app.utils import validation_class, highlight_errors, convert_answer_object_to_html
+    from app.utils import validation_class, highlight_errors, convert_answer_object_to_html, time_ago_in_words
+    app.jinja_env.filters['time_ago_in_words'] = time_ago_in_words
     app.jinja_env.filters['validation_class'] = validation_class
     app.jinja_env.globals.update(highlight_errors=highlight_errors)
     app.jinja_env.globals['convert_answer_object_to_html'] = convert_answer_object_to_html

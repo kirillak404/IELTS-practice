@@ -8,6 +8,8 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from app import db
 from app.models import QuestionSet, Subsection
 
+from humanize import naturaltime
+from datetime import datetime
 
 LOW_PRON_ACCURACY_SCORE = 90
 
@@ -198,3 +200,8 @@ def get_pron_errors_and_recommendations(answers: list) -> dict:
         low_accuracy_words = "Sorry, no recommendations in this case..."
 
     return {'errors': mispronounced_words, 'recommendations': low_accuracy_words}
+
+
+def time_ago_in_words(dtime: datetime) -> str:
+    past_time = datetime.utcnow() - dtime
+    return naturaltime(past_time)

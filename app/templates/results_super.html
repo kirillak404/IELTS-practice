@@ -3,27 +3,27 @@
 Result
 {% endblock %}
 {% block h1 %}
-Speaking results
+Speaking
 {% endblock %}
 {% block h2 %}
-Part 1: Introduction and Interview
+Part 1: Introduction and Interview <small class="text-muted fw-normal fs-6">(completed {{ attempt.created_at | time_ago_in_words }})</small>
 {% endblock %}
 {% block content %}
 
-
+<h2 class="mb-4">Your results<br></h2>
 <div class="row">
    <!-- Fluency and Coherence -->
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ results.fluency_coherence_score }}</div>
+            <div class="rating">{{ result.fluency_coherence_score }}</div>
             <div class="header-content header-content-scores">
                <span class="header-title">Fluency and Coherence</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">{{ results.fluency_coherence_json.feedback }}</p>
+            <p class="card-text">{{ result.fluency_coherence_json.feedback }}</p>
             <div class="accordion " id="improvementAccordion">
                <div class="accordion-item">
                   <h2 class="accordion-header" id="headingErrors">
@@ -34,7 +34,7 @@ Part 1: Introduction and Interview
                   <div id="collapseErrors" class="accordion-collapse collapse" aria-labelledby="headingErrors" data-bs-parent="#improvementAccordion">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           {% for error in results.fluency_coherence_json.errors %}
+                           {% for error in result.fluency_coherence_json.errors %}
                            <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
                            {% endfor %}
                         </ul>
@@ -50,7 +50,7 @@ Part 1: Introduction and Interview
                   <div id="collapseRecommendations" class="accordion-collapse collapse" aria-labelledby="headingRecommendations" data-bs-parent="#improvementAccordion">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           {% for recommendation in results.fluency_coherence_json.recommendations %}
+                           {% for recommendation in result.fluency_coherence_json.recommendations %}
                            <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
                            {% endfor %}
                         </ul>
@@ -65,14 +65,14 @@ Part 1: Introduction and Interview
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ results.lexical_resource_score }}</div>
+            <div class="rating">{{ result.lexical_resource_score }}</div>
             <div class="header-content header-content-scores">
                <span class="header-title">Lexical Resource</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">{{ results.lexical_resource_json.feedback }}</p>
+            <p class="card-text">{{ result.lexical_resource_json.feedback }}</p>
             <div class="accordion " id="improvementAccordion2">
                <div class="accordion-item">
                   <h2 class="accordion-header" id="headingErrors2">
@@ -83,7 +83,7 @@ Part 1: Introduction and Interview
                   <div id="collapseErrors2" class="accordion-collapse collapse" aria-labelledby="headingErrors" data-bs-parent="#improvementAccordion2">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           {% for error in results.lexical_resource_json.errors %}
+                           {% for error in result.lexical_resource_json.errors %}
                            <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
                            {% endfor %}
                         </ul>
@@ -99,7 +99,7 @@ Part 1: Introduction and Interview
                   <div id="collapseRecommendations2" class="accordion-collapse collapse" aria-labelledby="headingRecommendations2" data-bs-parent="#improvementAccordion">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           {% for recommendation in results.lexical_resource_json.recommendations %}
+                           {% for recommendation in result.lexical_resource_json.recommendations %}
                            <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
                            {% endfor %}
                         </ul>
@@ -114,14 +114,14 @@ Part 1: Introduction and Interview
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ results.grammatical_range_accuracy_score }}</div>
+            <div class="rating">{{ result.grammatical_range_accuracy_score }}</div>
             <div class="header-content header-content-scores">
                <span class="header-title">Grammatical range and accuracy</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">{{ results.grammatical_range_accuracy_json.feedback }}</p>
+            <p class="card-text">{{ result.grammatical_range_accuracy_json.feedback }}</p>
             <div class="accordion " id="improvementAccordion3">
                <div class="accordion-item">
                   <h2 class="accordion-header" id="headingErrors3">
@@ -132,7 +132,7 @@ Part 1: Introduction and Interview
                   <div id="collapseErrors3" class="accordion-collapse collapse" aria-labelledby="headingErrors3" data-bs-parent="#improvementAccordion3">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           {% for error in results.grammatical_range_accuracy_json.errors %}
+                           {% for error in result.grammatical_range_accuracy_json.errors %}
                            <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
                            {% endfor %}
                         </ul>
@@ -148,7 +148,7 @@ Part 1: Introduction and Interview
                   <div id="collapseRecommendations3" class="accordion-collapse collapse" aria-labelledby="headingRecommendations3" data-bs-parent="#improvementAccordion3">
                      <div class="accordion-body">
                         <ul class="list-unstyled">
-                           {% for recommendation in results.grammatical_range_accuracy_json.recommendations %}
+                           {% for recommendation in result.grammatical_range_accuracy_json.recommendations %}
                            <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
                            {% endfor %}
                         </ul>
@@ -163,14 +163,14 @@ Part 1: Introduction and Interview
    <div class="col-lg-6 mb-4">
       <div class="card">
          <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ results.pronunciation_score }}</div>
+            <div class="rating">{{ result.pronunciation_score }}</div>
             <div class="header-content header-content-scores">
                <span class="header-title">Pronunciation</span>
                <span class="score-text"></span>
             </div>
          </h5>
          <div class="card-body">
-            <p class="card-text">{{ results.pronunciation_json.feedback }}</p>
+            <p class="card-text">{{ result.pronunciation_json.feedback }}</p>
             <div class="accordion " id="improvementAccordion4">
                <div class="accordion-item">
                   <h2 class="accordion-header" id="headingErrors4">
@@ -205,7 +205,7 @@ Part 1: Introduction and Interview
       </div>
    </div>
 </div>
-<h3 class="mb-4 mt-4">Advanced Pronunciation Analysis</h3>
+<h2 class="mb-4 mt-4">Pronunciation Analysis</h2>
 <div class="row">
    <!-- Transcription Column (Wider) -->
    <div class="col-lg-8 mb-4">

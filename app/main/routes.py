@@ -94,7 +94,6 @@ def speaking_practice_post():
                             user_subsection_attempt_id=subsection_attempt.id))
 
 
-
 @login_required
 @bp.route('/section/speaking/attempt/<int:user_subsection_attempt_id>/')
 def get_speaking_attempt(user_subsection_attempt_id):
@@ -109,13 +108,14 @@ def get_speaking_attempt(user_subsection_attempt_id):
         abort(403)
 
     # Your results
-    results = user_subsection_attempt.speaking_result
+    result = user_subsection_attempt.speaking_result
 
     # Advanced Pronunciation Analysis
     answers = user_subsection_attempt.user_answers
     pron_scores = user_subsection_attempt.aggregate_scores()
     pron_errors = get_pron_errors_and_recommendations(answers)
-    return render_template('results_super.html', results=results,
+    return render_template('results_super.html', result=result,
+                           attempt=user_subsection_attempt,
                            answers=answers, pron_scores=pron_scores,
                            pron_errors=pron_errors)
 

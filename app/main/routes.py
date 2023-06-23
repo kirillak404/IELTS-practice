@@ -81,7 +81,7 @@ def speaking_practice_post():
         questions_set,
         transcriptions_and_pron_assessments)
 
-    # Evaluate user's speaking ability and insert the result TODO UNCOMMENT
+    # Evaluate user's speaking ability and insert the result
     pron_score = subsection_attempt.aggregate_scores()["pronunciation_score"]
     misspelled_words = get_misspelled_words(transcriptions_and_pron_assessments)
     gpt_speaking_result = batch_gpt_evaluate_speaking_new(questions_and_answers, pron_score, misspelled_words)
@@ -114,7 +114,7 @@ def get_speaking_attempt(user_subsection_attempt_id):
     answers = user_subsection_attempt.user_answers
     pron_scores = user_subsection_attempt.aggregate_scores()
     pron_errors = get_pron_errors_and_recommendations(answers)
-    return render_template('results_super.html', result=result,
+    return render_template('section_results.html', result=result,
                            attempt=user_subsection_attempt,
                            answers=answers, pron_scores=pron_scores,
                            pron_errors=pron_errors)
@@ -137,8 +137,3 @@ def reset_section_progress():
         db.session.commit()
 
     return redirect(url_for('main.speaking_practice_get'))
-
-
-@bp.route('/test')
-def test_route():
-    return render_template('results_super.html')

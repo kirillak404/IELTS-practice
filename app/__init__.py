@@ -1,9 +1,8 @@
+from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
-from authlib.integrations.flask_client import OAuth
 
-from app.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
 from config import Config
 
 db = SQLAlchemy()
@@ -25,7 +24,7 @@ def create_app(config_class=Config):
         # importing models
         from app import models
 
-        # creating tables
+        # creating database
         db.create_all()
 
         # creating tables if not exists

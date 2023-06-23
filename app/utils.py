@@ -1,15 +1,15 @@
 import time
+from datetime import datetime
 from io import BytesIO
 
 from flask import request, abort
+from humanize import naturaltime
 from pydub import AudioSegment
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 from app import db
-from app.models import QuestionSet, Subsection
 from app.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
-from humanize import naturaltime
-from datetime import datetime
+from app.models import QuestionSet, Subsection
 
 LOW_PRON_ACCURACY_SCORE = 90
 

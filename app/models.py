@@ -5,7 +5,7 @@ from flask import abort
 from flask_login import UserMixin
 from sqlalchemy import func, desc
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy.dialects.sqlite import JSON
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 from app import db, login
@@ -303,7 +303,7 @@ class UserSubsectionAnswer(db.Model):
                                lazy='joined')
 
     transcribed_answer = db.Column(db.Text)
-    pronunciation_assessment_json = db.Column(JSON)
+    pronunciation_assessment_json = db.Column(JSONB)
     accuracy_score = db.Column(db.Float)
     fluency_score = db.Column(db.Float)
     completeness_score = db.Column(db.Float)
@@ -356,13 +356,13 @@ class UserSpeakingAttemptResult(db.Model):
         'user_subsection_attempts.id'), unique=True, nullable=False)
     general_feedback = db.Column(db.Text)
     fluency_coherence_score = db.Column(db.Integer, nullable=False)
-    fluency_coherence_json = db.Column(JSON, nullable=False)
+    fluency_coherence_json = db.Column(JSONB, nullable=False)
     grammatical_range_accuracy_score = db.Column(db.Integer, nullable=False)
-    grammatical_range_accuracy_json = db.Column(JSON, nullable=False)
+    grammatical_range_accuracy_json = db.Column(JSONB, nullable=False)
     lexical_resource_score = db.Column(db.Integer, nullable=False)
-    lexical_resource_json = db.Column(JSON, nullable=False)
+    lexical_resource_json = db.Column(JSONB, nullable=False)
     pronunciation_score = db.Column(db.Integer, nullable=False)
-    pronunciation_json = db.Column(JSON, nullable=False)
+    pronunciation_json = db.Column(JSONB, nullable=False)
 
     @staticmethod
     def insert_speaking_result(subsection_attempt, gpt_speaking_result):

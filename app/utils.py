@@ -7,25 +7,79 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 
 from app import db
 from app.models import QuestionSet, Subsection
-
+from app.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
 from humanize import naturaltime
 from datetime import datetime
 
 LOW_PRON_ACCURACY_SCORE = 90
 
 
-def validation_class(field):
-    if field.errors:
-        return "is-invalid"
-    elif field.data or field.raw_data:
-        return "is-valid"
-    return ""
+def create_and_fill_out_tables(models):
+    # inserting sections
+    for section in SECTIONS:
+        new_section = models.Section(**section)
+        db.session.add(new_section)
 
+    db.session.commit()
 
-def highlight_errors(content, mistakes):
-    for error in mistakes:
-        content = content.replace(error['IncorrectText'], f'<span class="highlight" data-bs-toggle="tooltip" title="{error["Explanation"]}">{error["IncorrectText"]}</span>')
-    return content
+    # inserting subsections
+    for subsection in SUBSECTIONS:
+        section = models.Section.query.filter_by(
+            name=subsection["section"]).first()
+        subsection["section"] = section
+        new_subsection = models.Subsection(**subsection)
+        db.session.add(new_subsection)
+    db.session.commit()
+
+    # inserting PART 1 topics
+    for question_set in QUESTIONS:
+        subsection = models.Subsection.query.filter_by(
+            name=question_set["subsection"]).first()
+
+        # inserting new subsection_question
+        new_question_set = models.QuestionSet(subsection=subsection)
+        db.session.add(new_question_set)
+
+        # inserting questions inside topic
+        for question in question_set["questions"]:
+            new_question = models.Question(text=question,
+                                           question_set=new_question_set)
+            db.session.add(new_question)
+
+    db.session.commit()
+
+    # inserting PART 2-3 topics
+    for topic in TOPICS:
+        subsection = models.Subsection.query.filter_by(
+            name=topic["subsection"]).first()
+
+        # inserting new topic
+        new_topic = models.Topic(name=topic["name"],
+                                 description=topic["description"])
+        db.session.add(new_topic)
+
+        # inserting topic GENERAL questions
+        new_question_set = models.QuestionSet(subsection=subsection,
+                                              topic=new_topic)
+        db.session.add(new_question_set)
+
+        for question in topic["general_questions"]:
+            new_question = models.Question(text=question,
+                                           question_set=new_question_set)
+            db.session.add(new_question)
+
+        # inserting topic DISCUSSION questions
+        subsection = models.Subsection.query.filter_by(
+            name="Two-way Discussion").first()
+        new_question_set = models.QuestionSet(subsection=subsection,
+                                              topic=new_topic)
+
+        for question in topic["discussion_questions"]:
+            new_question = models.Question(text=question,
+                                           question_set=new_question_set)
+            db.session.add(new_question)
+
+    db.session.commit()
 
 
 def measure_time(func):

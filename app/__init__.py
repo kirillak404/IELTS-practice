@@ -28,73 +28,10 @@ def create_app(config_class=Config):
         # creating tables
         db.create_all()
 
-        # creating defaults data TODO вынести в utils
-        if not models.Section.query.first():  # if no sections in database
-
-            # inserting sections
-            for section in SECTIONS:
-                new_section = models.Section(**section)
-                db.session.add(new_section)
-
-            db.session.commit()
-
-            # inserting subsections
-            for subsection in SUBSECTIONS:
-                section = models.Section.query.filter_by(
-                    name=subsection["section"]).first()
-                subsection["section"] = section
-                new_subsection = models.Subsection(**subsection)
-                db.session.add(new_subsection)
-            db.session.commit()
-
-            # inserting PART 1 topics
-            for question_set in QUESTIONS:
-                subsection = models.Subsection.query.filter_by(
-                    name=question_set["subsection"]).first()
-
-                # inserting new subsection_question
-                new_question_set = models.QuestionSet(subsection=subsection)
-                db.session.add(new_question_set)
-
-                # inserting questions inside topic
-                for question in question_set["questions"]:
-                    new_question = models.Question(text=question,
-                                                   question_set=new_question_set)
-                    db.session.add(new_question)
-
-            db.session.commit()
-
-            # inserting PART 2-3 topics
-            for topic in TOPICS:
-                subsection = models.Subsection.query.filter_by(
-                    name=topic["subsection"]).first()
-
-                # inserting new topic
-                new_topic = models.Topic(name=topic["name"],
-                                         description=topic["description"])
-                db.session.add(new_topic)
-
-                # inserting topic GENERAL questions
-                new_question_set = models.QuestionSet(subsection=subsection,
-                                                       topic=new_topic)
-                db.session.add(new_question_set)
-
-                for question in topic["general_questions"]:
-                    new_question = models.Question(text=question,
-                                                   question_set=new_question_set)
-                    db.session.add(new_question)
-
-                # inserting topic DISCUSSION questions
-                subsection = models.Subsection.query.filter_by(
-                    name="Two-way Discussion").first()
-                new_question_set = models.QuestionSet(subsection=subsection, topic=new_topic)
-
-                for question in topic["discussion_questions"]:
-                    new_question = models.Question(text=question,
-                                                   question_set=new_question_set)
-                    db.session.add(new_question)
-
-            db.session.commit()
+        # creating tables if not exists
+        if not models.Section.query.first():
+            from app.utils import create_and_fill_out_tables
+            create_and_fill_out_tables(models)
 
     # register blueprints
     from app.auth import bp as auth_bp
@@ -103,9 +40,7 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
-    from app.utils import validation_class, highlight_errors, convert_answer_object_to_html, time_ago_in_words
+    from app.utils import convert_answer_object_to_html, time_ago_in_words
     app.jinja_env.filters['time_ago_in_words'] = time_ago_in_words
-    app.jinja_env.filters['validation_class'] = validation_class
-    app.jinja_env.globals.update(highlight_errors=highlight_errors)
     app.jinja_env.globals['convert_answer_object_to_html'] = convert_answer_object_to_html
     return app

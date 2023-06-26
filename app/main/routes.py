@@ -81,7 +81,7 @@ def speaking_practice_post():
         questions_set,
         transcriptions_and_pron_assessments)
 
-    # Evaluate user's speaking ability and insert the result
+    # Evaluate user's speaking pronunciation and insert the result
     pron_score = subsection_attempt.aggregate_scores()["pronunciation_score"]
     misspelled_words = get_misspelled_words(transcriptions_and_pron_assessments)
     gpt_speaking_result = batch_gpt_evaluate_speaking_new(questions_and_answers, pron_score, misspelled_words)

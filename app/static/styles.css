@@ -206,7 +206,7 @@ font-size: 1.15rem;
 --rating-color-default: #2980b9;
 --rating-color-background: #A1A2A0;
 --rating-color-good: #27ae60;
---rating-color-meh: #f1c40f;
+--rating-color-meh: #ffc107;
 --rating-color-bad: #e74c3c;
 }
 
@@ -300,4 +300,19 @@ font-size: 0.8em;
     margin-bottom: 1.25rem;
     background-color: var(--bd-callout-bg, var(--bs-gray-100));
     border-left: 0.25rem solid var(--bd-callout-border, var(--bs-gray-300));
+}
+
+body {
+    background-color: #f8f9fa; /* Это серый цвет Bootstrap */
+}
+
+.completed_dot {
+    height: 8px;
+    width: 8px;
+    background-color: #28a745; /* Это зеленый цвет Bootstrap для кнопок Success */
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    position: relative;
+    top: -2px; /* подгонка положения */
 }

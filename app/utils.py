@@ -120,8 +120,8 @@ def get_practice_data(subsection, last_topic):
 
 # speaking_practice_post helpers
 
-def get_audio_files(questions_set):
-    audio_files = [request.files[key] for key in request.files.keys() if key.startswith('audio_')]
+def get_audio_files(questions_set) -> tuple:
+    audio_files = tuple(request.files[key] for key in request.files.keys() if key.startswith('audio_'))
     if len(audio_files) != len(questions_set.questions):
         abort(400, "Audio recordings do not match question count.")
     return audio_files

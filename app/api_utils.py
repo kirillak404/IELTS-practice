@@ -1,29 +1,45 @@
 import base64
-from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import openai
 import requests
+from flask import abort
+
 from werkzeug.datastructures import FileStorage
 
-from app.utils import measure_time, get_chunk, convert_audio, convert_dialogue_to_string
+from app.utils import measure_time, get_chunk, convert_audio, \
+    convert_dialogue_to_string
+
+
+
+# def retry(func: function, attempts: int):
+#     def wrapper(*args, **kwargs):
+#         for _ in range(attempts):
+#             try:
+#                 result = func(*args, **kwargs)
+#
+#             except Exception:
+#                 time.sleep(1)
+#                 pass
+#             else:
+#                 return result
+
 
 
 @measure_time
 def transcribe_audio_file(audio_file: FileStorage) -> str:
     audio_file.name = "audio.webm"
-    try:
-        transcript = openai.Audio.transcribe(model="whisper-1",
-                                             file=audio_file,
-                                             language="en")
-        audio_file.seek(0)
-    except Exception as e:
-        print(e)
-        return ""
-    else:
-        return transcript["text"]
+    transcript = openai.Audio.transcribe(model="whisper-1",
+                                         file=audio_file,
+                                         language="en")
+    audio_file.seek(0)
+    transcript = transcript.get("text")
+    if not transcript or transcript == 'Thank you.':
+        return None
+    return transcript
 
 
 def transcribe_and_assess_pronunciation(audio_file: FileStorage) -> dict:
@@ -286,3 +302,28 @@ The expected JSON schema for your response is as follows:
     result = get_gpt_json_completion(messages)
     print(result)
     return result
+
+
+
+
+
+
+@measure_time
+def batch_transcribe_audio_files(audio_files: list) -> tuple:
+    with ThreadPoolExecutor() as executor:
+        return tuple(executor.map(transcribe_audio_file, audio_files))
+
+
+def evaluate_speaking(questions_set, audio_files):
+
+    transcriptions = batch_transcribe_audio_files(audio_files)
+
+    # get questions / answers [string]
+
+    # send full dialog to GPT || send all answers to Azure
+
+    # create pronunciation report
+
+    # qa1 = (question_id, transcribed_answers, pron_assessment_json, metrics)
+    # questions_answers = [qa1, qa2, qa3]
+    pass  # return

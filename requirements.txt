@@ -25,3 +25,6 @@ yarl==1.9.2
 WTForms~=3.0.1
 SQLAlchemy~=2.0.12
 Authlib~=1.2.0
+humanize~=4.6.0
+pydub~=0.25.1
+tenacity~=8.2.2

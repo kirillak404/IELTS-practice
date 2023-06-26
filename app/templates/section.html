@@ -10,25 +10,69 @@
 {% endblock %}
 {% block content %}
 
-<table class="table">
-  <thead>
-    <tr>
-      <th scope="col">Part</th>
-      <th scope="col">Description</th>
-      <th scope="col">Approximate time</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for subsection in subsections %}
-    <tr>
-      <td>Part {{ subsection.part }}: {{ subsection.name }}</td>
-      <td>{{ subsection.description }}</td>
-      <td>{{ subsection.time_limit_minutes }} minutes</td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<div class="my-3 p-3 bg-body rounded shadow-sm">
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th scope="col">Subsection</th>
+                <th scope="col">Status</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong class="text-gray-dark">Part 1: Introduction and Interview</strong>
+                    <span class="d-block text-muted">You will answer questions about yourself</span>
+                </td>
+                <td><span class="completed_dot"></span>Completed</td>
+                <td><button type="button" class="btn btn-outline-success">View results</button></td>
+            </tr>
+            <tr>
+                <td>
+                    <strong class="text-gray-dark">Part 2: Individual Long Turn</strong>
+                    <span class="d-block text-muted">You will be given a topic on a cue card</span>
+                </td>
+                <td>You are here</td>
+                <td><button type="button" class="btn btn-primary">Start practice</button></td>
+            </tr>
+            <tr>
+                <td class="border-bottom-0 pb-0">
+                    <strong class="text-gray-dark">Part 3: Two-way Discussion</strong>
+                    <span class="d-block text-muted">Discuss and justify your opinions</span>
+                </td>
+                <td class="border-bottom-0 pb-0"></td>
+                <td class="border-bottom-0 pb-0"><button type="button" class="btn btn-primary disabled">Start practice</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
-<a href="/section/{{ section.name|lower }}/practice" class="btn btn-primary">Start {{ section.name }} practice</a>
+
+
+
+
+
+
+<!--<table class="table">-->
+<!--  <thead>-->
+<!--    <tr>-->
+<!--      <th scope="col">Part</th>-->
+<!--      <th scope="col">Description</th>-->
+<!--      <th scope="col">Status</th>-->
+<!--    </tr>-->
+<!--  </thead>-->
+<!--  <tbody>-->
+<!--    {% for subsection in subsections %}-->
+<!--    <tr>-->
+<!--      <td>Part {{ subsection.part_number }}: {{ subsection.name }}</td>-->
+<!--      <td>{{ subsection.description }}</td>-->
+<!--      <td>{{ subsection.time_limit_minutes }} minutes</td>-->
+<!--    </tr>-->
+<!--  {% endfor %}-->
+<!--  </tbody>-->
+<!--</table>-->
+
+<!--<a href="/section/{{ section.name|lower }}/practice" class="btn btn-primary">Start {{ section.name }} practice</a>-->
 
 {% endblock %}

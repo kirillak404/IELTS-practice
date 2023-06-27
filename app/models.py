@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from sqlalchemy import func, desc
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy.dialects.postgresql import JSONB
-
+from itertools import zip_longest
 
 from app import db, login
 
@@ -70,6 +70,44 @@ class Section(db.Model):
     def get_by_name(name):
         return Section.query.filter(Section.name.ilike(name)).first_or_404()
 
+    def get_user_subsections_progress(self, user) -> list:
+        """
+        Returns a list of subsections with user's progress status.
+
+        Function retrieves progress of a user for each subsection in a section.
+        The progress status can be "Completed", "In Progress", or "Upcoming".
+
+        Args:
+            user (User): User instance.
+
+        Returns:
+            list[Subsection]: Subsections with progress status.
+        """
+
+        # get user's progress in this section
+        user_progress = user.get_section_progress(self.id)
+
+        # get subsections for this section
+        subsections = Subsection.query.filter_by(section=self).all()
+
+        # get user attempts for this subsection
+        user_attempts = user_progress.user_subsection_attempt if user_progress else ()
+
+        # iterating over subsections and set statuses and attempt id if any
+        zipped = zip_longest(subsections, user_attempts)
+        is_completed = False
+        for subsection, attempt in zipped:
+            if attempt:
+                subsection.status = "Completed"
+                subsection.attempt_id = attempt.id  # set attempt_id for completed subsection
+            else:
+                if not is_completed:
+                    subsection.status = "In Progress"
+                    is_completed = True
+                else:
+                    subsection.status = "Upcoming"
+        return subsections
+
 
 class Subsection(db.Model):
     __tablename__ = 'subsections'
@@ -89,7 +127,8 @@ class Subsection(db.Model):
 
     @staticmethod
     def get_by_section_and_part(section, part):
-        return Subsection.query.filter_by(section=section, part_number=part).first()
+        return Subsection.query.filter_by(section=section,
+                                          part_number=part).first()
 
 
 class Topic(db.Model):
@@ -200,7 +239,8 @@ class UserProgress(db.Model):
         return last_attempt.question_set.topic
 
     @staticmethod
-    def create_or_update_user_progress(current_user, user_progress, section, question_set_id):
+    def create_or_update_user_progress(current_user, user_progress, section,
+                                       question_set_id):
         if not user_progress:
 
             # checking that question_set_id from POST request is valid
@@ -262,7 +302,8 @@ class UserSubsectionAttempt(db.Model):
                                       cascade='all, delete')
 
     def aggregate_scores(self) -> dict:
-        answers = [a for a in self.user_answers if a.pronunciation_assessment_json]
+        answers = [a for a in self.user_answers if
+                   a.pronunciation_assessment_json]
         total_scores = {
             "accuracy_score": 0,
             "fluency_score": 0,
@@ -276,8 +317,10 @@ class UserSubsectionAttempt(db.Model):
         for answer in answers:
             total_scores["accuracy_score"] += int(answer.accuracy_score)
             total_scores["fluency_score"] += int(answer.fluency_score)
-            total_scores["completeness_score"] += int(answer.completeness_score)
-            total_scores["pronunciation_score"] += int(answer.pronunciation_score)
+            total_scores["completeness_score"] += int(
+                answer.completeness_score)
+            total_scores["pronunciation_score"] += int(
+                answer.pronunciation_score)
 
         # Get the average score
         for score in total_scores:
@@ -310,7 +353,8 @@ class UserSubsectionAnswer(db.Model):
     pronunciation_score = db.Column(db.Float)
 
     @staticmethod
-    def insert_user_answers(subsection_attempt, questions_set, transcriptions_and_pron_assessments) -> list:
+    def insert_user_answers(subsection_attempt, questions_set,
+                            transcriptions_and_pron_assessments) -> list:
         questions_and_answers = []
         for question, answer in zip(questions_set.questions,
                                     transcriptions_and_pron_assessments):
@@ -368,13 +412,18 @@ class UserSpeakingAttemptResult(db.Model):
     def insert_speaking_result(subsection_attempt, gpt_speaking_result):
         speaking_attempt_result = UserSpeakingAttemptResult(
             subsection_attempt=subsection_attempt,
-            fluency_coherence_score=gpt_speaking_result['speaking_fluency']['score'],
+            fluency_coherence_score=gpt_speaking_result['speaking_fluency'][
+                'score'],
             fluency_coherence_json=gpt_speaking_result['speaking_fluency'],
-            grammatical_range_accuracy_score=gpt_speaking_result['speaking_grammar']['score'],
-            grammatical_range_accuracy_json=gpt_speaking_result['speaking_grammar'],
-            lexical_resource_score=gpt_speaking_result['speaking_lexis']['score'],
+            grammatical_range_accuracy_score=
+            gpt_speaking_result['speaking_grammar']['score'],
+            grammatical_range_accuracy_json=gpt_speaking_result[
+                'speaking_grammar'],
+            lexical_resource_score=gpt_speaking_result['speaking_lexis'][
+                'score'],
             lexical_resource_json=gpt_speaking_result['speaking_lexis'],
-            pronunciation_score=gpt_speaking_result['speaking_pronunciation']['score'],
+            pronunciation_score=gpt_speaking_result['speaking_pronunciation'][
+                'score'],
             pronunciation_json=gpt_speaking_result['speaking_pronunciation']
         )
         db.session.add(speaking_attempt_result)

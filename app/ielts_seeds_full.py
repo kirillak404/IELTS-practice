@@ -9,25 +9,25 @@ SECTIONS = [
      "description": "IELTS Writing is a section of the IELTS exam that assesses your English writing skills through specific tasks such as report writing or graph description."},
 
     {"name": "Speaking",
-     "description": "IELTS Speaking tests your English oral communication skills."}
+     "description": "The IELTS Speaking test evaluates your English oral skills"}
 ]
 
 SUBSECTIONS = [
     {"name": "Introduction and Interview",
      "part_number": 1,
-     "description": "You will answer questions about yourself, your background, and general topics in a conversation with the examiner.",
+     "description": "Answer general questions about yourself and various familiar topics",
      "time_limit_minutes": 5,
      "section": "Speaking"},
 
     {"name": "Individual Long Turn",
      "part_number": 2,
-     "description": "You will be given a topic on a cue card, have 1 minute to prepare, and then speak for 1-2 minutes on the topic.",
+     "description": "Discuss a specific topic presented on a cue card",
      "time_limit_minutes": 4,
      "section": "Speaking"},
 
     {"name": "Two-way Discussion",
      "part_number": 3,
-     "description": "Discuss and justify your opinions on the topic given in Part 2 while exploring related issues in a detailed conversation with the examiner.",
+     "description": "Engage in a deeper, more abstract discussion on the topic from Part 2",
      "time_limit_minutes": 5,
      "section": "Speaking"}
 ]

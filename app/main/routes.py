@@ -20,7 +20,7 @@ def index():
 @bp.route('/section/<name>')
 def render_section(name):
     section = Section.get_by_name(name)
-    subsections = Subsection.query.filter_by(section=section).all()
+    subsections = section.get_user_subsections_progress(current_user)
 
     return render_template("section.html",
                            section=section,

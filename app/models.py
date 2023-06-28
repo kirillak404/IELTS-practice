@@ -12,24 +12,27 @@ from app import db, login
 
 
 class User(UserMixin, db.Model):
+    """User model. Represents registered users of the app."""
+
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), index=True, unique=True, nullable=False)
-    is_email_verified = db.Column(db.Boolean, default=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique user ID
+    email = db.Column(db.String(255), index=True, unique=True,
+                      nullable=False)  # User email address
+    is_email_verified = db.Column(db.Boolean, default=False)  # Boolean indicating if email is verified
 
-    hashed_password = db.Column(db.String(128))
-    google_account_id = db.Column(db.String(255), unique=True)
+    hashed_password = db.Column(db.String(128))  # Hashed password for users who registered via email
+    google_account_id = db.Column(db.String(255), unique=True)  # Google account ID for users who registered via Google
 
-    first_name = db.Column(db.String(255))
-    last_name = db.Column(db.String(255))
-    profile_picture = db.Column(db.String(255))
-    locale = db.Column(db.String(10))
+    first_name = db.Column(db.String(255))  # User's first name
+    last_name = db.Column(db.String(255))  # User's last name
+    profile_picture = db.Column(db.String(255))  # URL to the user's profile picture
+    locale = db.Column(db.String(10))  # User's locale (e.g. en-US)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)  # The time when the user account was created
 
     user_progress = db.relationship('UserProgress', backref='user',
-                                    cascade='all, delete')
+                                    cascade='all, delete')  # Tracks user's progress in IELTS sections
 
     def __repr__(self):
         return '<User %r>' % self.email
@@ -55,13 +58,15 @@ def load_user(id):
 
 
 class Section(db.Model):
+    """Section model. Represents a section in the IELTS exam."""
+
     __tablename__ = 'sections'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True, nullable=False)
-    description = db.Column(db.String(255), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique section ID
+    name = db.Column(db.String(128), unique=True, nullable=False)  # Section name
+    description = db.Column(db.String(255), nullable=False)  # Description of the section
 
-    subsections = db.relationship('Subsection', back_populates='section')
+    subsections = db.relationship('Subsection', back_populates='section')  # List of subsections in a section
 
     def __repr__(self):
         return f"<Section {self.name}>"
@@ -94,15 +99,14 @@ class Section(db.Model):
         user_attempts = user_progress.user_subsection_attempt if user_progress else ()
 
         # iterating over subsections and set statuses and attempt id if any
-        zipped = zip_longest(subsections, user_attempts)
         is_completed = False
-        for subsection, attempt in zipped:
+        for subsection, attempt in zip_longest(subsections, user_attempts):
             if attempt:
                 subsection.status = "Completed"
                 subsection.attempt_id = attempt.id  # set attempt_id for completed subsection
             else:
                 if not is_completed:
-                    subsection.status = "In Progress"
+                    subsection.status = "Available"
                     is_completed = True
                 else:
                     subsection.status = "Upcoming"
@@ -110,17 +114,18 @@ class Section(db.Model):
 
 
 class Subsection(db.Model):
+    """Subsection model. Represents a subsection in an IELTS exam section."""
+
     __tablename__ = 'subsections'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
-    part_number = db.Column(db.Integer, nullable=False)
-    description = db.Column(db.String(255), nullable=False)
-    time_limit_minutes = db.Column(db.Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique subsection ID
+    name = db.Column(db.String(128), nullable=False)  # Subsection name
+    part_number = db.Column(db.Integer, nullable=False)  # Order number of the subsection within the section
+    description = db.Column(db.String(255), nullable=False)  # Description of the subsection
+    time_limit_minutes = db.Column(db.Integer, nullable=False)  # Time limit for the subsection in minutes
 
-    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'),
-                           nullable=False)
-    section = db.relationship('Section', back_populates='subsections')
+    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)  # ID of the section this subsection belongs to
+    section = db.relationship('Section', back_populates='subsections')  # Relationship to the parent section
 
     def __repr__(self):
         return f"<Subsection {self.name}>"
@@ -132,30 +137,33 @@ class Subsection(db.Model):
 
 
 class Topic(db.Model):
+    """Topic model. Represents a topic that can appear in a subsection."""
+
     __tablename__ = 'topics'
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
-    description = db.Column(db.String(255), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique topic ID
+    name = db.Column(db.String(128), nullable=False)  # Topic name
+    description = db.Column(db.String(255), nullable=False)  # Description of the topic
 
     def __repr__(self):
         return f"<Topic {self.name}>"
 
 
 class QuestionSet(db.Model):
+    """QuestionSet model. Represents a set of questions for a subsection-topic pair."""
+
     __tablename__ = 'question_sets'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)  # Unique question set ID
 
-    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'),
-                              nullable=False)
-    subsection = db.relationship('Subsection', backref='question_sets')
+    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'), nullable=False)  # ID of the subsection this question set belongs to
+    subsection = db.relationship('Subsection', backref='question_sets')  # Relationship to the subsection
 
-    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))
-    topic = db.relationship('Topic', backref='question_sets', lazy='joined')
+    topic_id = db.Column(db.Integer, db.ForeignKey('topics.id'))  # ID of the topic this question set is about
+    topic = db.relationship('Topic', backref='question_sets', lazy='joined')  # Relationship to the topic
 
-    questions = db.relationship('Question', backref='question_set',
-                                lazy='joined')
+    questions = db.relationship('Question', backref='question_set', lazy='joined')  # List of questions in the set
+
     __table_args__ = (
         db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
 
@@ -191,29 +199,29 @@ class QuestionSet(db.Model):
 
 
 class Question(db.Model):
+    """Question model. Represents a question in a question set."""
+
     __tablename__ = 'questions'
 
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.String(1000), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique question ID
+    text = db.Column(db.String(1000), nullable=False)  # Text of the question
 
-    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'),
-                                nullable=False)
+    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'), nullable=False)  # ID of the question set this question belongs to
 
 
 class UserProgress(db.Model):
+    """UserProgress model. Represents the progress of a user in a section."""
+
     __tablename__ = 'user_progress'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'),
-                           nullable=False)
-    next_subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'))
-    is_completed = db.Column(db.Boolean, nullable=False, default=False)
-    completed_at = db.Column(db.DateTime)
+    id = db.Column(db.Integer, primary_key=True)  # Unique progress ID
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ID of the user this progress record belongs to
+    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)  # ID of the section this progress record is for
+    next_subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'))  # ID of the next subsection the user should attempt
+    is_completed = db.Column(db.Boolean, nullable=False, default=False)  # Boolean indicating if the section has been completed
+    completed_at = db.Column(db.DateTime)  # The time when the section was completed
 
-    user_subsection_attempt = db.relationship('UserSubsectionAttempt',
-                                              backref='user_progress',
-                                              cascade='all, delete')
+    user_subsection_attempt = db.relationship('UserSubsectionAttempt', backref='user_progress', cascade='all, delete')  # Tracks user's attempts in subsections
 
     def __init__(self, *args, **kwargs):
         super(UserProgress, self).__init__(*args, **kwargs)
@@ -274,35 +282,24 @@ class UserProgress(db.Model):
 
 
 class UserSubsectionAttempt(db.Model):
+    """UserSubsectionAttempt model. Represents an attempt by a user to answer a question set in a subsection."""
+
     __tablename__ = 'user_subsection_attempts'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_progress_id = db.Column(db.Integer, db.ForeignKey('user_progress.id'),
-                                 nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique attempt ID
+    user_progress_id = db.Column(db.Integer, db.ForeignKey('user_progress.id'), nullable=False)  # ID of the user progress record this attempt is linked to
 
-    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'),
-                              nullable=False)
-    subsection = db.relationship('Subsection',
-                                 backref='user_subsection_attempt')
+    subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'), nullable=False)  # ID of the subsection this attempt is for
+    subsection = db.relationship('Subsection', backref='user_subsection_attempt')  # Relationship to the subsection
 
-    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'),
-                                nullable=False)
-    question_set = db.relationship('QuestionSet',
-                                   backref='user_subsection_attempt')
+    question_set_id = db.Column(db.Integer, db.ForeignKey('question_sets.id'), nullable=False)  # ID of the question set this attempt is for
+    question_set = db.relationship('QuestionSet', backref='user_subsection_attempt')  # Relationship to the question set
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow,
-                           nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)  # The time when the attempt was made
 
-    user_answers = db.relationship('UserSubsectionAnswer',
-                                   backref='subsection_attempt',
-                                   lazy='joined',
-                                   cascade='all, delete')
+    user_answers = db.relationship('UserSubsectionAnswer', backref='subsection_attempt', lazy='joined', cascade='all, delete')  # Tracks user's answers in the attempt
 
-    speaking_result = db.relationship('UserSpeakingAttemptResult',
-                                      uselist=False,
-                                      backref='subsection_attempt',
-                                      lazy='joined',
-                                      cascade='all, delete')
+    speaking_result = db.relationship('UserSpeakingAttemptResult', uselist=False, backref='subsection_attempt', lazy='joined', cascade='all, delete')  # Stores result of speaking attempt
 
     def aggregate_scores(self) -> dict:
         answers = tuple(a for a in self.user_answers if
@@ -329,27 +326,22 @@ class UserSubsectionAttempt(db.Model):
 
 
 class UserSubsectionAnswer(db.Model):
+    """UserSubsectionAnswer model. Represents a user's answer to a question in an attempt."""
+
     __tablename__ = 'user_subsection_answers'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_subsection_attempt_id = db.Column(db.Integer,
-                                           db.ForeignKey(
-                                               'user_subsection_attempts.id'),
-                                           nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique answer ID
+    user_subsection_attempt_id = db.Column(db.Integer, db.ForeignKey('user_subsection_attempts.id'), nullable=False)  # ID of the attempt this answer is part of
 
-    question_id = db.Column(db.Integer,
-                            db.ForeignKey('questions.id'),
-                            nullable=False)
-    question = db.relationship('Question',
-                               backref='user_subsection_answers',
-                               lazy='joined')
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)  # ID of the question this answer is for
+    question = db.relationship('Question', backref='user_subsection_answers', lazy='joined')  # Relationship to the question
 
-    transcribed_answer = db.Column(db.Text)
-    pronunciation_assessment_json = db.Column(JSONB)
-    accuracy_score = db.Column(db.Float)
-    fluency_score = db.Column(db.Float)
-    completeness_score = db.Column(db.Float)
-    pronunciation_score = db.Column(db.Float)
+    transcribed_answer = db.Column(db.Text)  # Text of the transcribed answer
+    pronunciation_assessment_json = db.Column(JSONB)  # JSON data from pronunciation assessment
+    accuracy_score = db.Column(db.Float)  # Score for accuracy
+    fluency_score = db.Column(db.Float)  # Score for fluency
+    completeness_score = db.Column(db.Float)  # Score for completeness
+    pronunciation_score = db.Column(db.Float)  # Score for pronunciation
 
     @staticmethod
     def insert_user_answers(subsection_attempt, answers_evaluation) -> None:
@@ -371,20 +363,21 @@ class UserSubsectionAnswer(db.Model):
 
 
 class UserSpeakingAttemptResult(db.Model):
+    """UserSpeakingAttemptResult model. Represents the result of a speaking attempt."""
+
     __tablename__ = 'user_speaking_attempt_results'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_subsection_attempt_id = db.Column(db.Integer, db.ForeignKey(
-        'user_subsection_attempts.id'), unique=True, nullable=False)
-    general_feedback = db.Column(db.Text)
-    fluency_coherence_score = db.Column(db.Integer, nullable=False)
-    fluency_coherence_json = db.Column(JSONB, nullable=False)
-    grammatical_range_accuracy_score = db.Column(db.Integer, nullable=False)
-    grammatical_range_accuracy_json = db.Column(JSONB, nullable=False)
-    lexical_resource_score = db.Column(db.Integer, nullable=False)
-    lexical_resource_json = db.Column(JSONB, nullable=False)
-    pronunciation_score = db.Column(db.Integer, nullable=False)
-    pronunciation_json = db.Column(JSONB, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)  # Unique result ID
+    user_subsection_attempt_id = db.Column(db.Integer, db.ForeignKey('user_subsection_attempts.id'), unique=True, nullable=False)  # ID of the attempt this result is for
+    general_feedback = db.Column(db.Text)  # General feedback for the speaking attempt
+    fluency_coherence_score = db.Column(db.Integer, nullable=False)  # Score for fluency and coherence
+    fluency_coherence_json = db.Column(JSONB, nullable=False)  # JSON data for fluency and coherence
+    grammatical_range_accuracy_score = db.Column(db.Integer, nullable=False)  # Score for grammatical range and accuracy
+    grammatical_range_accuracy_json = db.Column(JSONB, nullable=False)  # JSON data for grammatical range and accuracy
+    lexical_resource_score = db.Column(db.Integer, nullable=False)  # Score for lexical resource
+    lexical_resource_json = db.Column(JSONB, nullable=False)  # JSON data for lexical resource
+    pronunciation_score = db.Column(db.Integer, nullable=False)  # Score for pronunciation
+    pronunciation_json = db.Column(JSONB, nullable=False)  # JSON data for pronunciation
 
     @staticmethod
     def insert_speaking_result(subsection_attempt, speaking_result):

@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 
-from app.api_utils import evaluate_ielts_speaking
+from app.ielts_speaking import evaluate_ielts_speaking
 from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \

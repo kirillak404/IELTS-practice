@@ -32,7 +32,7 @@ Speaking practice
             <td><span class="completed_dot"></span>{{ subsection.status }}</td>
             <td><a href="{{ url_for('main.get_speaking_attempt', user_subsection_attempt_id=subsection.attempt_id) }}" class="btn btn-outline-success">View results</a></td>
 
-            {% elif subsection.status == "In Progress" %}
+            {% elif subsection.status == "Available" %}
             <td>{{ subsection.status }}</td>
             <td><a href="{{ url_for('main.speaking_practice_get') }}" class="btn btn-primary">Start practice</a></td>
 

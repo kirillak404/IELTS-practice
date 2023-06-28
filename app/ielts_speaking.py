@@ -110,11 +110,9 @@ def get_chatgpt_and_azure_speech_assessment(qa_data: tuple) -> tuple:
     """
     with ThreadPoolExecutor() as executor:
         chatgpt_assessment_future = executor.submit(
-            evaluate_speech_with_chatgpt,
-            qa_data)
+            evaluate_speech_with_chatgpt,qa_data)
         azure_pronunciation_assessment_future = executor.submit(
-            assess_pronunciation_in_bulk,
-            qa_data)
+            assess_pronunciation_in_bulk,qa_data)
 
         gpt_speaking_eval = chatgpt_assessment_future.result()
         qa_data = azure_pronunciation_assessment_future.result()

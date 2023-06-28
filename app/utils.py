@@ -1,15 +1,14 @@
 import time
-from datetime import datetime
 from io import BytesIO
 
-from flask import request, abort
+from flask import request
 from humanize import naturaltime
 from pydub import AudioSegment
 from sqlalchemy.exc import IntegrityError, OperationalError
+from werkzeug.datastructures import FileStorage
 
-from app import db
 from app.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
-from app.models import QuestionSet, Subsection
+from app.models import *
 
 LOW_PRON_ACCURACY_SCORE = 90
 
@@ -123,6 +122,7 @@ def get_practice_data(subsection, last_topic):
 def get_audio_files(questions_set) -> tuple:
     audio_files = tuple(request.files[key] for key in request.files.keys() if key.startswith('audio_'))
     if len(audio_files) != len(questions_set.questions):
+        flash("An error has occurred, please try again")
         abort(400, "Audio recordings do not match question count.")
     return audio_files
 
@@ -132,9 +132,11 @@ def commit_changes():
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
+        flash("An error has occurred, please try again")
         abort(400, "Database integrity error")
     except OperationalError:
         db.session.rollback()
+        flash("An error has occurred, please try again")
         abort(500, "Database operational error")
 
 
@@ -147,22 +149,32 @@ def get_chunk(audio_source, chunk_size=1024):
         yield chunk
 
 
-def convert_audio(file_storage):
-    # Конвертировать FileStorage в Bytes
+def convert_audio_to_opus_bytesio(file_storage: FileStorage) -> BytesIO:
+    """
+    Convert an audio file from FileStorage to BytesIO, change its parameters,
+    and export it in opus format.
+
+    Parameters:
+    file_storage (FileStorage): The original audio file in FileStorage format.
+
+    Returns:
+    BytesIO: The converted audio file in opus format, stored in a BytesIO object.
+    """
+    # Convert FileStorage to Bytes
     blob = BytesIO(file_storage.read())
 
-    # Загрузить файл в формате webm
+    # Load the file in webm format
     audio = AudioSegment.from_file(blob, format="webm")
 
-    # Установить параметры аудио
+    # Set audio parameters
     audio = audio.set_frame_rate(16000)
     audio = audio.set_channels(1)
 
-    # Конвертировать обратно в BytesIO
+    # Convert back to BytesIO
     output_blob = BytesIO()
     audio.export(output_blob, format="opus")
 
-    # Переустановить указатель в начало BytesIO, чтобы считывать с начала
+    # Reset the pointer to the start of BytesIO to read from the beginning
     output_blob.seek(0)
 
     return output_blob
@@ -198,23 +210,9 @@ def convert_answer_object_to_html(answer):
     return " ".join(word_list)
 
 
-def convert_dialogue_to_string(questions_and_answers: list) -> str:
-    res = [f"Examiner: {qa['question']}\nStudent: {qa['answer']}" for qa in questions_and_answers]
+def get_dialog_text(questions_and_answers: tuple) -> str:
+    res = [f"Q: {item['question'].text}\nA: {item['answer_transcription']}" for item in questions_and_answers]
     return "\n\n".join(res)
-
-
-def get_misspelled_words(transcriptions_and_pron_assessments: list):
-    misspelled_words = set()
-    for item in transcriptions_and_pron_assessments:
-        try:
-            words = item["pronunciation"]['NBest'][0]['Words']
-        except (KeyError, IndexError, TypeError):
-            continue
-        else:
-            for word in words:
-                if word.get('ErrorType') == 'Mispronunciation':
-                    misspelled_words.add(word.get('Word'))
-    return list(misspelled_words)
 
 
 def get_words_low_pron_accuracy(answers: list) -> tuple:
@@ -259,3 +257,38 @@ def get_pron_errors_and_recommendations(answers: list) -> dict:
 def time_ago_in_words(dtime: datetime) -> str:
     past_time = datetime.utcnow() - dtime
     return naturaltime(past_time)
+
+
+def add_pronunciation_score_and_feedback(gpt_speech_evaluation: dict) -> None:
+    pronunciation_score_and_feedback = {'score': 8, 'feedback': 'Pron: The student demonstrates moderate fluency and coherence, but there are some hesitations and disruptions in the flow of speech.', 'errors': ['Hesitations and disruptions in the flow of speech.'], 'recommendations': ['Practice speaking more fluently and smoothly.', 'Work on reducing hesitations and disruptions in speech.']}
+    gpt_speech_evaluation['Pronunciation'] = pronunciation_score_and_feedback
+
+
+def save_speaking_results_to_database(user, question_set, speaking_result, answers_evaluation):
+
+    # Get the 'speaking' section
+    section = Section.get_by_name("speaking")
+    # Get the current user's progress in this section
+    user_progress = user.get_section_progress(section.id)
+
+    # Update or create user's progress based on previous section progress
+    subsection_id, user_progress = UserProgress.create_or_update_user_progress(
+        user, user_progress, section, question_set.id)
+
+    # Create a new record for the user's attempt at this subsection
+    subsection_attempt = UserSubsectionAttempt(
+        user_progress=user_progress,
+        subsection_id=subsection_id,
+        question_set_id=question_set.id)
+    db.session.add(subsection_attempt)
+
+    # Insert user's answers for this attempt
+    UserSubsectionAnswer.insert_user_answers(subsection_attempt, answers_evaluation)
+
+    # Insert speaking attempt result
+    UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt,speaking_result)
+
+    # Commit changes to the database
+    commit_changes()
+
+    return subsection_attempt

@@ -9,21 +9,6 @@ Speaking practice
 text-center
 {% endblock %}
 {% block content %}
-<!--Subsections list-->
-<div class="container text-center">
-   <ul class="list-group" style="max-width: 380px; margin: 0 auto;">
-      {% for subsection in subsections %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-         Part {{ subsection.part_number }}: {{ subsection.name }}
-         {% if subsection.part_number == current_subsection.part_number %}
-         <span class="badge bg-primary rounded-pill">You are here</span>
-         {% elif subsection.part_number < current_subsection.part_number %}
-         <span class="badge bg-success rounded-pill">Completed</span>
-         {% endif %}
-      </li>
-      {% endfor %}
-   </ul>
-</div>
 <div class="card text-center bg-white mt-5" id="speaking-practice-card">
    <div class="card-header" id="cardHeader">
       Part {{ current_subsection.part_number }}: {{ current_subsection.name }}
@@ -66,11 +51,5 @@ text-center
 <script>const practice = {{ practice|tojson|safe }};</script>
 <script src="{{ url_for('static', filename='recording.js') }}"></script>
 
-<!--Footer-->
-<div class="sticky-footer">
-  <form action="/reset-section-progress" method="POST">
-    <button type="submit" class="btn btn-outline-danger">Reset section</button>
-  </form>
-</div>
 
 {% endblock %}

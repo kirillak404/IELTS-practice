@@ -202,10 +202,15 @@ completePracticeButton.addEventListener('click', function() {
     })
     .then(response => {
       if (response.redirected) {
+        // Обработка редиректа
         window.location.href = response.url;
+      }
+      else {
+        window.location.reload();
       }
     })
     .catch(error => console.error(error));
+
 
     // Here goes the rest of your code for completing the practice...
   }, 1000);  // Delay of 2 seconds

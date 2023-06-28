@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from flask import abort
+from flask import abort, flash
 from flask_login import UserMixin
 from sqlalchemy import func, desc
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -176,13 +176,16 @@ class QuestionSet(db.Model):
     @staticmethod
     def validate_question_set(question_set_id: str) -> Optional['QuestionSet']:
         if not question_set_id:
+            flash("An error has occurred, please try again")
             abort(400, "question_set_id is missing")
         try:
             question_set_id = int(question_set_id)
         except ValueError:
+            flash("An error has occurred, please try again")
             return abort(400, "question_set_id must be an integer")
         questions_set = QuestionSet.query.get(question_set_id)
         if not questions_set:
+            flash("An error has occurred, please try again")
             abort(400, "Invalid question_set_id")
         return questions_set
 
@@ -302,31 +305,27 @@ class UserSubsectionAttempt(db.Model):
                                       cascade='all, delete')
 
     def aggregate_scores(self) -> dict:
-        answers = [a for a in self.user_answers if
-                   a.pronunciation_assessment_json]
-        total_scores = {
-            "accuracy_score": 0,
-            "fluency_score": 0,
-            "completeness_score": 0,
-            "pronunciation_score": 0,
-        }
+        answers = tuple(a for a in self.user_answers if
+                        a.pronunciation_assessment_json)
+
         count = len(answers)
         if not count:
-            return total_scores
+            return {"accuracy_score": 0, "fluency_score": 0,
+                    "completeness_score": 0, "pronunciation_score": 0}
 
-        for answer in answers:
-            total_scores["accuracy_score"] += int(answer.accuracy_score)
-            total_scores["fluency_score"] += int(answer.fluency_score)
-            total_scores["completeness_score"] += int(
-                answer.completeness_score)
-            total_scores["pronunciation_score"] += int(
-                answer.pronunciation_score)
+        total_scores = {
+            "accuracy_score": sum(int(a.accuracy_score) for a in answers),
+            "fluency_score": sum(int(a.fluency_score) for a in answers),
+            "completeness_score": sum(
+                int(a.completeness_score) for a in answers),
+            "pronunciation_score": sum(
+                int(a.pronunciation_score) for a in answers),
+        }
 
-        # Get the average score
-        for score in total_scores:
-            total_scores[score] //= count
+        average_scores = {score: total // count for score, total in
+                          total_scores.items()}
 
-        return total_scores
+        return average_scores
 
 
 class UserSubsectionAnswer(db.Model):
@@ -353,43 +352,22 @@ class UserSubsectionAnswer(db.Model):
     pronunciation_score = db.Column(db.Float)
 
     @staticmethod
-    def insert_user_answers(subsection_attempt, questions_set,
-                            transcriptions_and_pron_assessments) -> list:
-        questions_and_answers = []
-        for question, answer in zip(questions_set.questions,
-                                    transcriptions_and_pron_assessments):
+    def insert_user_answers(subsection_attempt, answers_evaluation) -> None:
 
-            pronunciation_assessment = answer.get("pronunciation", {})
-
-            if pronunciation_assessment.get("RecognitionStatus") == "Success":
-                n_best = pronunciation_assessment.get("NBest", [{}])
-                display_text = n_best[0].get("Display")
-
-                if display_text is not None:
-                    questions_and_answers.append(
-                        {"question": question.text, "answer": display_text})
-
-                scores = n_best[0]
-            else:
-                scores = {}
-
-            accuracy_score = scores.get("AccuracyScore")
-            fluency_score = scores.get("FluencyScore")
-            completeness_score = scores.get("CompletenessScore")
-            pronunciation_score = scores.get("PronScore")
-
+        for answer in answers_evaluation:
+            pronunciation_assessment = answer.get('pronunciation_assessment')
+            scores = pronunciation_assessment.get('NBest')[0]
             user_subsection_answers = UserSubsectionAnswer(
                 subsection_attempt=subsection_attempt,
-                question=question,
-                transcribed_answer=answer["transcript"],
+                question=answer.get('question'),
+                transcribed_answer=answer.get('answer_transcription'),
                 pronunciation_assessment_json=pronunciation_assessment,
-                accuracy_score=accuracy_score,
-                fluency_score=fluency_score,
-                completeness_score=completeness_score,
-                pronunciation_score=pronunciation_score
+                accuracy_score=scores['AccuracyScore'],
+                fluency_score=scores['FluencyScore'],
+                completeness_score=scores['CompletenessScore'],
+                pronunciation_score=scores['PronScore']
             )
             db.session.add(user_subsection_answers)
-        return questions_and_answers
 
 
 class UserSpeakingAttemptResult(db.Model):
@@ -409,21 +387,21 @@ class UserSpeakingAttemptResult(db.Model):
     pronunciation_json = db.Column(JSONB, nullable=False)
 
     @staticmethod
-    def insert_speaking_result(subsection_attempt, gpt_speaking_result):
+    def insert_speaking_result(subsection_attempt, speaking_result):
         speaking_attempt_result = UserSpeakingAttemptResult(
             subsection_attempt=subsection_attempt,
-            fluency_coherence_score=gpt_speaking_result['speaking_fluency'][
-                'score'],
-            fluency_coherence_json=gpt_speaking_result['speaking_fluency'],
-            grammatical_range_accuracy_score=
-            gpt_speaking_result['speaking_grammar']['score'],
-            grammatical_range_accuracy_json=gpt_speaking_result[
-                'speaking_grammar'],
-            lexical_resource_score=gpt_speaking_result['speaking_lexis'][
-                'score'],
-            lexical_resource_json=gpt_speaking_result['speaking_lexis'],
-            pronunciation_score=gpt_speaking_result['speaking_pronunciation'][
-                'score'],
-            pronunciation_json=gpt_speaking_result['speaking_pronunciation']
+            general_feedback=speaking_result['General Feedback'],
+
+            fluency_coherence_score=speaking_result['Fluency and Coherence']['score'],
+            fluency_coherence_json=speaking_result['Fluency and Coherence'],
+
+            grammatical_range_accuracy_score=speaking_result['Grammatical Range and Accuracy']['score'],
+            grammatical_range_accuracy_json=speaking_result['Grammatical Range and Accuracy'],
+
+            lexical_resource_score=speaking_result['Lexical Resource']['score'],
+            lexical_resource_json=speaking_result['Lexical Resource'],
+
+            pronunciation_score=speaking_result['Pronunciation']['score'],
+            pronunciation_json=speaking_result['Pronunciation']
         )
         db.session.add(speaking_attempt_result)

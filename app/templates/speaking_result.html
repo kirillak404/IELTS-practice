@@ -6,206 +6,118 @@ Result
 Speaking
 {% endblock %}
 {% block h2 %}
-Part 1: Introduction and Interview <small class="text-muted fw-normal fs-6">(completed {{ attempt.created_at | time_ago_in_words }})</small>
+Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
 {% endblock %}
 {% block content %}
 
-<h2 class="mb-4">Your results<br></h2>
-
-<div class="bd-callout bd-callout-info">
-   <h4>🥳 Well done, Kirill!</h4>
-   {{ result.general_feedback }}
-   <hr>
-   Below you will find detailed information about each IELTS Speaking criteria:
-</div>
-
+<h3 class="mb-4">Your results <small class="text-muted fw-normal fs-6">completed {{ attempt.created_at | time_ago_in_words }}</small></h3>
 <div class="row">
-   <!-- Fluency and Coherence -->
-   <div class="col-lg-6 mb-4">
-      <div class="card">
-         <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ result.fluency_coherence_score }}</div>
-            <div class="header-content header-content-scores">
-               <span class="header-title">Fluency and Coherence</span>
-               <span class="score-text"></span>
+   <div class="col-lg-8">
+      <div class="col-lg-12 mb-4">
+         <div class="p-1 card bg-body shadow-sm">
+            <div class="card-body">
+               <h5 class="card-title">Overall score</h5>
+               <h2 class="mt-3 font-weight-bold">{{ get_speaking_overall_score_and_emoji(result) }}</h2>
+               <p class="card-text mt-3">
+                  {{ result.general_feedback }}
+               </p>
             </div>
-         </h5>
-         <div class="card-body">
-            <p class="card-text">{{ result.fluency_coherence_json.feedback }}</p>
-            <div class="accordion " id="improvementAccordion">
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingErrors">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrors" aria-expanded="false" aria-controls="collapseErrors">
-                     Errors
-                     </button>
-                  </h2>
-                  <div id="collapseErrors" class="accordion-collapse collapse" aria-labelledby="headingErrors" data-bs-parent="#improvementAccordion">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           {% for error in result.fluency_coherence_json.errors %}
-                           <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
-                           {% endfor %}
-                        </ul>
-                     </div>
-                  </div>
-               </div>
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingRecommendations">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecommendations" aria-expanded="false" aria-controls="collapseRecommendations">
-                     Recommendations
-                     </button>
-                  </h2>
-                  <div id="collapseRecommendations" class="accordion-collapse collapse" aria-labelledby="headingRecommendations" data-bs-parent="#improvementAccordion">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           {% for recommendation in result.fluency_coherence_json.recommendations %}
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
-                           {% endfor %}
-                        </ul>
-                     </div>
-                  </div>
-               </div>
+         </div>
+      </div>
+      <div class="col-lg-12 mb-4">
+         <div class="p-1 card bg-body shadow-sm">
+            <div class="card-body">
+               <h5 class="card-title">Transcript</h5>
+               <ul class="list-unstyled mt-3">
+                  {% for answer in answers %}
+                  <li class="mb-4">
+                     <p class="mb-0">Q: {{ answer.question.text }}</p>
+                     <p class="mb-0">A: {{ answer.transcribed_answer }}</p>
+                  </li>
+                  {% endfor %}
+               </ul>
             </div>
          </div>
       </div>
    </div>
-   <!-- Lexical Resource -->
-   <div class="col-lg-6 mb-4">
-      <div class="card">
-         <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ result.lexical_resource_score }}</div>
-            <div class="header-content header-content-scores">
-               <span class="header-title">Lexical Resource</span>
-               <span class="score-text"></span>
-            </div>
-         </h5>
-         <div class="card-body">
-            <p class="card-text">{{ result.lexical_resource_json.feedback }}</p>
-            <div class="accordion " id="improvementAccordion2">
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingErrors2">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrors2" aria-expanded="false" aria-controls="collapseErrors2">
-                     Errors
-                     </button>
-                  </h2>
-                  <div id="collapseErrors2" class="accordion-collapse collapse" aria-labelledby="headingErrors" data-bs-parent="#improvementAccordion2">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           {% for error in result.lexical_resource_json.errors %}
-                           <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
-                           {% endfor %}
-                        </ul>
+   <div class="col-lg-4">
+      <div class="row">
+         <div class="col-lg-12 mb-4">
+            <div class="card bg-body shadow-sm">
+               <h5 class="card-header bg-body d-flex align-items-center">
+                  <div class="p-1 d-flex align-items-center w-100">
+                     <div class="rating">{{ result.fluency_coherence_score }}</div>
+                     <div class="header-content header-content-scores">
+                        <span class="header-title">Fluency and Coherence</span>
+                        <span class="score-text"></span>
                      </div>
                   </div>
-               </div>
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingRecommendations2">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecommendations2" aria-expanded="false" aria-controls="collapseRecommendations2">
-                     Recommendations
-                     </button>
-                  </h2>
-                  <div id="collapseRecommendations2" class="accordion-collapse collapse" aria-labelledby="headingRecommendations2" data-bs-parent="#improvementAccordion">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           {% for recommendation in result.lexical_resource_json.recommendations %}
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
-                           {% endfor %}
-                        </ul>
-                     </div>
+               </h5>
+               <div class="card-body">
+                  <div class="p-1">
+                     <p class="card-text">
+                        {{ result.fluency_coherence_json.feedback }}
+                     </p>
                   </div>
                </div>
             </div>
          </div>
-      </div>
-   </div>
-   <!-- Grammatical range and accuracy -->
-   <div class="col-lg-6 mb-4">
-      <div class="card">
-         <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ result.grammatical_range_accuracy_score }}</div>
-            <div class="header-content header-content-scores">
-               <span class="header-title">Grammatical range and accuracy</span>
-               <span class="score-text"></span>
-            </div>
-         </h5>
-         <div class="card-body">
-            <p class="card-text">{{ result.grammatical_range_accuracy_json.feedback }}</p>
-            <div class="accordion " id="improvementAccordion3">
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingErrors3">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrors3" aria-expanded="false" aria-controls="collapseErrors3">
-                     Errors
-                     </button>
-                  </h2>
-                  <div id="collapseErrors3" class="accordion-collapse collapse" aria-labelledby="headingErrors3" data-bs-parent="#improvementAccordion3">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           {% for error in result.grammatical_range_accuracy_json.errors %}
-                           <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ error }}</li>
-                           {% endfor %}
-                        </ul>
+         <div class="col-lg-12 mb-4">
+            <div class="card bg-body shadow-sm">
+               <h5 class="card-header bg-body d-flex align-items-center">
+                  <div class="p-1 d-flex align-items-center w-100">
+                     <div class="rating">{{ result.lexical_resource_score }}</div>
+                     <div class="header-content header-content-scores">
+                        <span class="header-title">Lexical Resource</span>
+                        <span class="score-text"></span>
                      </div>
                   </div>
-               </div>
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingRecommendations3">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecommendations3" aria-expanded="false" aria-controls="collapseRecommendations3">
-                     Recommendations
-                     </button>
-                  </h2>
-                  <div id="collapseRecommendations3" class="accordion-collapse collapse" aria-labelledby="headingRecommendations3" data-bs-parent="#improvementAccordion3">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           {% for recommendation in result.grammatical_range_accuracy_json.recommendations %}
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ recommendation }}</li>
-                           {% endfor %}
-                        </ul>
-                     </div>
+               </h5>
+               <div class="card-body">
+                  <div class="p-1">
+                     <p class="card-text">
+                        {{ result.lexical_resource_json.feedback }}
+                     </p>
                   </div>
                </div>
             </div>
          </div>
-      </div>
-   </div>
-   <!-- Pronunciation -->
-   <div class="col-lg-6 mb-4">
-      <div class="card">
-         <h5 class="card-header d-flex align-items-center">
-            <div class="rating">{{ result.pronunciation_score }}</div>
-            <div class="header-content header-content-scores">
-               <span class="header-title">Pronunciation</span>
-               <span class="score-text"></span>
-            </div>
-         </h5>
-         <div class="card-body">
-            <p class="card-text">{{ result.pronunciation_json.feedback }}</p>
-            <div class="accordion " id="improvementAccordion4">
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingErrors4">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseErrors4" aria-expanded="false" aria-controls="collapseErrors4">
-                     Errors
-                     </button>
-                  </h2>
-                  <div id="collapseErrors4" class="accordion-collapse collapse" aria-labelledby="headingErrors4" data-bs-parent="#improvementAccordion4">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           <li class="mt-2"><i class="bi bi-x-circle-fill text-danger"></i> {{ pron_errors.errors }}</li>
-                        </ul>
+         <div class="col-lg-12 mb-4">
+            <div class="card bg-body shadow-sm">
+               <h5 class="card-header bg-body d-flex align-items-center">
+                  <div class="p-1 d-flex align-items-center w-100">
+                     <div class="rating">{{ result.grammatical_range_accuracy_score }}</div>
+                     <div class="header-content header-content-scores">
+                        <span class="header-title">Grammatical range and accuracy</span>
+                        <span class="score-text"></span>
                      </div>
                   </div>
+               </h5>
+               <div class="card-body">
+                  <div class="p-1">
+                     <p class="card-text">
+                        {{ result.grammatical_range_accuracy_json.feedback }}
+                     </p>
+                  </div>
                </div>
-               <div class="accordion-item">
-                  <h2 class="accordion-header" id="headingRecommendations4">
-                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecommendations4" aria-expanded="false" aria-controls="collapseRecommendations4">
-                     Recommendations
-                     </button>
-                  </h2>
-                  <div id="collapseRecommendations4" class="accordion-collapse collapse" aria-labelledby="headingRecommendations4" data-bs-parent="#improvementAccordion4">
-                     <div class="accordion-body">
-                        <ul class="list-unstyled">
-                           <li class="mt-2"><i class="bi bi-lightbulb-fill text-warning"></i> {{ pron_errors.recommendations }}</li>
-                        </ul>
+            </div>
+         </div>
+         <div class="col-lg-12 mb-4">
+            <div class="card bg-body shadow-sm">
+               <h5 class="card-header bg-body d-flex align-items-center">
+                  <div class="p-1 d-flex align-items-center w-100">
+                     <div class="rating">{{ result.pronunciation_score }}</div>
+                     <div class="header-content header-content-scores">
+                        <span class="header-title">Pronunciation</span>
+                        <span class="score-text"></span>
                      </div>
+                  </div>
+               </h5>
+               <div class="card-body">
+                  <div class="p-1">
+                     <p class="card-text">
+                        {{ result.pronunciation_json.feedback }}
+                     </p>
                   </div>
                </div>
             </div>
@@ -213,50 +125,59 @@ Part 1: Introduction and Interview <small class="text-muted fw-normal fs-6">(com
       </div>
    </div>
 </div>
-<h2 class="mb-4 mt-4">Pronunciation Analysis</h2>
+<h3 class="mb-4 mt-4">Your pronunciation</h3>
 <div class="row">
    <!-- Transcription Column (Wider) -->
    <div class="col-lg-8 mb-4">
-      <div class="card">
-         <h5 class="card-header d-flex align-items-center">
-            <div class="header-content">
-               <span class="header-title">Transcription</span>
-            </div>
-         </h5>
-      <ul class="list-group list-group-flush mt-2">
-        {% for answer in answers %}
-        <li class="list-group-item">
-          <p class="question">Q: {{ answer.question.text }}</p>
-          <p>A: {{ convert_answer_object_to_html(answer)|safe }}</p>
-        </li>
-        {% endfor %}
-      </ul>
+      <div class="p-1 card bg-body shadow-sm">
+         <div class="card-body">
+            <h5 class="card-title">Accuracy of word pronunciation</h5>
+            <ul class="list-unstyled mt-4">
+               {% for answer in answers %}
+               <li class="mb-4">
+                  <p class="mb-0">A: {{ convert_answer_object_to_html(answer)|safe }}</p>
+               </li>
+               {% endfor %}
+            </ul>
+         </div>
       </div>
    </div>
    <!-- Scores Column (Narrower) -->
    <div class="col-lg-4 mb-4">
-      <div class="card">
-         <h5 class="card-header d-flex align-items-center">
-            <div class="header-content">
-               <span class="header-title">Pronunciation scores</span>
-            </div>
-         </h5>
+      <div class="p-1 card bg-body shadow-sm">
          <div class="card-body">
-            <h5 class="fw-normal" data-toggle="tooltip" data-placement="right" title="Accuracy Score Explanation">Accuracy</h5>
-            <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.accuracy_score }}%;" aria-valuenow="{{ pron_scores.accuracy_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.accuracy_score }}</div>
+            <h5 class="card-title mb-4">Overall pronunciation scores</h5>
+            <div class="row align-items-center">
+               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Accuracy Score Explanation">Accuracy</div>
+               <div class="col">
+                  <div class="progress">
+                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.accuracy_score }}%;" aria-valuenow="{{ pron_scores.accuracy_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.accuracy_score }}</div>
+                  </div>
+               </div>
             </div>
-            <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Fluency Score Explanation">Fluency</h5>
-            <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.fluency_score }}%;" aria-valuenow="{{ pron_scores.fluency_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.fluency_score }}</div>
+            <div class="row align-items-center mt-3">
+               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Fluency Score Explanation">Fluency</div>
+               <div class="col">
+                  <div class="progress">
+                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.fluency_score }}%;" aria-valuenow="{{ pron_scores.fluency_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.fluency_score }}</div>
+                  </div>
+               </div>
             </div>
-            <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Completeness Score Explanation">Completeness</h5>
-            <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.completeness_score }}%;" aria-valuenow="{{ pron_scores.completeness_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.completeness_score }}</div>
+            <div class="row align-items-center mt-3">
+               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Completeness Score Explanation">Completeness</div>
+               <div class="col">
+                  <div class="progress">
+                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.completeness_score }}%;" aria-valuenow="{{ pron_scores.completeness_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.completeness_score }}</div>
+                  </div>
+               </div>
             </div>
-            <h5 class="fw-normal mt-3" data-toggle="tooltip" data-placement="right" title="Pronunciation Score Explanation">Pronunciation</h5>
-            <div class="progress">
-               <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.pronunciation_score }}%;" aria-valuenow="{{ pron_scores.pronunciation_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.pronunciation_score }}</div>
+            <div class="row align-items-center mt-3">
+               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Pronunciation Score Explanation">Pronunciation</div>
+               <div class="col">
+                  <div class="progress">
+                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.pronunciation_score }}%;" aria-valuenow="{{ pron_scores.pronunciation_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.pronunciation_score }}</div>
+                  </div>
+               </div>
             </div>
          </div>
       </div>

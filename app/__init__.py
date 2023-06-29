@@ -39,7 +39,8 @@ def create_app(config_class=Config):
     from app.main import bp as main_bp
     app.register_blueprint(main_bp)
 
-    from app.utils import convert_answer_object_to_html, time_ago_in_words
+    from app.utils import convert_answer_object_to_html, time_ago_in_words, get_speaking_overall_score_and_emoji
     app.jinja_env.filters['time_ago_in_words'] = time_ago_in_words
     app.jinja_env.globals['convert_answer_object_to_html'] = convert_answer_object_to_html
+    app.jinja_env.globals['get_speaking_overall_score_and_emoji'] = get_speaking_overall_score_and_emoji
     return app

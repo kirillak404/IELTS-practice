@@ -206,7 +206,7 @@ font-size: 1.15rem;
 --rating-color-default: #2980b9;
 --rating-color-background: #A1A2A0;
 --rating-color-good: #27ae60;
---rating-color-meh: #ffc107;
+--rating-color-meh: #FFA500;
 --rating-color-bad: #e74c3c;
 }
 
@@ -273,11 +273,41 @@ display: block;
 font-size: 0.8em;
 }
 
+
+
+
 /* Advanced Pronunciation Analysis */
-.word_mispronunciation { background-color: #dc3545; color: white; }
-.word_omitted { background-color: #6c757d; color: white; }
-.word_insertion { background-color: #20c997; color: white; }
-.score-low { background-color: var(--rating-color-meh); color: black; }
+.word_mispronunciation,
+.word_omitted,
+.word_insertion,
+.score-low {
+    position: relative;
+}
+
+.word_mispronunciation::after,
+.word_omitted::after,
+.word_insertion::after,
+.score-low::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 3px;
+}
+
+.word_mispronunciation::after {
+    background-color: var(--rating-color-bad);
+}
+.word_omitted::after {
+    background-color: #6c757d;
+}
+.word_insertion::after {
+    background-color: #20c997;
+}
+.score-low::after {
+    background-color: var(--rating-color-meh);
+}
 
 
 .bd-lead {

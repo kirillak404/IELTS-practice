@@ -238,25 +238,39 @@ def get_words_low_pron_accuracy(answers: list) -> tuple:
     return mispronounced_words, low_accuracy_words
 
 
-def get_pron_errors_and_recommendations(answers: list) -> dict:
-    mispronounced_words, low_accuracy_words = get_words_low_pron_accuracy(answers)
-
-    if mispronounced_words:
-        mispronounced_words = f'Mispronounced words: {", ".join(mispronounced_words)}'
-    else:
-        mispronounced_words = "Wow, you don't have any errors!"
-
-    if low_accuracy_words:
-        low_accuracy_words = f'Words with low pronunciation accuracy: {", ".join(low_accuracy_words)}'
-    else:
-        low_accuracy_words = "Sorry, no recommendations in this case..."
-
-    return {'errors': mispronounced_words, 'recommendations': low_accuracy_words}
+# def get_pron_errors_and_recommendations(answers: list) -> dict:
+#     mispronounced_words, low_accuracy_words = get_words_low_pron_accuracy(answers)
+#
+#     if mispronounced_words:
+#         mispronounced_words = f'Mispronounced words: {", ".join(mispronounced_words)}'
+#     else:
+#         mispronounced_words = "Wow, you don't have any errors!"
+#
+#     if low_accuracy_words:
+#         low_accuracy_words = f'Words with low pronunciation accuracy: {", ".join(low_accuracy_words)}'
+#     else:
+#         low_accuracy_words = "Sorry, no recommendations in this case..."
+#
+#     return {'errors': mispronounced_words, 'recommendations': low_accuracy_words}
 
 
 def time_ago_in_words(dtime: datetime) -> str:
     past_time = datetime.utcnow() - dtime
     return naturaltime(past_time)
+
+
+def get_speaking_overall_score_and_emoji(attempt_result) -> str:
+    scores = (attempt_result.fluency_coherence_score,
+              attempt_result.grammatical_range_accuracy_score,
+              attempt_result.lexical_resource_score,
+              attempt_result.pronunciation_score)
+
+    emoji = ('💔', '😢', '🌧️', '😕', '🤨', '😐', '😊', '🌤️', '🎉', '💎')
+    if all(scores):
+        avg_score = round(sum(scores) / 4 * 2) / 2
+        return f"{avg_score} {emoji[int(avg_score)]}"
+    else:
+        return f"0 {emoji[0]}"
 
 
 def add_pronunciation_score_and_feedback(gpt_speech_evaluation: dict) -> None:

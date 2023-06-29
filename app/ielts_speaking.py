@@ -11,11 +11,12 @@ from flask import abort, flash
 from tenacity import retry, stop_after_attempt, wait_fixed, RetryError
 from werkzeug.datastructures import FileStorage
 
+from app.models import QuestionSet
 from app.utils import get_chunk, convert_audio_to_opus_bytesio, \
     get_dialog_text, add_pronunciation_score_and_feedback
 
 
-def evaluate_ielts_speaking(question_set, audio_files_list):
+def evaluate_ielts_speaking(question_set: QuestionSet, audio_files_list: list) -> tuple:
     """Evaluate IELTS speaking responses with transcript generation and pronunciation assessment.
 
     This function transcribes audio responses to IELTS speaking questions,

@@ -13,9 +13,10 @@ from werkzeug.datastructures import FileStorage
 
 from app.models import QuestionSet
 from app.utils import get_chunk, convert_audio_to_opus_bytesio, \
-    get_dialog_text, add_pronunciation_score_and_feedback
+    get_dialog_text, add_pronunciation_score_and_feedback, measure_time
 
 
+@measure_time
 def evaluate_ielts_speaking(question_set: QuestionSet, audio_files_list: list) -> tuple:
     """Evaluate IELTS speaking responses with transcript generation and pronunciation assessment.
 
@@ -58,11 +59,12 @@ def evaluate_ielts_speaking(question_set: QuestionSet, audio_files_list: list) -
 
     # Evaluate the spoken responses using ChatGPT and Azure's pronunciation API
     gpt_speech_evaluation, qa_data = get_chatgpt_and_azure_speech_assessment(qa_data)
-    add_pronunciation_score_and_feedback(gpt_speech_evaluation)
+    add_pronunciation_score_and_feedback(gpt_speech_evaluation, qa_data)
 
     return gpt_speech_evaluation, qa_data
 
 
+@measure_time
 def transcribe_audio_files_in_bulk(audio_files: list) -> tuple:
     """Transcribe multiple audio files in parallel.
 
@@ -121,6 +123,7 @@ def get_chatgpt_and_azure_speech_assessment(qa_data: tuple) -> tuple:
     return gpt_speaking_eval, qa_data
 
 
+@measure_time
 def evaluate_speech_with_chatgpt(qa_data: tuple) -> dict:
     """Evaluate a user's speech using ChatGPT.
 
@@ -135,7 +138,7 @@ def evaluate_speech_with_chatgpt(qa_data: tuple) -> dict:
         JSONDecodeError: If there is an error deserializing the JSON response from ChatGPT.
     """
     system_message = "You act as a professional IELTS examiner."
-    response_json_schema = """{"type":"object","properties":{"Fluency and Coherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}}},"Lexical Resource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}}},"Grammatical Range and Accuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200},"errors":{"type":"array","items":{"type":"string","maxLength":140}},"recommendations":{"type":"array","items":{"type":"string","maxLength":140}}}},"General Feedback":{"type":"string","maxLength":500}},"required":["Fluency and Coherence","Lexical Resource","Grammatical Range and Accuracy","Pronunciation","General Feedback"]}"""
+    response_json_schema = """{"type":"object","properties":{"fluencyAndCoherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200}}},"lexicalResource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200}}},"grammaticalRangeAndAccuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200}}},"generalFeedback":{"type":"string","maxLength":500}},"required":["fluencyAndCoherence","lexicalResource","grammaticalRangeAndAccuracy","generalFeedback"]}"""
     dialogue_text = get_dialog_text(qa_data)
     evaluation_prompt = f"""\
 As an AI model operating in the role of a professional IELTS examiner, you are tasked with evaluating a transcription of a student's dialogue from the IELTS Speaking Part 1. The evaluation should be based on the following IELTS criteria: "Fluency and Coherence", "Lexical Resource", and "Grammatical Range and Accuracy", using the standard IELTS assessment methodologies.
@@ -144,8 +147,6 @@ For each criterion, your response should include:
 
 1. "score": An integer from 0 to 9, indicating the student's performance on the criterion as per the IELTS scale.
 2. "feedback": A string of up to 200 characters, summarizing the student's performance on the criterion, as per IELTS assessment criteria.
-3. "errors": An array, where each entry is a brief description (up to 140 characters long) of a specific error that impacted the student's performance on the criterion, in line with IELTS assessment standards. Each entry should include the type of error, the incorrect phrase/word, and the correct version of the phrase/word.
-4. "recommendations": An array of strings, each entry offering a concise piece of advice (up to 140 characters long) for the student on how to improve their performance on the criterion.
 
 Furthermore, you should provide a "General Feedback" section, which provides an overall evaluation of the student's performance and highlights any significant trends or issues not addressed in the individual criterion evaluations.
 
@@ -157,6 +158,7 @@ Input:
 The expected JSON schema for your response is as follows:
 '''
 {response_json_schema}
+Make sure your answer is a simple JSON object without extra spaces or lines, and it should match the above JSON schema.
 '''"""
     chatgpt_messages = [
         {"role": "system", "content": system_message},
@@ -205,6 +207,7 @@ def get_chatgpt_response(messages: list, model="gpt-3.5-turbo", temperature=0) -
     return chatgpt_response_text
 
 
+@measure_time
 def assess_pronunciation_in_bulk(qa_data: tuple) -> tuple:
     """Assess pronunciation for multiple audio responses in parallel using Azure's pronunciation API.
 

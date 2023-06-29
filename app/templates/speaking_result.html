@@ -31,7 +31,7 @@ Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
                <ul class="list-unstyled mt-3">
                   {% for answer in answers %}
                   <li class="mb-4">
-                     <p class="mb-0">Q: {{ answer.question.text }}</p>
+                     <p class="mb-0 fw-bold">Q: {{ answer.question.text }}</p>
                      <p class="mb-0">A: {{ answer.transcribed_answer }}</p>
                   </li>
                   {% endfor %}

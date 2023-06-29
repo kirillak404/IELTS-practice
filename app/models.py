@@ -383,18 +383,18 @@ class UserSpeakingAttemptResult(db.Model):
     def insert_speaking_result(subsection_attempt, speaking_result):
         speaking_attempt_result = UserSpeakingAttemptResult(
             subsection_attempt=subsection_attempt,
-            general_feedback=speaking_result['General Feedback'],
+            general_feedback=speaking_result['generalFeedback'],
 
-            fluency_coherence_score=speaking_result['Fluency and Coherence']['score'],
-            fluency_coherence_json=speaking_result['Fluency and Coherence'],
+            fluency_coherence_score=speaking_result['fluencyAndCoherence']['score'],
+            fluency_coherence_json=speaking_result['fluencyAndCoherence'],
 
-            grammatical_range_accuracy_score=speaking_result['Grammatical Range and Accuracy']['score'],
-            grammatical_range_accuracy_json=speaking_result['Grammatical Range and Accuracy'],
+            grammatical_range_accuracy_score=speaking_result['grammaticalRangeAndAccuracy']['score'],
+            grammatical_range_accuracy_json=speaking_result['grammaticalRangeAndAccuracy'],
 
-            lexical_resource_score=speaking_result['Lexical Resource']['score'],
-            lexical_resource_json=speaking_result['Lexical Resource'],
+            lexical_resource_score=speaking_result['lexicalResource']['score'],
+            lexical_resource_json=speaking_result['lexicalResource'],
 
-            pronunciation_score=speaking_result['Pronunciation']['score'],
-            pronunciation_json=speaking_result['Pronunciation']
+            pronunciation_score=speaking_result['pronunciation']['score'],
+            pronunciation_json=speaking_result['pronunciation']
         )
         db.session.add(speaking_attempt_result)

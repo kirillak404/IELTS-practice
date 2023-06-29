@@ -87,8 +87,10 @@ def measure_time(func):
         result = func(*args, **kwargs)
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"🕐 Function {func.__name__} executed in {int(execution_time)} seconds.")
+        print(
+            f"🕐 Function {func.__name__} executed in {int(execution_time)} seconds.")
         return result
+
     return wrapper
 
 
@@ -105,7 +107,8 @@ def get_current_subsection_and_last_topic(user_progress, section):
 
 
 def get_practice_data(subsection, last_topic):
-    question_set = QuestionSet.get_random_for_subsection(subsection, last_topic)
+    question_set = QuestionSet.get_random_for_subsection(subsection,
+                                                         last_topic)
     topic_name = question_set.topic.name if question_set.topic else None
     topic_desc = question_set.topic.description if question_set.topic else None
     practice = {"part": subsection.part_number,
@@ -120,7 +123,8 @@ def get_practice_data(subsection, last_topic):
 # speaking_practice_post helpers
 
 def get_audio_files(questions_set) -> tuple:
-    audio_files = tuple(request.files[key] for key in request.files.keys() if key.startswith('audio_'))
+    audio_files = tuple(request.files[key] for key in request.files.keys() if
+                        key.startswith('audio_'))
     if len(audio_files) != len(questions_set.questions):
         flash("An error has occurred, please try again")
         abort(400, "Audio recordings do not match question count.")
@@ -211,7 +215,8 @@ def convert_answer_object_to_html(answer):
 
 
 def get_dialog_text(questions_and_answers: tuple) -> str:
-    res = [f"Q: {item['question'].text}\nA: {item['answer_transcription']}" for item in questions_and_answers]
+    res = [f"Q: {item['question'].text}\nA: {item['answer_transcription']}" for
+           item in questions_and_answers]
     return "\n\n".join(res)
 
 
@@ -273,13 +278,22 @@ def get_speaking_overall_score_and_emoji(attempt_result) -> str:
         return f"0 {emoji[0]}"
 
 
-def add_pronunciation_score_and_feedback(gpt_speech_evaluation: dict) -> None:
-    pronunciation_score_and_feedback = {'score': 8, 'feedback': 'Pron: The student demonstrates moderate fluency and coherence, but there are some hesitations and disruptions in the flow of speech.', 'errors': ['Hesitations and disruptions in the flow of speech.'], 'recommendations': ['Practice speaking more fluently and smoothly.', 'Work on reducing hesitations and disruptions in speech.']}
-    gpt_speech_evaluation['Pronunciation'] = pronunciation_score_and_feedback
+def add_pronunciation_score_and_feedback(gpt_speech_evaluation: dict,
+                                         qa_data: tuple) -> None:
+    pron_scores = tuple(
+        score['pronunciation_assessment']['NBest'][0]['PronScore']
+        for score in qa_data)
+    pron_score = sum(pron_scores) / len(pron_scores)  # 100-point scale
+    pron_score = round(pron_score / 100 * 9)  # 9-point scale
+
+    pron_feedback = 'There will be a text here later...'  # TODO replace
+
+    gpt_speech_evaluation['pronunciation'] = {'score': pron_score,
+                                              'feedback': pron_feedback}
 
 
-def save_speaking_results_to_database(user, question_set, speaking_result, answers_evaluation):
-
+def save_speaking_results_to_database(user, question_set, speaking_result,
+                                      answers_evaluation):
     # Get the 'speaking' section
     section = Section.get_by_name("speaking")
     # Get the current user's progress in this section
@@ -297,10 +311,12 @@ def save_speaking_results_to_database(user, question_set, speaking_result, answe
     db.session.add(subsection_attempt)
 
     # Insert user's answers for this attempt
-    UserSubsectionAnswer.insert_user_answers(subsection_attempt, answers_evaluation)
+    UserSubsectionAnswer.insert_user_answers(subsection_attempt,
+                                             answers_evaluation)
 
     # Insert speaking attempt result
-    UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt,speaking_result)
+    UserSpeakingAttemptResult.insert_speaking_result(subsection_attempt,
+                                                     speaking_result)
 
     # Commit changes to the database
     commit_changes()

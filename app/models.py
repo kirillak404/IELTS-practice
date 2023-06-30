@@ -186,15 +186,18 @@ class QuestionSet(db.Model):
     def validate_question_set(question_set_id: str) -> Optional['QuestionSet']:
         if not question_set_id:
             flash("An error has occurred, please try again")
+            print("question_set_id is missing")
             abort(400, "question_set_id is missing")
         try:
             question_set_id = int(question_set_id)
         except ValueError:
             flash("An error has occurred, please try again")
+            print("question_set_id must be an integer")
             return abort(400, "question_set_id must be an integer")
         questions_set = QuestionSet.query.get(question_set_id)
         if not questions_set:
             flash("An error has occurred, please try again")
+            print("Invalid question_set_id")
             abort(400, "Invalid question_set_id")
         return questions_set
 

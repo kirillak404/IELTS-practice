@@ -88,6 +88,16 @@ def get_speaking_attempt(user_subsection_attempt_id):
     # Advanced Pronunciation Analysis
     answers = user_subsection_attempt.user_answers
     pron_scores = user_subsection_attempt.aggregate_scores()
+
+
+    # # TODO DELETE
+    # for a in answers:
+    #     question = a.question
+    #     topic = question.question_set.topic
+    #     subsection_name = question.question_set.subsection.name
+    #     subsection_part_number = question.question_set.subsection.part_number
+
+
     return render_template('speaking_result.html', result=result,
                            speaking_scores=speaking_scores,
                            attempt=user_subsection_attempt,

@@ -13,8 +13,7 @@ from werkzeug.datastructures import FileStorage
 
 from app.models import QuestionSet
 from app.utils import get_chunk, convert_audio_to_opus_bytesio, \
-    get_dialog_text, add_pronunciation_score, add_fluency_and_coherence_score, \
-    measure_time
+    get_dialog_text, add_pronunciation_score, add_fluency_and_coherence_score, measure_time
 
 
 @measure_time
@@ -58,8 +57,13 @@ def evaluate_ielts_speaking(question_set: QuestionSet, audio_files_list: list) -
                      'question': question}
                     for file, transcript, question in zipped)
 
+    # Collect attempt info for future needs
+    attempt_info = {'subsection': question_set.subsection,
+                    'question_set': question_set,
+                    'topic': question_set.topic}
+
     # Evaluate the spoken responses using ChatGPT and Azure's pronunciation API
-    gpt_speech_evaluation, qa_data = get_chatgpt_and_azure_speech_assessment(qa_data)
+    gpt_speech_evaluation, qa_data = get_chatgpt_and_azure_speech_assessment(qa_data, attempt_info)
     add_pronunciation_score(gpt_speech_evaluation, qa_data)
     add_fluency_and_coherence_score(gpt_speech_evaluation, qa_data)
 
@@ -104,20 +108,21 @@ def transcribe_single_audio_file(audio_file: FileStorage) -> Optional[str]:
     return audio_transcript
 
 
-def get_chatgpt_and_azure_speech_assessment(qa_data: tuple) -> tuple:
+def get_chatgpt_and_azure_speech_assessment(qa_data: tuple, attempt_info: dict) -> tuple:
     """Perform parallel assessment of user answers using ChatGPT and Azure's pronunciation assessment.
 
     Args:
         qa_data (tuple): A tuple containing data for each question-answer pair.
+        attempt_info (dict): A dict with subsection, question_set and topic
 
     Returns:
         tuple: A tuple containing the updated question-answer data and the ChatGPT speech evaluation.
     """
     with ThreadPoolExecutor() as executor:
         chatgpt_assessment_future = executor.submit(
-            evaluate_speech_with_chatgpt,qa_data)
+            evaluate_speech_with_chatgpt, qa_data, attempt_info)
         azure_pronunciation_assessment_future = executor.submit(
-            assess_pronunciation_in_bulk,qa_data)
+            assess_pronunciation_in_bulk, qa_data)
 
         gpt_speaking_eval = chatgpt_assessment_future.result()
         qa_data = azure_pronunciation_assessment_future.result()
@@ -126,11 +131,12 @@ def get_chatgpt_and_azure_speech_assessment(qa_data: tuple) -> tuple:
 
 
 @measure_time
-def evaluate_speech_with_chatgpt(qa_data: tuple) -> dict:
+def evaluate_speech_with_chatgpt(qa_data: tuple, attempt_info: dict) -> dict:
     """Evaluate a user's speech using ChatGPT.
 
     Args:
         qa_data (tuple): A tuple containing data for each question-answer pair.
+        attempt_info (dict): A dict with subsection, question_set and topic
 
     Returns:
         dict: A dictionary containing the ChatGPT evaluation.
@@ -141,9 +147,11 @@ def evaluate_speech_with_chatgpt(qa_data: tuple) -> dict:
     """
     system_message = "You act as a professional IELTS examiner."
     response_json_schema = """{"type":"object","properties":{"coherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"lexicalResource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"grammaticalRangeAndAccuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"generalFeedback":{"type":"string","maxLength":300}},"required":["coherence","lexicalResource","grammaticalRangeAndAccuracy","generalFeedback"]}"""
-    dialogue_text = get_dialog_text(qa_data)
-    evaluation_prompt = f"""\
-As an AI model simulating a professional IELTS examiner, your task is to evaluate a transcription of a student's dialogue from the IELTS Speaking Part 1. Your evaluation should strictly adhere to the official IELTS Speaking Band Descriptors for the following criteria: "Coherence" (a component of "Fluency and Coherence"), "Lexical Resource", "Grammatical Range and Accuracy", and "Pronunciation". Use the standard IELTS scoring methodology, but specifically for the "Fluency and Coherence" criterion, evaluate only "Coherence".
+    dialogue_text = get_dialog_text(qa_data, attempt_info)
+    subsection = attempt_info['subsection']
+    prompt = f"""\
+As an AI model simulating a professional IELTS examiner, your task is to evaluate a transcription of a student's dialogue from the IELTS Speaking Part {subsection.part_number}: {subsection.name}.
+Your evaluation should strictly adhere to the official IELTS Speaking Band Descriptors for the following criteria: "Coherence" (a component of "Fluency and Coherence"), "Lexical Resource", "Grammatical Range and Accuracy", and "Pronunciation". Use the standard IELTS scoring methodology, but specifically for the "Fluency and Coherence" criterion, evaluate only "Coherence".
 
 Provide a "score" for each mentioned criterion. This score should be a number from 0 to 9, representing the student's performance on that criterion in accordance with the official IELTS Speaking Band Descriptors for Academic and General Training tests.
 
@@ -162,7 +170,7 @@ Your answer should be a straightforward JSON object without extra spaces or line
 """
     chatgpt_messages = [
         {"role": "system", "content": system_message},
-        {"role": "user", "content": evaluation_prompt}
+        {"role": "user", "content": prompt}
     ]
 
     # Getting a response from ChatGPT

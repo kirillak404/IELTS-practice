@@ -125,10 +125,18 @@ def get_practice_data(subsection, last_topic):
 def get_audio_files(questions_set) -> tuple:
     audio_files = tuple(request.files[key] for key in request.files.keys() if
                         key.startswith('audio_'))
-    if len(audio_files) != len(questions_set.questions):
-        flash("An error has occurred, please try again")
-        abort(400, "Audio recordings do not match question count.")
-    return audio_files
+
+    # IELTS Speaking part 2 (cue card)
+    if questions_set.topic and len(audio_files) == 1:
+        return audio_files
+
+    # IELTS Speaking part 1 or part 3
+    if len(audio_files) == len(questions_set.questions):
+        return audio_files
+
+    flash("An error has occurred, please try again")
+    print("Audio recordings do not match question count.")
+    abort(400, "Audio recordings do not match question count.")
 
 
 def commit_changes():
@@ -216,7 +224,31 @@ def convert_answer_object_to_html(answer):
     return " ".join(word_list)
 
 
-def get_dialog_text(questions_and_answers: tuple) -> str:
+def get_dialog_text(questions_and_answers: tuple, attempt_info: dict) -> str:
+    question_set = attempt_info['question_set']
+    speaking_part_number = attempt_info['subsection'].part_number
+
+    # create cue card and answer for IELTS Speaking part 2
+    if speaking_part_number == 2:
+        topic = attempt_info['topic']
+        questions = "\n- ".join(q.text for q in question_set.questions)
+        dialog = f'''\
+Cue card:
+###
+Topic: {topic.name}
+Task: {topic.description}
+You should say:
+
+{questions}
+###
+
+Student Answer:
+###
+{questions_and_answers[0]['answer_transcription']}
+###'''
+        return dialog
+
+    # create dialog for IELTS Speaking part 1 & 3
     res = [f"Q: {item['question'].text}\nA: {item['answer_transcription']}" for
            item in questions_and_answers]
     return "\n\n".join(res)

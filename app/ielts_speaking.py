@@ -13,7 +13,8 @@ from werkzeug.datastructures import FileStorage
 
 from app.models import QuestionSet
 from app.utils import get_chunk, convert_audio_to_opus_bytesio, \
-    get_dialog_text, add_pronunciation_score_and_feedback, measure_time
+    get_dialog_text, add_pronunciation_score, add_fluency_and_coherence_score, \
+    measure_time
 
 
 @measure_time
@@ -59,7 +60,8 @@ def evaluate_ielts_speaking(question_set: QuestionSet, audio_files_list: list) -
 
     # Evaluate the spoken responses using ChatGPT and Azure's pronunciation API
     gpt_speech_evaluation, qa_data = get_chatgpt_and_azure_speech_assessment(qa_data)
-    add_pronunciation_score_and_feedback(gpt_speech_evaluation, qa_data)
+    add_pronunciation_score(gpt_speech_evaluation, qa_data)
+    add_fluency_and_coherence_score(gpt_speech_evaluation, qa_data)
 
     return gpt_speech_evaluation, qa_data
 
@@ -138,17 +140,14 @@ def evaluate_speech_with_chatgpt(qa_data: tuple) -> dict:
         JSONDecodeError: If there is an error deserializing the JSON response from ChatGPT.
     """
     system_message = "You act as a professional IELTS examiner."
-    response_json_schema = """{"type":"object","properties":{"fluencyAndCoherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200}}},"lexicalResource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200}}},"grammaticalRangeAndAccuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9},"feedback":{"type":"string","maxLength":200}}},"generalFeedback":{"type":"string","maxLength":500}},"required":["fluencyAndCoherence","lexicalResource","grammaticalRangeAndAccuracy","generalFeedback"]}"""
+    response_json_schema = """{"type":"object","properties":{"coherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"lexicalResource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"grammaticalRangeAndAccuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"generalFeedback":{"type":"string","maxLength":300}},"required":["coherence","lexicalResource","grammaticalRangeAndAccuracy","generalFeedback"]}"""
     dialogue_text = get_dialog_text(qa_data)
     evaluation_prompt = f"""\
-As an AI model operating in the role of a professional IELTS examiner, you are tasked with evaluating a transcription of a student's dialogue from the IELTS Speaking Part 1. The evaluation should be based on the following IELTS criteria: "Fluency and Coherence", "Lexical Resource", and "Grammatical Range and Accuracy", using the standard IELTS assessment methodologies.
+As an AI model simulating a professional IELTS examiner, your task is to evaluate a transcription of a student's dialogue from the IELTS Speaking Part 1. Your evaluation should strictly adhere to the official IELTS Speaking Band Descriptors for the following criteria: "Coherence" (a component of "Fluency and Coherence"), "Lexical Resource", "Grammatical Range and Accuracy", and "Pronunciation". Use the standard IELTS scoring methodology, but specifically for the "Fluency and Coherence" criterion, evaluate only "Coherence".
 
-For each criterion, your response should include:
+Provide a "score" for each mentioned criterion. This score should be a number from 0 to 9, representing the student's performance on that criterion in accordance with the official IELTS Speaking Band Descriptors for Academic and General Training tests.
 
-1. "score": An integer from 0 to 9, indicating the student's performance on the criterion as per the IELTS scale.
-2. "feedback": A string of up to 200 characters, summarizing the student's performance on the criterion, as per IELTS assessment criteria.
-
-Furthermore, you should provide a "General Feedback" section, which provides an overall evaluation of the student's performance and highlights any significant trends or issues not addressed in the individual criterion evaluations.
+In addition, provide "generalFeedback" string of up to 300 characters. This is an overall evaluation of the student's performance, based on all the criteria, and should highlight any significant trends or issues not addressed in the individual criterion evaluations.
 
 Input:
 '''
@@ -158,8 +157,9 @@ Input:
 The expected JSON schema for your response is as follows:
 '''
 {response_json_schema}
-Make sure your answer is a simple JSON object without extra spaces or lines, and it should match the above JSON schema.
-'''"""
+'''
+Your answer should be a straightforward JSON object without extra spaces or lines, adhering to the above JSON schema.\
+"""
     chatgpt_messages = [
         {"role": "system", "content": system_message},
         {"role": "user", "content": evaluation_prompt}
@@ -244,6 +244,7 @@ def get_azure_pronunciation_assessment(qa_data: dict) -> None:
         abort(500)
     else:
         if pronunciation_evaluation['RecognitionStatus'] != 'Success':
+            print('RecognitionStatus != Success')
             flash('An error has occurred, please try again')
             abort(500)
         else:

@@ -6,7 +6,7 @@ from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
     get_audio_files, \
-    save_speaking_results_to_database, get_speaking_overall_score_and_emoji
+    save_speaking_results_to_database
 
 
 @bp.route('/')
@@ -83,11 +83,13 @@ def get_speaking_attempt(user_subsection_attempt_id):
 
     # Your results
     result = user_subsection_attempt.speaking_result
+    speaking_scores = result.get_speaking_scores()
 
     # Advanced Pronunciation Analysis
     answers = user_subsection_attempt.user_answers
     pron_scores = user_subsection_attempt.aggregate_scores()
     return render_template('speaking_result.html', result=result,
+                           speaking_scores=speaking_scores,
                            attempt=user_subsection_attempt,
                            answers=answers, pron_scores=pron_scores)
 

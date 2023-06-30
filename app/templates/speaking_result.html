@@ -42,13 +42,14 @@ Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
    </div>
    <div class="col-lg-4">
       <div class="row">
+         {% for score in speaking_scores %}
          <div class="col-lg-12 mb-4">
             <div class="card bg-body shadow-sm">
                <h5 class="card-header bg-body d-flex align-items-center">
                   <div class="p-1 d-flex align-items-center w-100">
-                     <div class="rating">{{ result.fluency_coherence_score }}</div>
+                     <div class="rating">{{ score.score }}</div>
                      <div class="header-content header-content-scores">
-                        <span class="header-title">Fluency and Coherence</span>
+                        <span class="header-title">{{ score.name }}</span>
                         <span class="score-text"></span>
                      </div>
                   </div>
@@ -56,72 +57,13 @@ Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
                <div class="card-body">
                   <div class="p-1">
                      <p class="card-text">
-                        {{ result.fluency_coherence_json.feedback }}
+                        {{ score.feedback }}
                      </p>
                   </div>
                </div>
             </div>
          </div>
-         <div class="col-lg-12 mb-4">
-            <div class="card bg-body shadow-sm">
-               <h5 class="card-header bg-body d-flex align-items-center">
-                  <div class="p-1 d-flex align-items-center w-100">
-                     <div class="rating">{{ result.lexical_resource_score }}</div>
-                     <div class="header-content header-content-scores">
-                        <span class="header-title">Lexical Resource</span>
-                        <span class="score-text"></span>
-                     </div>
-                  </div>
-               </h5>
-               <div class="card-body">
-                  <div class="p-1">
-                     <p class="card-text">
-                        {{ result.lexical_resource_json.feedback }}
-                     </p>
-                  </div>
-               </div>
-            </div>
-         </div>
-         <div class="col-lg-12 mb-4">
-            <div class="card bg-body shadow-sm">
-               <h5 class="card-header bg-body d-flex align-items-center">
-                  <div class="p-1 d-flex align-items-center w-100">
-                     <div class="rating">{{ result.grammatical_range_accuracy_score }}</div>
-                     <div class="header-content header-content-scores">
-                        <span class="header-title">Grammatical range and accuracy</span>
-                        <span class="score-text"></span>
-                     </div>
-                  </div>
-               </h5>
-               <div class="card-body">
-                  <div class="p-1">
-                     <p class="card-text">
-                        {{ result.grammatical_range_accuracy_json.feedback }}
-                     </p>
-                  </div>
-               </div>
-            </div>
-         </div>
-         <div class="col-lg-12 mb-4">
-            <div class="card bg-body shadow-sm">
-               <h5 class="card-header bg-body d-flex align-items-center">
-                  <div class="p-1 d-flex align-items-center w-100">
-                     <div class="rating">{{ result.pronunciation_score }}</div>
-                     <div class="header-content header-content-scores">
-                        <span class="header-title">Pronunciation</span>
-                        <span class="score-text"></span>
-                     </div>
-                  </div>
-               </h5>
-               <div class="card-body">
-                  <div class="p-1">
-                     <p class="card-text">
-                        {{ result.pronunciation_json.feedback }}
-                     </p>
-                  </div>
-               </div>
-            </div>
-         </div>
+         {% endfor %}
       </div>
    </div>
 </div>

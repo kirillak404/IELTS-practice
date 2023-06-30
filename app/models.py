@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from itertools import zip_longest
 
 from app import db, login
+from app.content.scores import SPEAKING_SCORES_FEEDBACK
 
 
 class User(UserMixin, db.Model):
@@ -371,30 +372,51 @@ class UserSpeakingAttemptResult(db.Model):
     user_subsection_attempt_id = db.Column(db.Integer, db.ForeignKey('user_subsection_attempts.id'), unique=True, nullable=False)  # ID of the attempt this result is for
     general_feedback = db.Column(db.Text)  # General feedback for the speaking attempt
     fluency_coherence_score = db.Column(db.Integer, nullable=False)  # Score for fluency and coherence
-    fluency_coherence_json = db.Column(JSONB, nullable=False)  # JSON data for fluency and coherence
     grammatical_range_accuracy_score = db.Column(db.Integer, nullable=False)  # Score for grammatical range and accuracy
-    grammatical_range_accuracy_json = db.Column(JSONB, nullable=False)  # JSON data for grammatical range and accuracy
     lexical_resource_score = db.Column(db.Integer, nullable=False)  # Score for lexical resource
-    lexical_resource_json = db.Column(JSONB, nullable=False)  # JSON data for lexical resource
     pronunciation_score = db.Column(db.Integer, nullable=False)  # Score for pronunciation
-    pronunciation_json = db.Column(JSONB, nullable=False)  # JSON data for pronunciation
 
     @staticmethod
     def insert_speaking_result(subsection_attempt, speaking_result):
         speaking_attempt_result = UserSpeakingAttemptResult(
             subsection_attempt=subsection_attempt,
             general_feedback=speaking_result['generalFeedback'],
-
             fluency_coherence_score=speaking_result['fluencyAndCoherence']['score'],
-            fluency_coherence_json=speaking_result['fluencyAndCoherence'],
-
             grammatical_range_accuracy_score=speaking_result['grammaticalRangeAndAccuracy']['score'],
-            grammatical_range_accuracy_json=speaking_result['grammaticalRangeAndAccuracy'],
-
             lexical_resource_score=speaking_result['lexicalResource']['score'],
-            lexical_resource_json=speaking_result['lexicalResource'],
-
             pronunciation_score=speaking_result['pronunciation']['score'],
-            pronunciation_json=speaking_result['pronunciation']
         )
         db.session.add(speaking_attempt_result)
+
+    def get_speaking_scores(self) -> tuple:
+        """
+        Gather and return speaking scores, and add feedback using another function.
+
+        Returns:
+            tuple: A tuple of dictionaries, each containing criterion name, its score, and feedback.
+        """
+        scores = ({'name': 'Fluency and Coherence',
+                  'score': self.fluency_coherence_score},
+                  {'name': 'Lexical Resource',
+                  'score': self.lexical_resource_score},
+                  {'name': 'Grammatical range and accuracy',
+                  'score': self.grammatical_range_accuracy_score},
+                  {'name': 'Pronunciation',
+                  'score': self.pronunciation_score})
+
+        UserSpeakingAttemptResult.set_scores_feedback(scores)
+        return scores
+
+    @staticmethod
+    def set_scores_feedback(scores: tuple) -> None:
+        """
+        Assign feedback to each score based on the SCORES_FEEDBACK dictionary.
+
+        Args:
+            scores (tuple): A tuple of dictionaries containing criterion name and its score.
+        """
+        for score in scores:
+            criterion = score['name']
+            criterion_score = score['score']
+            feedback_text = SPEAKING_SCORES_FEEDBACK[criterion][criterion_score]
+            score['feedback'] = feedback_text

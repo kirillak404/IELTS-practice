@@ -7,7 +7,7 @@ from pydub import AudioSegment
 from sqlalchemy.exc import IntegrityError, OperationalError
 from werkzeug.datastructures import FileStorage
 
-from app.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
+from app.content.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
 from app.models import *
 
 LOW_PRON_ACCURACY_SCORE = 90
@@ -137,10 +137,12 @@ def commit_changes():
     except IntegrityError:
         db.session.rollback()
         flash("An error has occurred, please try again")
+        print('Database integrity error')
         abort(400, "Database integrity error")
     except OperationalError:
         db.session.rollback()
         flash("An error has occurred, please try again")
+        print('Database operational error')
         abort(500, "Database operational error")
 
 
@@ -278,18 +280,67 @@ def get_speaking_overall_score_and_emoji(attempt_result) -> str:
         return f"0 {emoji[0]}"
 
 
-def add_pronunciation_score_and_feedback(gpt_speech_evaluation: dict,
-                                         qa_data: tuple) -> None:
+def add_pronunciation_score(gpt_speech_evaluation: dict,
+                            qa_data: tuple) -> None:
+    """
+    Add pronunciation score to a speech evaluation dictionary.
+
+    Args:
+        gpt_speech_evaluation (dict): The dictionary to add pronunciation score to.
+        qa_data (tuple): Tuple containing QA data used to compute the score.
+    """
+    # Compute average pronunciation score from QA data
+    pron_score = get_avg_score_from_answers_speech_eval(qa_data, 'PronScore')
+
+    # Add the pronunciation score to the evaluation dictionary
+    gpt_speech_evaluation['pronunciation'] = {'score': pron_score}
+
+
+def add_fluency_and_coherence_score(gpt_speech_evaluation: dict,
+                                    qa_data: tuple) -> None:
+    """
+    Add fluency and coherence score to a speech evaluation dictionary.
+
+    Args:
+        gpt_speech_evaluation (dict): The dictionary to add fluency and coherence score to.
+        qa_data (tuple): Tuple containing QA data used to compute the score.
+    """
+    # Compute average fluency score from QA data
+    fluency_score = get_avg_score_from_answers_speech_eval(qa_data,
+                                                           'FluencyScore')
+
+    # Get the coherence score from the evaluation dictionary and remove it
+    coherence_score = gpt_speech_evaluation.pop('coherence')['score']
+
+    # Compute the average of fluency and coherence scores
+    fluency_and_coherence_score = round((fluency_score + coherence_score) / 2)
+
+    # Add the fluency and coherence score to the evaluation dictionary
+    gpt_speech_evaluation['fluencyAndCoherence'] = {
+        'score': fluency_and_coherence_score}
+
+
+def get_avg_score_from_answers_speech_eval(qa_data: tuple, score_name: str):
+    """
+    Compute the average score of a particular criterion from QA data.
+
+    Args:
+        qa_data (tuple): Tuple containing QA data used to compute the score.
+        score_name (str): Name of the score to compute.
+
+    Returns:
+        int: The computed average score, rounded and converted to a 9-point scale.
+    """
+    # Extract the specified scores from the QA data
     pron_scores = tuple(
-        score['pronunciation_assessment']['NBest'][0]['PronScore']
+        score['pronunciation_assessment']['NBest'][0][score_name]
         for score in qa_data)
-    pron_score = sum(pron_scores) / len(pron_scores)  # 100-point scale
-    pron_score = round(pron_score / 100 * 9)  # 9-point scale
 
-    pron_feedback = 'There will be a text here later...'  # TODO replace
+    # Compute the average score on a 100-point scale
+    pron_score = sum(pron_scores) / len(pron_scores)
 
-    gpt_speech_evaluation['pronunciation'] = {'score': pron_score,
-                                              'feedback': pron_feedback}
+    # Convert the score to a 9-point scale and round it
+    return round(pron_score / 100 * 9)
 
 
 def save_speaking_results_to_database(user, question_set, speaking_result,

@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block title %}
+Speaking practice
+{% endblock %}
+{% block h1 %}
+History
+{% endblock %}
+{% block h2 %}
+Description
+{% endblock %}
+{% block content %}
+
+<div class="my-3 p-3 bg-body rounded shadow-sm">
+   <table class="table align-middle">
+      <thead>
+         <tr>
+            <th scope="col">Section</th>
+            <th scope="col">Status</th>
+            <th scope="col">Completion date</th>
+            <th scope="col">Action</th>
+         </tr>
+      </thead>
+      <tbody>
+         {% for progress in user_progress_history %}
+         <tr>
+            <td>
+               {{ progress.section.name }}
+            </td>
+            <td>
+               {% if progress.is_completed %}
+               <span class="completed_dot"></span> Completed
+               {% else %}
+               <span class="in_progress_dot"></span> In Progress
+               {% endif %}
+            </td>
+            <td>
+               {{ progress.completed_at }}
+            </td>
+            <td>
+               {% if progress.is_completed %}
+               <button type="button" class="btn btn-outline-success">View result</button>
+               {% else %}
+               <button type="button" class="btn btn-primary">Continue</button>
+               {% endif %}
+            </td>
+         </tr>
+         {% endfor %}
+      </tbody>
+   </table>
+</div>
+
+{% endblock %}

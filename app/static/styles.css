@@ -339,10 +339,21 @@ body {
 .completed_dot {
     height: 8px;
     width: 8px;
-    background-color: #28a745; /* Это зеленый цвет Bootstrap для кнопок Success */
+    background-color: #198754; /* Это зеленый цвет Bootstrap для кнопок Success */
     border-radius: 50%;
     display: inline-block;
-    margin-right: 5px;
+    margin-right: 4px;
+    position: relative;
+    top: -2px; /* подгонка положения */
+}
+
+.in_progress_dot {
+    height: 8px;
+    width: 8px;
+    background-color: #0d6efd; /* Это зеленый цвет Bootstrap для кнопок Success */
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
     position: relative;
     top: -2px; /* подгонка положения */
 }

@@ -253,7 +253,7 @@ def get_azure_pronunciation_assessment(qa_data: dict) -> None:
     else:
         if pronunciation_evaluation['RecognitionStatus'] != 'Success':
             print('RecognitionStatus != Success')
-            flash('An error has occurred, please try again')
+            flash('An error occurred while trying to transcribe your speech, please try again.')
             abort(500)
         else:
             qa_data['pronunciation_assessment'] = pronunciation_evaluation

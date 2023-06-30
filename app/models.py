@@ -52,6 +52,12 @@ class User(UserMixin, db.Model):
         ).first()
         return user_progress
 
+    def get_sections_history(self):
+        user_progress = UserProgress.query.filter(
+            UserProgress.user_id == self.id
+        ).all()
+        return user_progress
+
 
 @login.user_loader
 def load_user(id):
@@ -225,6 +231,7 @@ class UserProgress(db.Model):
     is_completed = db.Column(db.Boolean, nullable=False, default=False)  # Boolean indicating if the section has been completed
     completed_at = db.Column(db.DateTime)  # The time when the section was completed
 
+    section = db.relationship('Section', lazy='joined')
     user_subsection_attempt = db.relationship('UserSubsectionAttempt', backref='user_progress', cascade='all, delete')  # Tracks user's attempts in subsections
 
     def __init__(self, *args, **kwargs):

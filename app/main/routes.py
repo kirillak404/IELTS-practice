@@ -110,6 +110,14 @@ def get_speaking_result():
     pass
 
 
+@login_required
+@bp.route('/history')
+def get_sections_history():
+    user_progress_history = current_user.get_sections_history()
+    return render_template("history.html",
+                           user_progress_history=user_progress_history)
+
+
 @bp.route('/reset-section-progress', methods=["POST"])
 def reset_section_progress():
     # Retrieve the 'speaking' section

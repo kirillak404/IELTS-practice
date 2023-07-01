@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block title %}
+Result
+{% endblock %}
+{% block h1 %}
+Speaking
+{% endblock %}
+{% block h2 %}
+Description
+{% endblock %}
+{% block content %}
+
+
+
+
+
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th scope="col">Subsection / Criterion</th>
+      <th scope="col" class="text-center">FC</th>
+      <th scope="col" class="text-center">GRA</th>
+      <th scope="col" class="text-center">LR</th>
+      <th scope="col" class="text-center">PR</th>
+      <th scope="col" class="text-center">Overall</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Part 1: Introduction and Interview</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8.0</td>
+    </tr>
+    <tr>
+      <td>Part 2: Introduction and Interview</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8.0</td>
+    </tr>
+    <tr>
+      <td>Part 3: Introduction and Interview</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8.0</td>
+    </tr>
+    <tr class="table-primary fs-5 fw-bold">
+      <td>Final Speaking Scores</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8</td>
+      <td class="text-center">8.0</td>
+    </tr>
+    <!-- Добавьте дополнительные строки с данными здесь -->
+  </tbody>
+</table>
+
+
+
+
+
+
+
+<script src="{{ url_for('static', filename='scores.js') }}"></script>
+{% endblock %}

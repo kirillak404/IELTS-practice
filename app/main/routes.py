@@ -89,25 +89,26 @@ def get_speaking_attempt(user_subsection_attempt_id):
     answers = user_subsection_attempt.user_answers
     pron_scores = user_subsection_attempt.aggregate_scores()
 
-
-    # # TODO DELETE
-    # for a in answers:
-    #     question = a.question
-    #     topic = question.question_set.topic
-    #     subsection_name = question.question_set.subsection.name
-    #     subsection_part_number = question.question_set.subsection.part_number
-
-
-    return render_template('speaking_result.html', result=result,
+    return render_template('subsection_results.html', result=result,
                            speaking_scores=speaking_scores,
                            attempt=user_subsection_attempt,
                            answers=answers, pron_scores=pron_scores)
 
 
 @login_required
-@bp.route('/section/speaking/result/<int:id>/')
-def get_speaking_result():
-    pass
+@bp.route('/section/results/<int:user_progress_id>/')
+def get_section_results(user_progress_id):
+    user_progress = UserProgress.query.get(user_progress_id)
+
+    # check that user_progress exists
+    if not user_progress:
+        abort(404)
+
+    # check that user_progress belongs to the current user
+    if user_progress.user_id != current_user.id:
+        abort(403)
+
+    return render_template('section_results.html')
 
 
 @login_required

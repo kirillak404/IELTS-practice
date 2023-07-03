@@ -1,5 +1,6 @@
 import time
 from io import BytesIO
+from collections import namedtuple
 
 from flask import request
 from humanize import naturaltime
@@ -224,13 +225,13 @@ def convert_answer_object_to_html(answer):
     return " ".join(word_list)
 
 
-def get_dialog_text(questions_and_answers: tuple, attempt_info: dict) -> str:
-    question_set = attempt_info['question_set']
-    speaking_part_number = attempt_info['subsection'].part_number
+def get_dialog_text(answers_data: tuple, attempt: namedtuple) -> str:
+    question_set = attempt.question_set
+    speaking_part_number = attempt.subsection.part_number
 
     # create cue card and answer for IELTS Speaking part 2
     if speaking_part_number == 2:
-        topic = attempt_info['topic']
+        topic = attempt.topic
         questions = "\n- ".join(q.text for q in question_set.questions)
         dialog = f'''\
 Cue card:
@@ -244,13 +245,13 @@ You should say:
 
 Student Answer:
 ###
-{questions_and_answers[0]['answer_transcription']}
+{answers_data[0]['answer_transcription']}
 ###'''
         return dialog
 
     # create dialog for IELTS Speaking part 1 & 3
-    res = [f"Q: {item['question'].text}\nA: {item['answer_transcription']}" for
-           item in questions_and_answers]
+    res = [f"Q: {item['question'].text}\nA: {item['answer_transcription']}"
+           for item in answers_data]
     return "\n\n".join(res)
 
 

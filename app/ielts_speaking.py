@@ -4,6 +4,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from typing import Optional
+from collections import namedtuple
 
 import openai
 import requests
@@ -41,33 +42,32 @@ def evaluate_ielts_speaking(question_set: QuestionSet, audio_files_list: list) -
     try:
         transcriptions_list = transcribe_audio_files_in_bulk(audio_files_list)
     except RetryError as e:
-        print("Failed to transcribe all audio files after multiple attempts. Last attempt:", e.last_attempt)
-        flash("An error occurred while transcribing the audio files. Please try again.")
+        print('Failed to transcribe all audio files after multiple attempts. Last attempt:', e.last_attempt)
+        flash('An error occurred while transcribing the audio files. Please try again.')
         abort(500)
 
     # Validate that all questions have received an answer
     if not all(transcriptions_list):
-        flash("It seems you did not answer all the questions, please try again")
+        flash('It seems you did not answer all the questions, please try again')
         abort(400)
 
-    # Combine audio files, transcriptions, and questions into a list of dictionaries
+    # Combine audio files, transcriptions, and questions into a tuple of dictionaries
     zipped = zip(audio_files_list, transcriptions_list, question_set.questions)
-    qa_data = tuple({'answer_audio': file,
-                     'answer_transcription': transcript,
-                     'question': question}
-                    for file, transcript, question in zipped)
+    answers_data = tuple({'answer_audio': file,
+                          'answer_transcription': transcript,
+                          'question': question}
+                         for file, transcript, question in zipped)
 
     # Collect attempt info for future needs
-    attempt_info = {'subsection': question_set.subsection,
-                    'question_set': question_set,
-                    'topic': question_set.topic}
+    Attempt = namedtuple('Attempt', ('subsection', 'question_set', 'topic'))
+    attempt = Attempt(question_set.subsection, question_set, question_set.topic)
 
     # Evaluate the spoken responses using ChatGPT and Azure's pronunciation API
-    gpt_speech_evaluation, qa_data = get_chatgpt_and_azure_speech_assessment(qa_data, attempt_info)
-    add_pronunciation_score(gpt_speech_evaluation, qa_data)
-    add_fluency_and_coherence_score(gpt_speech_evaluation, qa_data)
+    gpt_speech_evaluation, answers_data = get_chatgpt_and_azure_speech_assessment(answers_data, attempt)
+    add_pronunciation_score(gpt_speech_evaluation, answers_data)
+    add_fluency_and_coherence_score(gpt_speech_evaluation, answers_data)
 
-    return gpt_speech_evaluation, qa_data
+    return gpt_speech_evaluation, answers_data
 
 
 @measure_time
@@ -108,35 +108,35 @@ def transcribe_single_audio_file(audio_file: FileStorage) -> Optional[str]:
     return audio_transcript
 
 
-def get_chatgpt_and_azure_speech_assessment(qa_data: tuple, attempt_info: dict) -> tuple:
+def get_chatgpt_and_azure_speech_assessment(answers_data: tuple, attempt: namedtuple) -> tuple:
     """Perform parallel assessment of user answers using ChatGPT and Azure's pronunciation assessment.
 
     Args:
-        qa_data (tuple): A tuple containing data for each question-answer pair.
-        attempt_info (dict): A dict with subsection, question_set and topic
+        answers_data (tuple): A tuple containing data for each question-answer pair.
+        attempt (namedtuple): A dict with subsection, question_set and topic
 
     Returns:
         tuple: A tuple containing the updated question-answer data and the ChatGPT speech evaluation.
     """
     with ThreadPoolExecutor() as executor:
         chatgpt_assessment_future = executor.submit(
-            evaluate_speech_with_chatgpt, qa_data, attempt_info)
+            evaluate_speech_with_chatgpt, answers_data, attempt)
         azure_pronunciation_assessment_future = executor.submit(
-            assess_pronunciation_in_bulk, qa_data)
+            assess_pronunciation_in_bulk, answers_data)
 
         gpt_speaking_eval = chatgpt_assessment_future.result()
-        qa_data = azure_pronunciation_assessment_future.result()
+        answers_data = azure_pronunciation_assessment_future.result()
 
-    return gpt_speaking_eval, qa_data
+    return gpt_speaking_eval, answers_data
 
 
 @measure_time
-def evaluate_speech_with_chatgpt(qa_data: tuple, attempt_info: dict) -> dict:
+def evaluate_speech_with_chatgpt(answers_data: tuple, attempt: namedtuple) -> dict:
     """Evaluate a user's speech using ChatGPT.
 
     Args:
-        qa_data (tuple): A tuple containing data for each question-answer pair.
-        attempt_info (dict): A dict with subsection, question_set and topic
+        answers_data (tuple): A tuple containing data for each question-answer pair.
+        attempt (namedtuple): A dict with subsection, question_set and topic
 
     Returns:
         dict: A dictionary containing the ChatGPT evaluation.
@@ -147,8 +147,8 @@ def evaluate_speech_with_chatgpt(qa_data: tuple, attempt_info: dict) -> dict:
     """
     system_message = "You act as a professional IELTS examiner."
     response_json_schema = """{"type":"object","properties":{"coherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"lexicalResource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"grammaticalRangeAndAccuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"generalFeedback":{"type":"string","maxLength":300}},"required":["coherence","lexicalResource","grammaticalRangeAndAccuracy","generalFeedback"]}"""
-    dialogue_text = get_dialog_text(qa_data, attempt_info)
-    subsection = attempt_info['subsection']
+    dialogue_text = get_dialog_text(answers_data, attempt)
+    subsection = attempt.subsection
     prompt = f"""\
 As an AI model simulating a professional IELTS examiner, your task is to evaluate a transcription of a student's dialogue from the IELTS Speaking Part {subsection.part_number}: {subsection.name}.
 Your evaluation should strictly adhere to the official IELTS Speaking Band Descriptors for the following criteria: "Coherence" (a component of "Fluency and Coherence"), "Lexical Resource", "Grammatical Range and Accuracy", and "Pronunciation". Use the standard IELTS scoring methodology, but specifically for the "Fluency and Coherence" criterion, evaluate only "Coherence".
@@ -216,32 +216,32 @@ def get_chatgpt_response(messages: list, model="gpt-3.5-turbo", temperature=0) -
 
 
 @measure_time
-def assess_pronunciation_in_bulk(qa_data: tuple) -> tuple:
+def assess_pronunciation_in_bulk(answers_data: tuple) -> tuple:
     """Assess pronunciation for multiple audio responses in parallel using Azure's pronunciation API.
 
     Args:
-        qa_data (tuple): A tuple containing data for each question-answer pair.
+        answers_data (tuple): A tuple containing data for each question-answer pair.
 
     Returns:
         tuple: A tuple containing the updated question-answer data with pronunciation assessments.
     """
     with ThreadPoolExecutor() as executor:
-        executor.map(get_azure_pronunciation_assessment, qa_data)
-    return qa_data
+        executor.map(get_azure_pronunciation_assessment, answers_data)
+    return answers_data
 
 
-def get_azure_pronunciation_assessment(qa_data: dict) -> None:
+def get_azure_pronunciation_assessment(answer_data: dict) -> None:
     """Request a pronunciation assessment for a single answer from Azure's pronunciation API.
 
     Args:
-        qa_data (dict): A dictionary containing data for a single question-answer pair.
+        answer_data (dict): A dictionary containing data for a single question-answer pair.
 
     Raises:
         RetryError: If all attempts to get a response from Azure's pronunciation API fail.
         Exception: If an unexpected error occurs.
     """
-    audio_file = convert_audio_to_opus_bytesio(qa_data['answer_audio'])
-    transcription_text = qa_data['answer_transcription']
+    audio_file = convert_audio_to_opus_bytesio(answer_data['answer_audio'])
+    transcription_text = answer_data['answer_transcription']
 
     try:
         pronunciation_evaluation = request_azure_pronunciation_assessment(
@@ -256,7 +256,7 @@ def get_azure_pronunciation_assessment(qa_data: dict) -> None:
             flash('An error occurred while trying to transcribe your speech, please try again.')
             abort(500)
         else:
-            qa_data['pronunciation_assessment'] = pronunciation_evaluation
+            answer_data['pronunciation_assessment'] = pronunciation_evaluation
 
 
 @retry(stop=stop_after_attempt(5), wait=wait_fixed(1))

@@ -38,7 +38,7 @@ Description
             </td>
             <td>
                {% if progress.is_completed %}
-               <button type="button" class="btn btn-outline-success">View result</button>
+               <a href="{{ url_for('main.get_section_results', user_progress_id=progress.id) }}" class="btn btn-outline-success" role="button">View result</a>
                {% else %}
                <button type="button" class="btn btn-primary">Continue</button>
                {% endif %}

@@ -82,12 +82,12 @@ def get_speaking_attempt(user_subsection_attempt_id):
         abort(403)
 
     # Your results
-    result = user_subsection_attempt.speaking_result
+    result = user_subsection_attempt.results
     speaking_scores = result.get_speaking_scores()
 
     # Advanced Pronunciation Analysis
     answers = user_subsection_attempt.user_answers
-    pron_scores = user_subsection_attempt.aggregate_scores()
+    pron_scores = user_subsection_attempt.get_overall_pron_scores()
 
     return render_template('subsection_results.html', result=result,
                            speaking_scores=speaking_scores,
@@ -108,7 +108,15 @@ def get_section_results(user_progress_id):
     if user_progress.user_id != current_user.id:
         abort(403)
 
-    return render_template('section_results.html')
+    # check that user_progress is completed
+    if not user_progress.is_completed:
+        abort(409)
+
+    final_scores = user_progress.get_speaking_final_scores()
+
+    return render_template('section_results.html',
+                           user_progress=user_progress,
+                           final_scores=final_scores)
 
 
 @login_required

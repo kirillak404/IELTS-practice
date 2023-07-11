@@ -299,18 +299,9 @@ def time_ago_in_words(dtime: datetime) -> str:
     return naturaltime(past_time)
 
 
-def get_speaking_overall_score_and_emoji(attempt_result) -> str:
-    scores = (attempt_result.fluency_coherence_score,
-              attempt_result.grammatical_range_accuracy_score,
-              attempt_result.lexical_resource_score,
-              attempt_result.pronunciation_score)
-
+def show_score_with_emoji(score: float) -> str:
     emoji = ('💔', '😢', '🌧️', '😕', '🤨', '😐', '😊', '🌤️', '🎉', '💎')
-    if all(scores):
-        avg_score = round(sum(scores) / 4 * 2) / 2
-        return f"{avg_score} {emoji[int(avg_score)]}"
-    else:
-        return f"0 {emoji[0]}"
+    return f"{score} {emoji[int(score)]}"
 
 
 def add_pronunciation_score(gpt_speech_evaluation: dict,

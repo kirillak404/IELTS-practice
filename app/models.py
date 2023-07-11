@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional
+from collections import namedtuple, defaultdict
 
 from flask import abort, flash
 from flask_login import UserMixin
@@ -103,7 +104,7 @@ class Section(db.Model):
         subsections = Subsection.query.filter_by(section=self).all()
 
         # get user attempts for this subsection
-        user_attempts = user_progress.user_subsection_attempt if user_progress else ()
+        user_attempts = user_progress.attempts if user_progress else ()
 
         # iterating over subsections and set statuses and attempt id if any
         is_completed = False
@@ -232,7 +233,7 @@ class UserProgress(db.Model):
     completed_at = db.Column(db.DateTime)  # The time when the section was completed
 
     section = db.relationship('Section', lazy='joined')
-    user_subsection_attempt = db.relationship('UserSubsectionAttempt', backref='user_progress', cascade='all, delete')  # Tracks user's attempts in subsections
+    attempts = db.relationship('UserSubsectionAttempt', backref='user_progress', cascade='all, delete')  # Tracks user's attempts in subsections
 
     def __init__(self, *args, **kwargs):
         super(UserProgress, self).__init__(*args, **kwargs)
@@ -291,6 +292,40 @@ class UserProgress(db.Model):
 
         return subsection_id, user_progress
 
+    def get_speaking_final_scores(self) -> dict:
+        """
+        Calculate and return final scores for speaking. Each score is an average of attempts,
+        rounded to the nearest whole number. The final score is an average of all scores,
+        rounded to the nearest 0.5.
+
+        Returns:
+            dict: Dictionary containing the final scores for fluency_coherence,
+                  grammatical_range_accuracy, lexical_resource, pronunciation, and final score.
+        """
+        # Define the score types
+        score_types = ['fluency_coherence_score',
+                       'grammatical_range_accuracy_score',
+                       'lexical_resource_score',
+                       'pronunciation_score']
+
+        # Initialize a defaultdict to store total scores
+        scores = defaultdict(int)
+
+        # Add up all the scores for each score type
+        for attempt in self.attempts:
+            for score_type in score_types:
+                scores[score_type] += getattr(attempt.results, score_type)
+
+        # Calculate the average for each score type and round to the nearest whole number
+        for score in scores:
+            scores[score] = round(scores[score] / len(self.attempts))
+
+        # Calculate and store the final score as the average of all scores, rounded to the nearest 0.5
+        scores['overall_score'] = round(
+            sum(scores.values()) / len(scores) * 2) / 2
+
+        return scores
+
 
 class UserSubsectionAttempt(db.Model):
     """UserSubsectionAttempt model. Represents an attempt by a user to answer a question set in a subsection."""
@@ -310,9 +345,9 @@ class UserSubsectionAttempt(db.Model):
 
     user_answers = db.relationship('UserSubsectionAnswer', backref='subsection_attempt', lazy='joined', cascade='all, delete')  # Tracks user's answers in the attempt
 
-    speaking_result = db.relationship('UserSpeakingAttemptResult', uselist=False, backref='subsection_attempt', lazy='joined', cascade='all, delete')  # Stores result of speaking attempt
+    results = db.relationship('UserSpeakingAttemptResult', uselist=False, backref='subsection_attempt', lazy='joined', cascade='all, delete')  # Stores result of speaking attempt
 
-    def aggregate_scores(self) -> dict:
+    def get_overall_pron_scores(self) -> dict:
         answers = tuple(a for a in self.user_answers if
                         a.pronunciation_assessment_json)
 
@@ -334,6 +369,30 @@ class UserSubsectionAttempt(db.Model):
                           total_scores.items()}
 
         return average_scores
+
+    def get_attempt_overall_score(self):
+        """
+        Calculate the average of four different scores, then rounds it to the nearest 0.5.
+        If any of the scores is None, the method will return 0.0.
+
+        Returns:
+            float: Overall score rounded to the nearest 0.5, or 0.0 if any score is None.
+        """
+
+        # Retrieving scores
+        scores = (self.results.fluency_coherence_score,
+                  self.results.grammatical_range_accuracy_score,
+                  self.results.lexical_resource_score,
+                  self.results.pronunciation_score)
+
+        # Check if all scores are not None
+        if all(s is not None for s in scores):
+            # If all scores are present, calculate the average, double it,
+            # round to the nearest whole number, then halve it to get rounding to the nearest 0.5
+            return round(sum(scores) / 4 * 2) / 2
+        else:
+            # If any score is None, return 0.0
+            return 0.0
 
 
 class UserSubsectionAnswer(db.Model):

@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from itertools import zip_longest
 
 from app import db, login
-from app.content.scores import SPEAKING_SCORES_FEEDBACK
+from app.content.scores import SPEAKING_SCORES_FEEDBACK, SPEAKING_FINAL_FEEDBACK
 
 
 class User(UserMixin, db.Model):
@@ -321,8 +321,11 @@ class UserProgress(db.Model):
             scores[score] = round(scores[score] / len(self.attempts))
 
         # Calculate and store the final score as the average of all scores, rounded to the nearest 0.5
-        scores['overall_score'] = round(
-            sum(scores.values()) / len(scores) * 2) / 2
+        overall_score = round(sum(scores.values()) / len(scores) * 2) / 2
+        scores['overall_score'] = overall_score
+
+        # Set text feedback for final (overall) score
+        scores['overall_score_feedback_text'] = SPEAKING_FINAL_FEEDBACK[int(overall_score)]
 
         return scores
 
@@ -473,11 +476,11 @@ class UserSpeakingAttemptResult(db.Model):
                   {'name': 'Pronunciation',
                   'score': self.pronunciation_score})
 
-        UserSpeakingAttemptResult.set_scores_feedback(scores)
+        UserSpeakingAttemptResult.set_speaking_scores_feedback(scores)
         return scores
 
     @staticmethod
-    def set_scores_feedback(scores: tuple) -> None:
+    def set_speaking_scores_feedback(scores: tuple) -> None:
         """
         Assign feedback to each score based on the SCORES_FEEDBACK dictionary.
 

@@ -302,6 +302,10 @@ class UserProgress(db.Model):
             dict: Dictionary containing the final scores for fluency_coherence,
                   grammatical_range_accuracy, lexical_resource, pronunciation, and final score.
         """
+
+        if not self.is_completed:
+            raise RuntimeError("Cannot calculate final scores before section completion.")
+
         # Define the score types
         score_types = ['fluency_coherence_score',
                        'grammatical_range_accuracy_score',

@@ -6,17 +6,20 @@ Speaking practice
 History
 {% endblock %}
 {% block h2 %}
-Description
+History of Your Progress on IELTS Exam Sections
 {% endblock %}
 {% block content %}
 
+
+{% if user_progress_history %}
 <div class="my-3 p-3 bg-body rounded shadow-sm">
    <table class="table align-middle">
       <thead>
          <tr>
             <th scope="col">Section</th>
             <th scope="col">Status</th>
-            <th scope="col">Completion date</th>
+            <th scope="col">Finished</th>
+            <th scope="col">Final score</th>
             <th scope="col">Action</th>
          </tr>
       </thead>
@@ -34,13 +37,24 @@ Description
                {% endif %}
             </td>
             <td>
-               {{ progress.completed_at }}
+               {% if progress.completed_at %}
+               {{ progress.completed_at | time_ago_in_words }}
+               {% else %}
+               -
+               {% endif %}
+            </td>
+            <td>
+               {% if progress.completed_at %}
+               {{ progress.get_speaking_final_scores().overall_score | show_score_with_emoji }}
+               {% else %}
+               -
+               {% endif %}
             </td>
             <td>
                {% if progress.is_completed %}
                <a href="{{ url_for('main.get_section_results', user_progress_id=progress.id) }}" class="btn btn-outline-success" role="button">View result</a>
                {% else %}
-               <button type="button" class="btn btn-primary">Continue</button>
+               <a href="{{ url_for('main.speaking_practice_get') }}" class="btn btn-primary" role="button">Resume</a>
                {% endif %}
             </td>
          </tr>
@@ -48,5 +62,11 @@ Description
       </tbody>
    </table>
 </div>
+{% else %}
+<div class="text-center" style="min-height: 50vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+    <h3 class="mb-3">You have not yet completed any IELTS sections</h3>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-lg">Select IELTS Section</a>
+</div>
+{% endif %}
 
 {% endblock %}

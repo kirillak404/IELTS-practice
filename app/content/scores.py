@@ -50,7 +50,7 @@ PRONUNCIATION_FEEDBACK = ('It seems you were unable to participate. We can work 
 
 SPEAKING_SCORES_FEEDBACK = {'Fluency and Coherence': FLUENCY_AND_COHERENCE_FEEDBACK,
                             'Lexical Resource': LEXICAL_RESOURCE_FEEDBACK,
-                            'Grammatical range and accuracy': GRAMMATICAL_RANGE_AND_ACCURACY_FEEDBACK,
+                            'Grammatical Range & Accuracy': GRAMMATICAL_RANGE_AND_ACCURACY_FEEDBACK,
                             'Pronunciation': PRONUNCIATION_FEEDBACK}
 
 # Text feedback for IELTS Speaking final scores (0 to 9)

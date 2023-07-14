@@ -50,6 +50,7 @@ Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
                      <div class="rating">{{ score.score }}</div>
                      <div class="header-content header-content-scores">
                         <span class="header-title">{{ score.name }}</span>
+                        <span class="bi bi-info-circle" data-bs-toggle="tooltip" title="{{ score.description }}"></span>
                         <span class="score-text"></span>
                      </div>
                   </div>
@@ -85,45 +86,59 @@ Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
       </div>
    </div>
    <!-- Scores Column (Narrower) -->
-   <div class="col-lg-4 mb-4">
-      <div class="p-1 card bg-body shadow-sm">
-         <div class="card-body">
-            <h5 class="card-title mb-4">Overall pronunciation scores</h5>
-            <div class="row align-items-center">
-               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Accuracy Score Explanation">Accuracy</div>
-               <div class="col">
-                  <div class="progress">
-                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.accuracy_score }}%;" aria-valuenow="{{ pron_scores.accuracy_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.accuracy_score }}</div>
-                  </div>
+<div class="col-lg-4 mb-4">
+   <div class="p-1 card bg-body shadow-sm">
+      <div class="card-body">
+         <h5 class="card-title mb-4">Overall pronunciation scores</h5>
+         <div class="row align-items-center">
+            <div class="col-4 score-title d-flex align-items-center">
+               <span>Accuracy</span>
+               <span class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="Measures how closely your pronunciation matches a native speaker's."></span>
+            </div>
+            <div class="col">
+               <div class="progress">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.accuracy_score }}%;" aria-valuenow="{{ pron_scores.accuracy_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.accuracy_score }}</div>
                </div>
             </div>
-            <div class="row align-items-center mt-3">
-               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Fluency Score Explanation">Fluency</div>
-               <div class="col">
-                  <div class="progress">
-                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.fluency_score }}%;" aria-valuenow="{{ pron_scores.fluency_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.fluency_score }}</div>
-                  </div>
+         </div>
+         <div class="row align-items-center mt-3">
+            <div class="col-4 score-title d-flex align-items-center">
+               <span>Fluency</span>
+               <span class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="Reflects the rhythm and natural pauses in your speech, like a native speaker."></span>
+            </div>
+            <div class="col">
+               <div class="progress">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.fluency_score }}%;" aria-valuenow="{{ pron_scores.fluency_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.fluency_score }}</div>
                </div>
             </div>
-            <div class="row align-items-center mt-3">
-               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Completeness Score Explanation">Completeness</div>
-               <div class="col">
-                  <div class="progress">
-                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.completeness_score }}%;" aria-valuenow="{{ pron_scores.completeness_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.completeness_score }}</div>
-                  </div>
+         </div>
+         <div class="row align-items-center mt-3">
+            <div class="col-4 score-title d-flex align-items-center">
+               <span>Completeness</span>
+               <span class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="Checks if you skipped any words or articles in your speech."></span>
+            </div>
+            <div class="col">
+               <div class="progress">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.completeness_score }}%;" aria-valuenow="{{ pron_scores.completeness_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.completeness_score }}</div>
                </div>
             </div>
-            <div class="row align-items-center mt-3">
-               <div class="col-4 score-title" data-toggle="tooltip" data-placement="right" title="Pronunciation Score Explanation">Pronunciation</div>
-               <div class="col">
-                  <div class="progress">
-                     <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.pronunciation_score }}%;" aria-valuenow="{{ pron_scores.pronunciation_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.pronunciation_score }}</div>
-                  </div>
+         </div>
+         <div class="row align-items-center mt-3">
+            <div class="col-4 score-title d-flex align-items-center">
+               <span>Pronunciation</span>
+               <span class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="Your overall score, combining accuracy, fluency, and completeness."></span>
+            </div>
+            <div class="col">
+               <div class="progress">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: {{ pron_scores.pronunciation_score }}%;" aria-valuenow="{{ pron_scores.pronunciation_score }}" aria-valuemin="0" aria-valuemax="100">{{ pron_scores.pronunciation_score }}</div>
                </div>
             </div>
          </div>
       </div>
    </div>
+</div>
+
+
 </div>
 
 <script src="{{ url_for('static', filename='scores.js') }}"></script>

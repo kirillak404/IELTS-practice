@@ -471,14 +471,23 @@ class UserSpeakingAttemptResult(db.Model):
         Returns:
             tuple: A tuple of dictionaries, each containing criterion name, its score, and feedback.
         """
+        CRITERIA_DESCRIPTION = ('Evaluates how smoothly and logically a speaker communicates ideas, focusing on organization of thoughts and fluid speech.',
+                                'Assesses the range and appropriateness of vocabulary usage, including the ability to paraphrase.',
+                                'Measures the usage of various grammatical structures correctly, examining both range and accuracy.',
+                                'Rates the clarity of speech, including pronunciation of words, sentence stress, and intonation.')
+
         scores = ({'name': 'Fluency and Coherence',
-                  'score': self.fluency_coherence_score},
+                   'score': self.fluency_coherence_score,
+                   'description': CRITERIA_DESCRIPTION[0]},
                   {'name': 'Lexical Resource',
-                  'score': self.lexical_resource_score},
-                  {'name': 'Grammatical range and accuracy',
-                  'score': self.grammatical_range_accuracy_score},
+                   'score': self.lexical_resource_score,
+                   'description': CRITERIA_DESCRIPTION[1]},
+                  {'name': 'Grammatical Range & Accuracy',
+                   'score': self.grammatical_range_accuracy_score,
+                   'description': CRITERIA_DESCRIPTION[2]},
                   {'name': 'Pronunciation',
-                  'score': self.pronunciation_score})
+                   'score': self.pronunciation_score,
+                   'description': CRITERIA_DESCRIPTION[3]})
 
         UserSpeakingAttemptResult.set_speaking_scores_feedback(scores)
         return scores

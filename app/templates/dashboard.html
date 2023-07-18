@@ -1,74 +1,72 @@
 {% extends "layout.html" %}
 {% block title %}
-   Main page
+Main page
 {% endblock %}
 {% block h1 %}
-   {% if current_user.is_authenticated %}
-      Hello {{ current_user.first_name or 'there' }} 👋
-   {% endif %}
+{% if current_user.is_authenticated %}
+Hello {{ current_user.first_name or 'there' }} 👋
+{% endif %}
 {% endblock %}
 {% block h2 %}
-   What skill do you want to practice today?
+Ready to master your IELTS skills? Choose a section to practice today!
 {% endblock %}
 {% block content %}
-
 <div class="row">
-   <div class="col">
-      <div class="card mb-4" style="width: 18rem;">
-         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
-            <title>Placeholder</title>
-            <rect width="100%" height="100%" fill="#868e96"></rect>
-            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
-         </svg>
+   <div class="col-sm-3 mb-3">
+      <div class="p-1 card bg-body shadow-sm" style="border: none">
          <div class="card-body">
-            <h5 class="card-title">Speaking</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="section/speaking" class="btn btn-primary">Practice Speaking</a>
+            <h5 class="card-title"><i class="bi bi-mic"></i> Speaking</h5>
+            <p class="card-text">Practice answering interview-style questions, simulating the IELTS speaking section.</p>
+            <a href="{{ url_for('main.render_section', name='speaking') }}" class="btn btn-primary position-relative">
+            Get Started
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            Beta
+            </span>
+            </a>
          </div>
       </div>
    </div>
-   <div class="col">
-      <div class="card mb-4" style="width: 18rem;">
-         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
-            <title>Placeholder</title>
-            <rect width="100%" height="100%" fill="#868e96"></rect>
-            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
-         </svg>
+   <div class="col-sm-3 mb-3">
+      <div class="p-1 card bg-body shadow-sm" style="border: none">
          <div class="card-body">
-            <h5 class="card-title">Listening</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="btn btn-primary disabled">Go somewhere</a>
+            <h5 class="card-title"><i class="bi bi-ear"></i> Listening</h5>
+            <p class="card-text">Boost your skills in understanding varied accents and conversations as in IELTS listening.</p>
+            <a href="#" class="btn btn-primary position-relative disabled">
+            Get Started
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+            Soon
+            </span>
+            </a>
          </div>
       </div>
    </div>
-   <div class="col">
-      <div class="card mb-4" style="width: 18rem;">
-         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
-            <title>Placeholder</title>
-            <rect width="100%" height="100%" fill="#868e96"></rect>
-            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
-         </svg>
+   <div class="col-sm-3 mb-3">
+      <div class="p-1 card bg-body shadow-sm" style="border: none">
          <div class="card-body">
-            <h5 class="card-title">Reading</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="btn btn-primary disabled">Go somewhere</a>
+            <h5 class="card-title"><i class="bi bi-book"></i> Reading</h5>
+            <p class="card-text">Boost speed and comprehension for long texts, akin to the IELTS reading tasks.</p>
+            <a href="#" class="btn btn-primary position-relative disabled">
+            Get Started
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+            Soon
+            </span>
+            </a>
          </div>
       </div>
    </div>
-   <div class="col">
-      <div class="card mb-4" style="width: 18rem;">
-         <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
-            <title>Placeholder</title>
-            <rect width="100%" height="100%" fill="#868e96"></rect>
-            <text x="50%" y="50%" fill="#dee2e6" dy=".3em" text-anchor="middle">Image cap</text>
-         </svg>
+   <div class="col-sm-3 mb-3">
+      <div class="p-1 card bg-body shadow-sm" style="border: none">
          <div class="card-body">
-            <h5 class="card-title">Writing</h5>
-            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-            <a href="#" class="btn btn-primary disabled">Go somewhere</a>
+            <h5 class="card-title"><i class="bi bi-pencil"></i> Writing</h5>
+            <p class="card-text">Practice writing essays and reports, similar to tasks in the IELTS writing section.</p>
+            <a href="#" class="btn btn-primary position-relative disabled">
+            Get Started
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+            Soon
+            </span>
+            </a>
          </div>
       </div>
    </div>
 </div>
-
 {% endblock %}

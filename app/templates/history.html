@@ -54,7 +54,7 @@ History of Your Progress on IELTS Exam Sections
                {% if progress.is_completed %}
                <a href="{{ url_for('main.get_section_results', user_progress_id=progress.id) }}" class="btn btn-outline-success" role="button">View result</a>
                {% else %}
-               <a href="{{ url_for('main.speaking_practice_get') }}" class="btn btn-primary" role="button">Resume</a>
+               <a href="{{ url_for('main.render_section', name=progress.section.name) }}" class="btn btn-primary" role="button">Resume</a>
                {% endif %}
             </td>
          </tr>

@@ -92,7 +92,8 @@ def get_speaking_attempt(user_subsection_attempt_id):
     return render_template('subsection_results.html', result=result,
                            speaking_scores=speaking_scores,
                            attempt=user_subsection_attempt,
-                           answers=answers, pron_scores=pron_scores)
+                           answers=answers, pron_scores=pron_scores,
+                           user_progress=user_progress)
 
 
 @login_required

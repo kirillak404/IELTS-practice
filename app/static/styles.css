@@ -334,6 +334,13 @@ font-size: 0.8em;
 
 body {
     background-color: #f8f9fa; /* Это серый цвет Bootstrap */
+    display: flex;
+    flex-direction: column;  /* Makes the body element a flex container */
+    min-height: 100vh;  /* Minimum height of 100% of the viewport height */
+}
+
+main {
+    flex: 1;  /* Allows the main content to grow and shrink, effectively pushing the footer down */
 }
 
 .completed_dot {

@@ -16,8 +16,8 @@ def index():
     return render_template("index.html")
 
 
-@login_required
 @bp.route('/section/<name>')
+@login_required
 def render_section(name):
     section = Section.get_by_name(name)
     subsections = section.get_user_subsections_progress(current_user)
@@ -27,8 +27,8 @@ def render_section(name):
                            subsections=subsections)
 
 
-@login_required
 @bp.route('/section/speaking/practice', methods=["GET"])
+@login_required
 def speaking_practice_get():
     # Retrieve the 'speaking' section
     section = Section.get_by_name("speaking")
@@ -45,8 +45,8 @@ def speaking_practice_get():
                            practice=practice)
 
 
-@login_required
 @bp.route('/section/speaking/practice', methods=["POST"])
+@login_required
 def speaking_practice_post():
     # Retrieving and checking questions_set from the request
     question_set_id = request.form.get('question_set_id')
@@ -68,8 +68,8 @@ def speaking_practice_post():
                             user_subsection_attempt_id=subsection_attempt.id))
 
 
-@login_required
 @bp.route('/section/speaking/attempt/<int:user_subsection_attempt_id>/')
+@login_required
 def get_speaking_attempt(user_subsection_attempt_id):
     user_subsection_attempt = UserSubsectionAttempt.query.get(
         user_subsection_attempt_id)
@@ -96,8 +96,8 @@ def get_speaking_attempt(user_subsection_attempt_id):
                            user_progress=user_progress)
 
 
-@login_required
 @bp.route('/section/results/<int:user_progress_id>/')
+@login_required
 def get_section_results(user_progress_id):
     user_progress = UserProgress.query.get(user_progress_id)
 
@@ -120,8 +120,8 @@ def get_section_results(user_progress_id):
                            final_scores=final_scores)
 
 
-@login_required
 @bp.route('/history')
+@login_required
 def get_sections_history():
     user_progress_history = current_user.get_sections_history()
     return render_template("history.html",
@@ -129,6 +129,7 @@ def get_sections_history():
 
 
 @bp.route('/reset-section-progress', methods=["POST"])
+@login_required
 def reset_section_progress():
     # Retrieve the 'speaking' section
     section = Section.get_by_name("speaking")

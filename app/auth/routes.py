@@ -1,4 +1,4 @@
-from flask import render_template, redirect, flash, url_for
+from flask import render_template, redirect, flash, url_for, request, session
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
@@ -130,5 +130,14 @@ def auth_google():
 @login_required
 def logout():
     logout_user()
+    session.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('main.index'))
+
+
+@bp.route('/set_device_id', methods=['GET'])
+def set_device_id():
+    device_id = request.args.get('device_id')
+    if device_id:
+        session['amplitude_device_id'] = device_id
+    return "", 204  # Return an empty 204 No Content response

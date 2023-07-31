@@ -1,13 +1,14 @@
 from datetime import datetime
 from typing import Optional
-from collections import namedtuple, defaultdict
+from collections import defaultdict
 
 from flask import abort, flash
 from flask_login import UserMixin
 from sqlalchemy import func, desc
 from werkzeug.security import check_password_hash, generate_password_hash
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from itertools import zip_longest
+import uuid
 
 from app import db, login
 from app.content.scores import SPEAKING_SCORES_FEEDBACK, SPEAKING_FINAL_FEEDBACK
@@ -18,7 +19,7 @@ class User(UserMixin, db.Model):
 
     __tablename__ = 'users'
 
-    id = db.Column(db.Integer, primary_key=True)  # Unique user ID
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
     email = db.Column(db.String(255), index=True, unique=True,
                       nullable=False)  # User email address
     is_email_verified = db.Column(db.Boolean, default=False)  # Boolean indicating if email is verified
@@ -62,7 +63,7 @@ class User(UserMixin, db.Model):
 
 @login.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    return User.query.get(id)
 
 
 class Section(db.Model):
@@ -226,7 +227,7 @@ class UserProgress(db.Model):
     __tablename__ = 'user_progress'
 
     id = db.Column(db.Integer, primary_key=True)  # Unique progress ID
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ID of the user this progress record belongs to
+    user_id = db.Column(db.UUID(as_uuid=True), db.ForeignKey('users.id'), nullable=False)
     section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)  # ID of the section this progress record is for
     next_subsection_id = db.Column(db.Integer, db.ForeignKey('subsections.id'))  # ID of the next subsection the user should attempt
     is_completed = db.Column(db.Boolean, nullable=False, default=False)  # Boolean indicating if the section has been completed

@@ -1,6 +1,8 @@
-from flask import render_template, request, redirect, url_for
+from amplitude import BaseEvent
+from flask import render_template, request, redirect, url_for, session
 from flask_login import login_required, current_user
 
+from app import amplitude
 from app.ielts_speaking import evaluate_ielts_speaking
 from app.main import bp
 from app.models import *
@@ -12,6 +14,18 @@ from app.utils import get_current_subsection_and_last_topic, get_practice_data, 
 @bp.route('/')
 def index():
     if current_user.is_authenticated:
+
+        # Amplitude test event
+        # device_id = session.get('amplitude_device_id')
+        # if device_id:
+        #     amplitude.track(
+        #         BaseEvent(
+        #             event_type="test-event_final",
+        #             user_id=str(current_user.id),
+        #             device_id=device_id
+        #         ))
+        #     amplitude.flush()
+
         return render_template("dashboard.html")
     return render_template("index.html")
 
@@ -56,7 +70,8 @@ def speaking_practice_post():
     audio_files = get_audio_files(questions_set)
 
     # Evaluate speaking with ChatGPT and Azure pronunciation assessment
-    speaking_result, answers_evaluation = evaluate_ielts_speaking(questions_set, audio_files)
+    speaking_result, answers_evaluation = evaluate_ielts_speaking(
+        questions_set, audio_files)
 
     # Save result and answers to database
     subsection_attempt = save_speaking_results_to_database(current_user,
@@ -140,5 +155,6 @@ def reset_section_progress():
         if user_progress:
             db.session.delete(user_progress)
             db.session.commit()
-            flash("You've successfully reset the progress of this section. It's a fresh start!")
+            flash(
+                "You've successfully reset the progress of this section. It's a fresh start!")
     return redirect(url_for('main.index'))

@@ -1,3 +1,6 @@
+import os
+
+from amplitude import Amplitude
 from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from flask_login import LoginManager
@@ -10,6 +13,7 @@ login = LoginManager()
 oauth = OAuth()
 login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
+amplitude = Amplitude(os.environ.get('AMPLITUDE_API_KEY'))
 
 
 def create_app(config_class=Config):

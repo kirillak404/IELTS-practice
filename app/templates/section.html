@@ -46,10 +46,31 @@ Speaking practice
    </table>
 </div>
 
-<!--Footer-->
-<div class="sticky-footer">
-  <form action="/reset-section-progress" method="POST">
-    <button type="submit" class="btn btn-outline-danger">Reset section</button>
-  </form>
+<!--Reset section progress-->
+<div class="text-center mt-3">
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#resetConfirmModal">Reset progress</button>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="resetConfirmModal" tabindex="-1" aria-labelledby="resetConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="resetConfirmModalLabel">Confirm Reset</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to reset the progress of the current section? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, keep my progress</button>
+        <form action="/reset-section-progress" method="POST">
+            <input type="hidden" name="section_name" value="{{ section.name }}">
+          <button type="submit" class="btn btn-danger">Yes, reset my progress</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

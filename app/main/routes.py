@@ -131,12 +131,14 @@ def get_sections_history():
 @bp.route('/reset-section-progress', methods=["POST"])
 @login_required
 def reset_section_progress():
-    # Retrieve the 'speaking' section
-    section = Section.get_by_name("speaking")
-    # Get the current user's progress in this section
-    user_progress = current_user.get_section_progress(section.id)
-    if user_progress:
-        db.session.delete(user_progress)
-        db.session.commit()
-
-    return redirect(url_for('main.speaking_practice_get'))
+    # Retrieve section
+    section_name = request.form.get('section_name')
+    if section_name:
+        section = Section.get_by_name(section_name)
+        # Get the current user's progress in this section
+        user_progress = current_user.get_section_progress(section.id)
+        if user_progress:
+            db.session.delete(user_progress)
+            db.session.commit()
+            flash("You've successfully reset the progress of this section. It's a fresh start!")
+    return redirect(url_for('main.index'))

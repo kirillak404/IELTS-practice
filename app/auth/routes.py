@@ -9,6 +9,13 @@ from app.models import User
 from app.utils import send_amplitude_event
 
 
+def after_login_success(login_method: str):
+    # sending login event to Amplitude
+    send_amplitude_event(current_user.id,
+                         'log in',
+                         {'method': login_method})
+
+
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -21,9 +28,7 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user)
-            send_amplitude_event(user.id,
-                                 'log in',
-                                 {'method': 'password'})
+            after_login_success(login_method='password')
             return redirect(url_for('main.index'))
         else:
             flash('Login failed. Check your username and/or password.')
@@ -105,9 +110,7 @@ def auth_google():
             return redirect(url_for('auth.login'))
         else:
             login_user(user)
-            send_amplitude_event(user.id,
-                                 'log in',
-                                 {'method': 'google'})
+            after_login_success(login_method='google')
 
     else:
         user = User(email=google_user_info.get('email'),

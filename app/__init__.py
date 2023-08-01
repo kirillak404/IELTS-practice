@@ -5,6 +5,8 @@ from authlib.integrations.flask_client import OAuth
 from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
 
 from config import Config
 
@@ -23,6 +25,19 @@ def create_app(config_class=Config):
     login.init_app(app)
     db.init_app(app)
     oauth.init_app(app)
+
+    sentry_sdk.init(
+        dsn=os.environ.get('SENTRY_SDK_DSN'),
+        integrations=[
+            FlaskIntegration(),
+        ],
+        send_default_pii=True,
+
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for performance monitoring.
+        # We recommend adjusting this value in production.
+        traces_sample_rate=1.0
+    )
 
     with app.app_context():
         # importing models

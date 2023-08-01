@@ -155,7 +155,7 @@ Your evaluation should strictly adhere to the official IELTS Speaking Band Descr
 
 Provide a "score" for each mentioned criterion. This score should be a number from 0 to 9, representing the student's performance on that criterion in accordance with the official IELTS Speaking Band Descriptors for Academic and General Training tests.
 
-In addition, provide "generalFeedback" string of up to 300 characters. This is an overall evaluation of the student's performance, based on all the criteria, and should highlight any significant trends or issues not addressed in the individual criterion evaluations.
+In addition, provide a "generalFeedback" text of up to 300 characters. It should be a friendly and personalized note directly addressing the student. Craft it to encapsulate your overall impressions about the student's performance without mentioning specific criteria, and focus instead on providing a broader picture of their achievements.
 
 Input:
 '''

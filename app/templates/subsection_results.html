@@ -165,9 +165,6 @@ Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
     <a href="{{ url_for('main.get_section_results', user_progress_id=user_progress.id) }}" class="btn btn-success position-relative">
         <i class="bi bi-check2-circle"></i>
         View Final Results
-        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
-            <span class="visually-hidden">New alerts</span>
-        </span>
     </a>
     {% endif %}
 </div>

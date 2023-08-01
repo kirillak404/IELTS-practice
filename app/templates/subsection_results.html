@@ -9,26 +9,6 @@ Speaking
 Part {{ attempt.subsection.part_number }}: {{ attempt.subsection.name }}
 {% endblock %}
 {% block content %}
-
-
-{% if not user_progress.is_completed and attempt.subsection.part_number in (1, 2) %}
-<a href="{{ url_for('main.speaking_practice_get') }}" class="btn btn-primary btn-lg">
-<i class="bi bi-play-fill"></i>
-Continue to Speaking Part {{ attempt.subsection.part_number + 1 }}
-</a>
-{% endif %}
-
-{% if attempt.subsection.part_number == 3 %}
-<a href="{{ url_for('main.get_section_results', user_progress_id=user_progress.id) }}" class="btn btn-success btn-lg position-relative">
-<i class="bi bi-check2-circle"></i>
-View Final Results
-<span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
-    <span class="visually-hidden">New alerts</span>
-</span>
-</a>
-{% endif %}
-
-
 <h3 class="mb-4">Your results <small class="text-muted fw-normal fs-6">completed {{ attempt.created_at | time_ago_in_words }}</small></h3>
 <div class="row">
    <div class="col-lg-8">
@@ -171,4 +151,27 @@ View Final Results
    </div>
 </div>
 <script src="{{ url_for('static', filename='scores.js') }}"></script>
+
+
+<div class="fixed-bottom d-flex justify-content-center align-items-center pb-4">
+    {% if not user_progress.is_completed and attempt.subsection.part_number in (1, 2) %}
+    <a href="{{ url_for('main.speaking_practice_get') }}" class="btn btn-primary">
+        <i class="bi bi-play-fill"></i>
+        Continue to Speaking Part {{ attempt.subsection.part_number + 1 }}
+    </a>
+    {% endif %}
+
+    {% if attempt.subsection.part_number == 3 %}
+    <a href="{{ url_for('main.get_section_results', user_progress_id=user_progress.id) }}" class="btn btn-success position-relative">
+        <i class="bi bi-check2-circle"></i>
+        View Final Results
+        <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+            <span class="visually-hidden">New alerts</span>
+        </span>
+    </a>
+    {% endif %}
+</div>
+
+
+
 {% endblock %}

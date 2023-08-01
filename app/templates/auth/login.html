@@ -17,7 +17,7 @@
 <!--Sending Amplitude device id to backend-->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var maxAttempts = 10;
+    var maxAttempts = 5;
     var attempt = 0;
 
     function getDeviceId() {
@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Если deviceId не получен, ждем 100 миллисекунд и пробуем снова.
             setTimeout(getDeviceId, 100);
         } else if (deviceId) {
-            alert(deviceId)
             var deviceIdUrl = "{{ url_for('auth.set_device_id') }}" + "?device_id=" + encodeURIComponent(deviceId);
             fetch(deviceIdUrl);
         }

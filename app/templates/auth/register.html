@@ -13,6 +13,30 @@
 {% endblock %}
 
 {% block content %}
+
+<!--Sending Amplitude device id to backend-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var maxAttempts = 5;
+    var attempt = 0;
+
+    function getDeviceId() {
+        var deviceId = amplitude.getDeviceId();
+
+        if (!deviceId && attempt < maxAttempts) {
+            attempt++;
+            // Если deviceId не получен, ждем 100 миллисекунд и пробуем снова.
+            setTimeout(getDeviceId, 100);
+        } else if (deviceId) {
+            var deviceIdUrl = "{{ url_for('auth.set_device_id') }}" + "?device_id=" + encodeURIComponent(deviceId);
+            fetch(deviceIdUrl);
+        }
+    }
+
+    getDeviceId();
+});
+</script>
+
 <div class="custom-form-container">
     <form method="POST" action="{{ url_for('auth.register') }}" id="register-form" novalidate>
         {{ form.csrf_token }}

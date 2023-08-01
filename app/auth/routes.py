@@ -6,6 +6,7 @@ from app import db, oauth
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm
 from app.models import User
+from app.utils import send_amplitude_event
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -20,6 +21,9 @@ def login():
 
         if user and user.check_password(form.password.data):
             login_user(user)
+            send_amplitude_event(user.id,
+                                 'log in',
+                                 {'method': 'password'})
             return redirect(url_for('main.index'))
         else:
             flash('Login failed. Check your username and/or password.')
@@ -40,6 +44,9 @@ def register():
         try:
             db.session.add(user)
             db.session.commit()
+            send_amplitude_event(user.id,
+                                 'complete registration',
+                                 {'method': 'password'})
             flash('Registration successful. You can now log in.')
             return redirect(url_for('auth.login'))
         except IntegrityError:
@@ -98,6 +105,9 @@ def auth_google():
             return redirect(url_for('auth.login'))
         else:
             login_user(user)
+            send_amplitude_event(user.id,
+                                 'log in',
+                                 {'method': 'google'})
 
     else:
         user = User(email=google_user_info.get('email'),
@@ -112,6 +122,9 @@ def auth_google():
             db.session.add(user)
             db.session.commit()
             login_user(user)
+            send_amplitude_event(user.id,
+                                 'complete registration',
+                                 {'method': 'google'})
         except IntegrityError:
             db.session.rollback()
             flash('This email is already registered. '
@@ -129,6 +142,8 @@ def auth_google():
 @bp.route('/logout')
 @login_required
 def logout():
+    send_amplitude_event(current_user.id,
+                         'log out')
     logout_user()
     session.clear()
     flash('You have been logged out.', 'success')

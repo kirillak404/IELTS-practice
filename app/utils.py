@@ -1,8 +1,9 @@
 import time
 from io import BytesIO
 from collections import namedtuple
+import uuid
 
-from flask import request
+from flask import request, session
 from humanize import naturaltime
 from pydub import AudioSegment
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -10,6 +11,9 @@ from werkzeug.datastructures import FileStorage
 
 from app.content.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
 from app.models import *
+from app import amplitude
+from amplitude import BaseEvent
+
 
 LOW_PRON_ACCURACY_SCORE = 90
 
@@ -397,3 +401,41 @@ def save_speaking_results_to_database(user, question_set, speaking_result,
     commit_changes()
 
     return subsection_attempt
+
+
+def send_amplitude_event(user_id: UUID, event_name: str,
+                         event_properties: dict[str, str] = None) -> None:
+    """
+    Sends an event to Amplitude with the specified properties if amplitude_device_id is available.
+
+    Args:
+        user_id: UUID of the user for whom the event is being sent.
+        event_name: Name of the event being sent.
+        event_properties: Additional properties associated with the event. Defaults to None.
+
+    Raises:
+        TypeError: If the user_id is not of UUID type.
+    """
+
+    # Check if the user_id is of UUID type
+    if not isinstance(user_id, uuid.UUID):
+        raise TypeError(
+            f'user_id should be of type UUID, but got {type(user_id).__name__}')
+
+    # Retrieve the amplitude device ID from the session
+    amplitude_device_id = session.get('amplitude_device_id')
+
+    if amplitude_device_id:
+        # If the amplitude device ID exists, track the event with amplitude
+        amplitude.track(
+            BaseEvent(
+                event_type=event_name.lower(),
+                user_id=str(user_id),
+                device_id=amplitude_device_id,
+                event_properties=event_properties
+            ))
+
+        # Flush the tracked events to Amplitude
+        amplitude.flush()
+    else:
+        print(f'amplitude_device_id not found, user: {user_id}')

@@ -1,8 +1,6 @@
-from amplitude import BaseEvent
-from flask import render_template, request, redirect, url_for, session
+from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 
-from app import amplitude
 from app.ielts_speaking import evaluate_ielts_speaking
 from app.main import bp
 from app.models import *
@@ -14,18 +12,6 @@ from app.utils import get_current_subsection_and_last_topic, get_practice_data, 
 @bp.route('/')
 def index():
     if current_user.is_authenticated:
-
-        # Amplitude test event
-        # device_id = session.get('amplitude_device_id')
-        # if device_id:
-        #     amplitude.track(
-        #         BaseEvent(
-        #             event_type="test-event_final",
-        #             user_id=str(current_user.id),
-        #             device_id=device_id
-        #         ))
-        #     amplitude.flush()
-
         return render_template("dashboard.html")
     return render_template("index.html")
 

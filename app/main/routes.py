@@ -5,8 +5,7 @@ from app.ielts_speaking import evaluate_ielts_speaking
 from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
-    get_audio_files, \
-    save_speaking_results_to_database
+    get_audio_files, save_speaking_results_to_database, send_amplitude_event
 
 
 @bp.route('/')
@@ -64,6 +63,17 @@ def speaking_practice_post():
                                                            questions_set,
                                                            speaking_result,
                                                            answers_evaluation)
+
+    # sending events to Amplitude Analytics
+    part_number = questions_set.subsection.part_number
+    send_amplitude_event(current_user.id,
+                         'complete subsection',
+                         {'section': 'speaking',
+                          'part number': part_number})
+    if part_number == 3:
+        send_amplitude_event(current_user.id,
+                             'complete section',
+                             {'section': 'speaking'})
 
     return redirect(url_for('main.get_speaking_attempt',
                             user_subsection_attempt_id=subsection_attempt.id))

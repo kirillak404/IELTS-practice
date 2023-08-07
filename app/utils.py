@@ -2,12 +2,10 @@ import os
 import time
 import uuid
 from collections import namedtuple
-from datetime import datetime
 from io import BytesIO
 
 from amplitude import Amplitude, BaseEvent
 from flask import request, session, flash, abort
-from humanize import naturaltime
 from pydub import AudioSegment
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -20,7 +18,6 @@ from app.models import (Section, Subsection, QuestionSet, UserProgress,
 from config.database import db
 
 amplitude = Amplitude(os.environ.get('AMPLITUDE_API_KEY'))
-LOW_PRON_ACCURACY_SCORE = 90
 
 
 def create_and_fill_out_tables(models):
@@ -204,36 +201,6 @@ def convert_audio_to_opus_bytesio(file_storage: FileStorage) -> BytesIO:
     return output_blob
 
 
-def convert_answer_object_to_html(answer):
-    pronunciation_assessment_json = answer.pronunciation_assessment_json
-    if not pronunciation_assessment_json:
-        return "You didn't give an answer ❌"
-
-    words = pronunciation_assessment_json["NBest"][0]["Words"]
-
-    word_list = []
-    for word in words:
-        word_text = word["Word"]
-        score = word.get("AccuracyScore")
-        if score:
-            score = int(score)
-
-        if word["ErrorType"] == "Mispronunciation":
-            word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%" class="word_mispronunciation">{word_text}</span>"""
-        elif word["ErrorType"] == "Omission":
-            word = f"""<span data-toggle="tooltip" title="This word was omitted" class="word_omitted">{word_text}</span>"""
-        elif word["ErrorType"] == "Insertion":
-            word = f"""<span data-toggle="tooltip" title="This word is probably redundant" class="word_insertion">{word_text}</span>"""
-        elif score < LOW_PRON_ACCURACY_SCORE:
-            word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%" class="score-low">{word_text}</span>"""
-        else:
-            word = f"""<span data-toggle="tooltip" title="Accuracy: {score}%">{word_text}</span>"""
-
-        word_list.append(word)
-
-    return " ".join(word_list)
-
-
 def get_dialog_text(answers_data: tuple, attempt: namedtuple) -> str:
     question_set = attempt.question_set
     speaking_part_number = attempt.subsection.part_number
@@ -280,21 +247,11 @@ def get_words_low_pron_accuracy(answers: list) -> tuple:
                 if word_text and word.get('AccuracyScore'):
                     if word.get('ErrorType') == 'Mispronunciation':
                         mispronounced_words.add(word_text)
-                    elif word.get('AccuracyScore') < LOW_PRON_ACCURACY_SCORE:
+                    elif word.get('AccuracyScore') < 90:
                         if word_text not in mispronounced_words:
                             low_accuracy_words.add(word_text)
 
     return mispronounced_words, low_accuracy_words
-
-
-def time_ago_in_words(dtime: datetime) -> str:
-    past_time = datetime.utcnow() - dtime
-    return naturaltime(past_time)
-
-
-def show_score_with_emoji(score: float) -> str:
-    emoji = ('💔', '😢', '🌧️', '😕', '🤨', '😐', '😊', '🌤️', '🎉', '💎')
-    return f"{score} {emoji[int(score)]}"
 
 
 def add_pronunciation_score(gpt_speech_evaluation: dict,

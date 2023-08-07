@@ -1,18 +1,25 @@
+import os
 import time
-from io import BytesIO
+import uuid
 from collections import namedtuple
-from flask import request, session
+from datetime import datetime
+from io import BytesIO
+
+from amplitude import Amplitude, BaseEvent
+from flask import request, session, flash, abort
 from humanize import naturaltime
 from pydub import AudioSegment
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.exc import IntegrityError, OperationalError
 from werkzeug.datastructures import FileStorage
 
 from app.content.ielts_seeds import SECTIONS, SUBSECTIONS, QUESTIONS, TOPICS
-from app.models import *
-from app import amplitude
-from amplitude import BaseEvent
+from app.models import (Section, Subsection, QuestionSet, UserProgress,
+                        UserSubsectionAttempt, UserSubsectionAnswer,
+                        UserSpeakingAttemptResult)
+from config.database import db
 
-
+amplitude = Amplitude(os.environ.get('AMPLITUDE_API_KEY'))
 LOW_PRON_ACCURACY_SCORE = 90
 
 

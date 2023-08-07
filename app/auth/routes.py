@@ -2,11 +2,12 @@ from flask import render_template, redirect, flash, url_for, request, session
 from flask_login import login_user, logout_user, login_required, current_user
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app import db, oauth
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm
 from app.models import User
 from app.utils import send_amplitude_event
+from config.auth import oauth
+from config.database import db
 
 
 def after_login_success(login_method: str):

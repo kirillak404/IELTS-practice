@@ -1,7 +1,7 @@
 import os
 
 from flask import Blueprint
-from app import oauth
+from config.auth import oauth
 
 bp = Blueprint('auth', __name__)
 

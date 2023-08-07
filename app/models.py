@@ -10,7 +10,8 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from itertools import zip_longest
 import uuid
 
-from app import db, login
+from config.database import db
+from config.auth import login
 from app.content.scores import SPEAKING_SCORES_FEEDBACK, SPEAKING_FINAL_FEEDBACK
 
 

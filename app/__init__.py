@@ -26,18 +26,19 @@ def create_app(config_class=Config):
     db.init_app(app)
     oauth.init_app(app)
 
-    sentry_sdk.init(
-        dsn=os.environ.get('SENTRY_SDK_DSN'),
-        integrations=[
-            FlaskIntegration(),
-        ],
-        send_default_pii=True,
+    if not app.debug:
+        sentry_sdk.init(
+            dsn=os.environ.get('SENTRY_SDK_DSN'),
+            integrations=[
+                FlaskIntegration(),
+            ],
+            send_default_pii=True,
 
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for performance monitoring.
-        # We recommend adjusting this value in production.
-        traces_sample_rate=1.0
-    )
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            # We recommend adjusting this value in production.
+            traces_sample_rate=1.0
+        )
 
     with app.app_context():
         # importing models

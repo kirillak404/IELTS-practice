@@ -1,8 +1,6 @@
 import time
 from io import BytesIO
 from collections import namedtuple
-import uuid
-
 from flask import request, session
 from humanize import naturaltime
 from pydub import AudioSegment
@@ -280,22 +278,6 @@ def get_words_low_pron_accuracy(answers: list) -> tuple:
                             low_accuracy_words.add(word_text)
 
     return mispronounced_words, low_accuracy_words
-
-
-# def get_pron_errors_and_recommendations(answers: list) -> dict:
-#     mispronounced_words, low_accuracy_words = get_words_low_pron_accuracy(answers)
-#
-#     if mispronounced_words:
-#         mispronounced_words = f'Mispronounced words: {", ".join(mispronounced_words)}'
-#     else:
-#         mispronounced_words = "Wow, you don't have any errors!"
-#
-#     if low_accuracy_words:
-#         low_accuracy_words = f'Words with low pronunciation accuracy: {", ".join(low_accuracy_words)}'
-#     else:
-#         low_accuracy_words = "Sorry, no recommendations in this case..."
-#
-#     return {'errors': mispronounced_words, 'recommendations': low_accuracy_words}
 
 
 def time_ago_in_words(dtime: datetime) -> str:

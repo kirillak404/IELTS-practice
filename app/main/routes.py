@@ -12,7 +12,7 @@ from app.utils import get_current_subsection_and_last_topic, get_practice_data, 
 def index():
     if current_user.is_authenticated:
         return render_template("dashboard.html")
-    return render_template("index.html")
+    return redirect(url_for('auth.login'))
 
 
 @bp.route('/section/<name>')

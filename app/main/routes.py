@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 
 from app.ielts_speaking import evaluate_ielts_speaking
+from app.speaking_eval import SpeechEvaluator
 from app.main import bp
 from app.models import *
 from app.utils import get_current_subsection_and_last_topic, get_practice_data, \
@@ -54,29 +55,42 @@ def speaking_practice_post():
     # Retrieving audio files from the request
     audio_files = get_audio_files(questions_set)
 
-    # Evaluate speaking with ChatGPT and Azure pronunciation assessment
-    speaking_result, answers_evaluation = evaluate_ielts_speaking(
-        questions_set, audio_files)
+    speech_evaluator = SpeechEvaluator(questions_set, audio_files)
 
-    # Save result and answers to database
-    subsection_attempt = save_speaking_results_to_database(current_user,
-                                                           questions_set,
-                                                           speaking_result,
-                                                           answers_evaluation)
 
-    # sending events to Amplitude Analytics
-    part_number = questions_set.subsection.part_number
-    send_amplitude_event(current_user.id,
-                         'complete subsection',
-                         {'section': 'speaking',
-                          'part number': part_number})
-    if part_number == 3:
-        send_amplitude_event(current_user.id,
-                             'complete section',
-                             {'section': 'speaking'})
 
-    return redirect(url_for('main.get_speaking_attempt',
-                            user_subsection_attempt_id=subsection_attempt.id))
+
+
+
+
+
+
+
+
+
+    # # Evaluate speaking with ChatGPT and Azure pronunciation assessment
+    # speaking_result, answers_evaluation = evaluate_ielts_speaking(
+    #     questions_set, audio_files)
+    #
+    # # Save result and answers to database
+    # subsection_attempt = save_speaking_results_to_database(current_user,
+    #                                                        questions_set,
+    #                                                        speaking_result,
+    #                                                        answers_evaluation)
+    #
+    # # sending events to Amplitude Analytics
+    # part_number = questions_set.subsection.part_number
+    # send_amplitude_event(current_user.id,
+    #                      'complete subsection',
+    #                      {'section': 'speaking',
+    #                       'part number': part_number})
+    # if part_number == 3:
+    #     send_amplitude_event(current_user.id,
+    #                          'complete section',
+    #                          {'section': 'speaking'})
+    #
+    # return redirect(url_for('main.get_speaking_attempt',
+    #                         user_subsection_attempt_id=subsection_attempt.id))
 
 
 @bp.route('/section/speaking/attempt/<int:user_subsection_attempt_id>/')

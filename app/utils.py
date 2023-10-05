@@ -130,19 +130,24 @@ def get_practice_data(subsection, last_topic):
 # speaking_practice_post helpers
 
 def get_audio_files(questions_set) -> tuple:
-    audio_files = tuple(request.files[key] for key in request.files.keys() if
-                        key.startswith('audio_'))
+    """Retrieve audio files from POST request, validate and name them"""
 
-    # IELTS Speaking part 2 (cue card)
+    audio_files = []
+    for name, file in request.files.items():
+        if name.startswith('audio_') and file.content_type == 'audio/webm':
+            file.name = f'{name}.webm'
+            audio_files.append(file)
+    audio_files = tuple(audio_files)
+
+    # if Speaking part 2 (cue card)
     if questions_set.topic and len(audio_files) == 1:
         return audio_files
 
-    # IELTS Speaking part 1 or part 3
+    # if Speaking part 1 or part 3
     if len(audio_files) == len(questions_set.questions):
         return audio_files
 
     flash("An error has occurred, please try again")
-    print("Audio recordings do not match question count.")
     abort(400, "Audio recordings do not match question count.")
 
 
@@ -226,8 +231,8 @@ Student Answer:
         return dialog
 
     # create dialog for IELTS Speaking part 1 & 3
-    res = [f"Q: {item['question'].text}\nA: {item['answer_transcription']}"
-           for item in answers_data]
+    res = (f"Q: {item['question'].text}\nA: {item['answer_transcription']}"
+           for item in answers_data)
     return "\n\n".join(res)
 
 

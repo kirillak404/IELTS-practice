@@ -37,112 +37,121 @@ QUESTIONS = [
      "questions": [
          "Can you tell me a bit about your hometown?",
          "What do you enjoy doing in your free time?",
-         "Do you work or are you a student?",
-         "Describe the kind of place where you live. What do you like about it?",
-         "What is your favorite season, and why?",
-         "How often do you use public transportation?",
-         "Do you prefer spending time with friends or spending time alone?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "Can you describe the area where you grew up?",
-         "Do you often cook at home or prefer eating out?",
-         "Tell me about your studies or your current job.",
-         "What aspects of your subject or job are most interesting to you?",
-         "How important is exercise to you?",
-         "What was the last book you read? Did you enjoy it?",
-         "Do you believe technological advancements always have positive impacts on society?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "Could you tell me about your family?",
-         "How often do you see your relatives?",
-         "Can you describe your daily routine?",
-         "How has your routine changed over the past few years?",
-         "What traditional dish from your country do you like the most?",
-         "How do people in your country celebrate major festivals or events?",
-         "What is your opinion on learning foreign languages?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "Could you describe your best friend to me?",
-         "How do you usually spend weekends?",
-         "How would you describe your ideal vacation?",
-         "Do you think tourism impacts the environment of a place?",
-         "How significant do you think the role of the internet is in our lives?",
-         "Have you ever tried learning something through online platforms?",
-         "How does social media influence relationships among people in your opinion?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "What type of movies or series do you enjoy watching?",
-         "Is there a type of movie that you prefer to watch at the cinema rather than at home?",
-         "Can you describe a memorable event from your childhood?",
-         "Do you think children’s activities today are different from those in the past?",
-         "How often do you participate in outdoor activities?",
-         "In your opinion, how has technology influenced entertainment?",
-         "Should governments invest more in public or private transportation, in your opinion?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "How do you usually celebrate your birthday?",
-         "Do you have a hobby or activity you like to do in your spare time?",
-         "What type of shops do you usually visit?",
-         "How do you feel about online shopping vs. in-store shopping?",
-         "Can you tell me about a traditional game or sport in your country?",
-         "Do you think it’s essential for children to play outdoor games?",
-         "What are your thoughts on the importance of historical landmarks and museums in education?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "Can you describe your favourite place in your city?",
-         "What is a popular festival or event in your country?",
-         "How do you usually keep in touch with your friends?",
-         "Can you tell me about a time when you helped someone?",
-         "How does the weather affect your daily activities?",
-         "What is your opinion on keeping pets?",
-         "How do you think climate change is impacting your country?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "What is a common means of transportation in your city?",
-         "Do you like travelling to different places?",
-         "What kind of art or exhibitions have you seen recently?",
-         "How often do you visit museums or galleries?",
-         "Do you think it’s beneficial for students to travel abroad for their studies?",
-         "In what ways do you think travel broadens the mind?",
-         "How does the education system in your country address global issues?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "Do you enjoy listening to music while working or studying?",
-         "How do you usually keep yourself fit and healthy?",
-         "Can you tell me about a recent trip you went on?",
-         "How have your travelling habits changed over time?",
-         "In what ways do you think cities can become more eco-friendly?",
-         "How often do you interact with nature and green spaces?",
-         "What role do you think individuals should play in protecting the environment?"
-     ]},
-
-    {"subsection": "Introduction and Interview",
-     "questions": [
-         "How do you feel about spending time in nature?",
-         "What is your favourite way to stay informed about current events?",
-         "Are there any traditional dances in your country?",
-         "What kind of role does traditional music play in your culture?",
-         "How do you think technology will impact our lives in the future?",
-         "What are the advantages and disadvantages of working from home?",
-         "How do you think advancements in AI might affect job opportunities?"
+         "Do you work or are you a student?"
      ]}
 ]
+
+# QUESTIONS = [
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "Can you tell me a bit about your hometown?",
+#          "What do you enjoy doing in your free time?",
+#          "Do you work or are you a student?",
+#          "Describe the kind of place where you live. What do you like about it?",
+#          "What is your favorite season, and why?",
+#          "How often do you use public transportation?",
+#          "Do you prefer spending time with friends or spending time alone?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "Can you describe the area where you grew up?",
+#          "Do you often cook at home or prefer eating out?",
+#          "Tell me about your studies or your current job.",
+#          "What aspects of your subject or job are most interesting to you?",
+#          "How important is exercise to you?",
+#          "What was the last book you read? Did you enjoy it?",
+#          "Do you believe technological advancements always have positive impacts on society?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "Could you tell me about your family?",
+#          "How often do you see your relatives?",
+#          "Can you describe your daily routine?",
+#          "How has your routine changed over the past few years?",
+#          "What traditional dish from your country do you like the most?",
+#          "How do people in your country celebrate major festivals or events?",
+#          "What is your opinion on learning foreign languages?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "Could you describe your best friend to me?",
+#          "How do you usually spend weekends?",
+#          "How would you describe your ideal vacation?",
+#          "Do you think tourism impacts the environment of a place?",
+#          "How significant do you think the role of the internet is in our lives?",
+#          "Have you ever tried learning something through online platforms?",
+#          "How does social media influence relationships among people in your opinion?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "What type of movies or series do you enjoy watching?",
+#          "Is there a type of movie that you prefer to watch at the cinema rather than at home?",
+#          "Can you describe a memorable event from your childhood?",
+#          "Do you think children’s activities today are different from those in the past?",
+#          "How often do you participate in outdoor activities?",
+#          "In your opinion, how has technology influenced entertainment?",
+#          "Should governments invest more in public or private transportation, in your opinion?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "How do you usually celebrate your birthday?",
+#          "Do you have a hobby or activity you like to do in your spare time?",
+#          "What type of shops do you usually visit?",
+#          "How do you feel about online shopping vs. in-store shopping?",
+#          "Can you tell me about a traditional game or sport in your country?",
+#          "Do you think it’s essential for children to play outdoor games?",
+#          "What are your thoughts on the importance of historical landmarks and museums in education?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "Can you describe your favourite place in your city?",
+#          "What is a popular festival or event in your country?",
+#          "How do you usually keep in touch with your friends?",
+#          "Can you tell me about a time when you helped someone?",
+#          "How does the weather affect your daily activities?",
+#          "What is your opinion on keeping pets?",
+#          "How do you think climate change is impacting your country?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "What is a common means of transportation in your city?",
+#          "Do you like travelling to different places?",
+#          "What kind of art or exhibitions have you seen recently?",
+#          "How often do you visit museums or galleries?",
+#          "Do you think it’s beneficial for students to travel abroad for their studies?",
+#          "In what ways do you think travel broadens the mind?",
+#          "How does the education system in your country address global issues?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "Do you enjoy listening to music while working or studying?",
+#          "How do you usually keep yourself fit and healthy?",
+#          "Can you tell me about a recent trip you went on?",
+#          "How have your travelling habits changed over time?",
+#          "In what ways do you think cities can become more eco-friendly?",
+#          "How often do you interact with nature and green spaces?",
+#          "What role do you think individuals should play in protecting the environment?"
+#      ]},
+#
+#     {"subsection": "Introduction and Interview",
+#      "questions": [
+#          "How do you feel about spending time in nature?",
+#          "What is your favourite way to stay informed about current events?",
+#          "Are there any traditional dances in your country?",
+#          "What kind of role does traditional music play in your culture?",
+#          "How do you think technology will impact our lives in the future?",
+#          "What are the advantages and disadvantages of working from home?",
+#          "How do you think advancements in AI might affect job opportunities?"
+#      ]}
+# ]
 
 TOPICS = [
     {"subsection": "Individual Long Turn",

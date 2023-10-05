@@ -177,6 +177,9 @@ class QuestionSet(db.Model):
     __table_args__ = (
         db.UniqueConstraint('subsection_id', 'topic_id', name='uix_1'),)
 
+    def __iter__(self):
+        yield from self.questions
+
     @staticmethod
     def get_random_for_subsection(subsection, last_topic):
         query = QuestionSet.query.filter_by(subsection=subsection)

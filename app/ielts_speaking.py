@@ -275,7 +275,7 @@ def request_azure_pronunciation_assessment(audio_file: BytesIO,
         RetryError: If all attempts to get a response from Azure's pronunciation API fail.
     """
     language_code = "en-US"
-    azure_region = "southeastasia"
+    azure_region = "germanywestcentral"
     azure_api_key = os.getenv("AZURE_API_KEY")
 
     pronunciation_assessment_params = json.dumps({

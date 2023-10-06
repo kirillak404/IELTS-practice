@@ -56,6 +56,8 @@ def speaking_practice_post():
     audio_files = get_audio_files(questions_set)
 
     speech_evaluator = SpeechEvaluator(questions_set, audio_files)
+    speech_evaluator.evaluate_speaking()
+    return render_template("dashboard.html")
 
 
 

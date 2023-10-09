@@ -57,17 +57,9 @@ def speaking_practice_post():
 
     speech_evaluator = SpeechEvaluator(questions_set, audio_files)
     speech_evaluator.evaluate_speaking()
+    print('scores:')
+    print(speech_evaluator.ielts_scores)
     return render_template("dashboard.html")
-
-
-
-
-
-
-
-
-
-
 
 
     # # Evaluate speaking with ChatGPT and Azure pronunciation assessment
@@ -113,7 +105,7 @@ def get_speaking_attempt(user_subsection_attempt_id):
     speaking_scores = result.get_speaking_scores()
 
     # Advanced Pronunciation Analysis
-    answers = user_subsection_attempt.user_answers
+    answers = user_subsection_attempt.get_transcribed_user_answers
     pron_scores = user_subsection_attempt.get_overall_pron_scores()
 
     return render_template('subsection_results.html', result=result,

@@ -299,7 +299,7 @@ def add_fluency_and_coherence_score(gpt_speech_evaluation: dict,
         'score': fluency_and_coherence_score}
 
 
-def get_avg_score_from_answers_speech_eval(qa_data: tuple, score_name: str):
+def get_avg_score_from_answers_speech_eval(qa_data: tuple, score_name: str) -> object:
     """
     Compute the average score of a particular criterion from QA data.
 

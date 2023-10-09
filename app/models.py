@@ -510,3 +510,6 @@ class UserSpeakingAttemptResult(db.Model):
             criterion_score = score['score']
             feedback_text = SPEAKING_SCORES_FEEDBACK[criterion][criterion_score]
             score['feedback'] = feedback_text
+
+    def save_user_result(self):
+        pass

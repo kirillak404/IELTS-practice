@@ -16,56 +16,105 @@ from app.models import QuestionSet, Subsection
 
 
 class SpeechEvaluator:
+    """
+    A class to evaluate IELTS speaking responses.
+
+    This class orchestrates the evaluation of spoken responses to IELTS
+    speaking test prompts. It leverages ChatGPT for transcribing and
+    evaluating responses, and Azure Pronunciation Assessor for assessing
+    pronunciation. The evaluations provide a comprehensive understanding of
+    the speaker's capabilities in different aspects like pronunciation,
+    lexical resources, grammatical range, and accuracy, which are
+    consolidated into IELTS scores.
+
+    Attributes:
+    - questions_set: An instance of the QuestionSet class containing IELTS speaking questions.
+    - audio_files: A tuple of audio file objects containing the user's spoken responses.
+
+    Usage:
+    ```
+    evaluator = SpeechEvaluator(questions_set, audio_files)
+    evaluator.evaluate_speaking()
+    print(evaluator.ielts_scores)
+    ```
+    """
+
     def __init__(self, questions_set: QuestionSet, audio_files: tuple[IO[bytes]]):
         self.questions_set = questions_set
         self.subsection = questions_set.subsection
         self._audio_files = audio_files
 
-        self.transcribed_user_answers = None
-        self.azure_answers_evaluation = None
-        self.chatgpt_speech_evaluation = None
+        self._transcribed_answers = None
+        self._azure_pron_scores = None
+        self._gpt_speech_evaluation = None
+        self._ielts_scores = {}
 
-    def evaluate_speaking(self):
+    @property
+    def transcribed_answers(self):
+        """Provide access to the transcribed answers."""
+        return self._transcribed_answers
+
+    @property
+    def azure_pron_scores(self):
+        """Provide access to the Azure pronunciation scores."""
+        return self._azure_pron_scores
+
+    @property
+    def gpt_speech_evaluation(self):
+        """Provide access to the GPT speech evaluation results."""
+        return self._gpt_speech_evaluation
+
+    @property
+    def ielts_scores(self):
+        """Provide access to the calculated IELTS scores."""
+        return self._ielts_scores
+
+    def evaluate_speaking(self) -> None:
+        """Evaluate speaking by orchestrating transcription and assessments."""
 
         # Step 1: Transcribe audio with OpenAI Whisper
-        self._transcribe_audio_files_in_bulk()
+        self._transcribe_audio_files()
 
         # Step 2: Concurrently assess speech with ChatGPT and pronunciation with Azure
-        self._parallel_evaluation_with_gpt_and_azure()
+        self._concurrent_speech_and_pronunciation_evaluation()
 
-    def _transcribe_audio_files_in_bulk(self):
+        # Step 3: Calculate IELTS scores from ChatGPT and Azure responses
+        self._calculate_ielts_scores()
+
+    def _transcribe_audio_files(self) -> None:
+        """Transcribe audio files using ChatGPT."""
         with ThreadPoolExecutor() as executor:
             try:
-                self.transcribed_user_answers = tuple(executor.map(
-                    ChatGPT().transcribe_audio_file,
+                self._transcribed_answers = tuple(executor.map(
+                    ChatGPT.transcribe_audio_file,
                     self._audio_files))
             except RetryError:
                 raise SpeechEvaluationError('Transcription error. Please try again.')
 
-    def _parallel_evaluation_with_gpt_and_azure(self):
-
+    def _concurrent_speech_and_pronunciation_evaluation(self) -> None:
+        """Evaluate speech and pronunciation in parallel."""
         with ThreadPoolExecutor() as executor:
             # creating text dialog with questions and user answers
             dialog = self._get_dialog_text()
 
-            chatgpt_future = executor.submit(ChatGPT().evaluate_speech, dialog, self.subsection)
+            chatgpt_future = executor.submit(ChatGPT.evaluate_speech, dialog, self.subsection)
             azure_future = executor.submit(self._assess_pronunciation_in_bulk)
 
-            self.chatgpt_speech_evaluation = chatgpt_future.result()
-            self.azure_answers_evaluation = azure_future.result()
+            self._gpt_speech_evaluation = chatgpt_future.result()
+            self._azure_pron_scores = azure_future.result()
 
-    def _assess_pronunciation_in_bulk(self):
+    def _assess_pronunciation_in_bulk(self) -> tuple:
+        """Evaluate pronunciation with Azure of all transcribed answers in bulk."""
         with ThreadPoolExecutor() as executor:
-            audiofile_and_transcript_pairs = zip(self._audio_files, self.transcribed_user_answers)
-            return tuple(executor.map(AzurePronunciationAssessor().get_assessment_from_tuple,
+            audiofile_and_transcript_pairs = zip(self._audio_files, self._transcribed_answers)
+            return tuple(executor.map(AzurePronunciationAssessor.get_assessment_from_tuple,
                                 audiofile_and_transcript_pairs))
 
     def _get_dialog_text(self) -> str:
-        """Combining question and user answers into one text"""
-        speaking_part_number = self.questions_set.subsection.part_number
+        """Generate a dialog string using questions and transcribed answers."""
 
         # Create cue card and answer for IELTS Speaking part 2
-        if speaking_part_number == 2:
+        if self.subsection.part_number == 2:
             topic = self.questions_set.topic
             questions = "\n- ".join(question.text for question in self.questions_set)
             dialog = f'''\
@@ -80,22 +129,77 @@ You should say:
 
 Student Answer:
 ###
-{self.transcribed_user_answers[0]}
+{self._transcribed_answers[0]}
 ###'''
             return dialog
 
         # Create dialog for IELTS Speaking part 1 or 3
         dialog = []
-        for question, answer in zip(self.questions_set, self.transcribed_user_answers):
+        for question, answer in zip(self.questions_set, self._transcribed_answers):
             question_and_answer = f'Q: {question.text}\nA: {answer}'
             dialog.append(question_and_answer)
         return "\n\n".join(dialog)
 
+    def _calculate_ielts_scores(self) -> None:
+        """Calculate IELTS scores based on GPT and Azure evaluations."""
+
+        self._ielts_scores['lexicalResource'] = self._gpt_speech_evaluation['lexicalResource']['score']
+        self._ielts_scores['grammaticalRangeAndAccuracy'] = self._gpt_speech_evaluation['grammaticalRangeAndAccuracy']['score']
+        self._ielts_scores['pronunciation'] = self._get_avg_score_from_azure_pron_eval('PronScore')
+        self._ielts_scores['fluencyAndCoherence'] = self._get_fluency_and_coherence_score()
+
+    def _get_avg_score_from_azure_pron_eval(self, score_name: str) -> int:
+        """Calculate average pronunciation score from Azure assessments."""
+
+        # Extract the specified scores from azure answers evaluation
+        scores = tuple(score['NBest'][0][score_name] for score in self._azure_pron_scores)
+
+        # Compute the average score on a 100-point scale
+        avg_score = sum(scores) / len(scores)
+
+        # Convert the score to a 9-point scale and round it
+        return round(avg_score / 100 * 9)
+
+    def _get_fluency_and_coherence_score(self) -> int:
+        """Derive a fluency and coherence score from Azure and GPT evaluations."""
+
+        # Calculate average fluency score from Azure pron evaluation
+        fluency_score = self._get_avg_score_from_azure_pron_eval('FluencyScore')
+
+        # Get the coherence score from ChatGPT evaluation
+        coherence_score = self._gpt_speech_evaluation['coherence']['score']
+
+        # Return the average of fluency and coherence scores
+        return round((fluency_score + coherence_score) / 2)
+
 
 class ChatGPT:
+    """
+    Utility for ChatGPT-based speech evaluation and transcription.
+    """
 
-    @staticmethod
-    def evaluate_speech(dialog: str, subsection: Subsection):
+    @classmethod
+    def evaluate_speech(cls, dialog: str, subsection: Subsection) -> dict:
+        """
+        Evaluate an IELTS Speaking test dialog using ChatGPT.
+
+        Parameters:
+        - dialog (str): The IELTS Speaking test dialog.
+        - subsection (Subsection): The subsection information.
+
+        Returns:
+        - dict: The ChatGPT evaluation response.
+
+        Example of returned data:
+        {
+            'coherence': {'score': 2},
+            'lexicalResource': {'score': 3},
+            'grammaticalRangeAndAccuracy': {'score': 3},
+            'generalFeedback': 'Overall, your responses lacked coherence...'
+        }
+        """
+
+        # Preparing system and user messages for ChatGPT interaction
         system_message = "You act as a professional IELTS examiner."
         response_json_schema = """{"type":"object","properties":{"coherence":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"lexicalResource":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"grammaticalRangeAndAccuracy":{"type":"object","properties":{"score":{"type":"integer","minimum":0,"maximum":9}}},"generalFeedback":{"type":"string","maxLength":300}},"required":["coherence","lexicalResource","grammaticalRangeAndAccuracy","generalFeedback"]}"""
         prompt = f"""\
@@ -117,52 +221,98 @@ class ChatGPT:
     '''
     Your answer should be a straightforward JSON object without extra spaces or lines, adhering to the above JSON schema.\
     """
+
+        # Structuring messages for sending to ChatGPT
         chatgpt_messages = [
             {"role": "system", "content": system_message},
             {"role": "user", "content": prompt}
         ]
 
-        # Getting a response from ChatGPT and deserializing it
         try:
-            chatgpt_response_text = ChatGPT._get_chat_completion(chatgpt_messages)
+            # Obtaining a response from ChatGPT
+            chatgpt_response_text = cls._get_chat_completion(chatgpt_messages)
             return json.loads(chatgpt_response_text)
         except (RetryError, json.decoder.JSONDecodeError):
             raise SpeechEvaluationError("Error during speech evaluation with ChatGPT")
 
-    @staticmethod
+    @classmethod
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(1))
-    def _get_chat_completion(messages: list,
+    def _get_chat_completion(cls, messages: list,
                              temperature=0,
                              model="gpt-3.5-turbo") -> str:
+        """Retrieve a ChatGPT completion with retry logic."""
+
         completion = openai.ChatCompletion.create(
             model=model,
             messages=messages,
             temperature=temperature)
         return completion.choices[0].message["content"]
 
-    @staticmethod
+    @classmethod
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(1))
-    def transcribe_audio_file(audio_file: IO[bytes]) -> Optional[str]:
+    def transcribe_audio_file(cls, audio_file: IO[bytes]) -> Optional[str]:
+        """Transcribe an audio file using OpenAI Whisper."""
+
+        # Transcribing audio file using OpenAI Whisper ASR API
         transcript = openai.Audio.transcribe(model='whisper-1',
                                              file=audio_file,
                                              language='en',
                                              response_format='text')
+
+        # Resetting the file pointer after read operation
         audio_file.seek(0)
         transcript = transcript.strip()
-        # Checking that the answer exists
+
+        # Ensuring that the transcript is not empty or doesn't contain placeholder/fallback values
         if not transcript or transcript in ('you', 'Thank you.'):
             raise SpeechEvaluationError('Not all questions answered. Please try again.')
         return transcript
 
 
 class AzurePronunciationAssessor:
-    _language_code = "en-US"
+    _LANGUAGE_CODE = "en-US"
+    _AZURE_REGION = "germanywestcentral"
     _azure_api_key = os.getenv("AZURE_API_KEY")
-    _azure_region = "germanywestcentral"
 
-    def get_assessment(self, audio_file: IO, transcript: str):
+    @classmethod
+    def get_assessment(cls, audio_file: IO, transcript: str) -> dict:
+        """
+        Get the assessment of the pronunciation from Azure.
 
-        audio_file = self._convert_audio_to_opus_bytesio(audio_file)
+        Parameters:
+        - audio_file (IO): An input audio file.
+        - transcript (str): The transcript to assess against.
+
+        Returns:
+        - dict: The response from Azure API as a JSON.
+
+        Example of returned data:
+        {
+            'RecognitionStatus': 'Success',
+            'Offset': 6800000,
+            'Duration': 22700000,
+            'NBest': [
+                {
+                    'Lexical': 'what is your name',
+                    'ITN': 'what is your name',
+                    'MaskedITN': 'what is your name',
+                    'Display': 'What is your name?',
+                    'AccuracyScore': 99.0,
+                    'FluencyScore': 99.0,
+                    'CompletenessScore': 100.0,
+                    'PronScore': 99.2,
+                    'Words': [
+                        {'Word': 'what', 'AccuracyScore': 98.0, 'ErrorType': 'None', 'Offset': 10100000, 'Duration': 4900000},
+                        {'Word': 'is', 'AccuracyScore': 100.0, 'ErrorType': 'None', 'Offset': 15300000, 'Duration': 2300000},
+                        {'Word': 'your', 'AccuracyScore': 100.0, 'ErrorType': 'None', 'Offset': 17700000, 'Duration': 2600000},
+                        {'Word': 'name', 'AccuracyScore': 98.0, 'ErrorType': 'None', 'Offset': 20400000, 'Duration': 6700000}
+                    ]
+                }
+            ]
+        }
+        """
+
+        audio_file = cls._convert_audio_to_opus_bytesio(audio_file)
 
         pronunciation_assessment_params = json.dumps({
             "ReferenceText": transcript,
@@ -175,35 +325,39 @@ class AzurePronunciationAssessor:
         pronunciation_assessment_params = base64.b64encode(
             pronunciation_assessment_params.encode('utf-8')).decode("utf-8")
 
-        azure_api_url = f"https://{self._azure_region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={self._language_code}&usePipelineVersion=0"
+        azure_api_url = f"https://{cls._AZURE_REGION}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language={cls._LANGUAGE_CODE}&usePipelineVersion=0"
         azure_api_headers = {
             'Accept': 'application/json;text/xml',
             'Connection': 'Keep-Alive',
             'Content-Type': 'audio/webm; codecs=opus; samplerate=16000',
-            'Ocp-Apim-Subscription-Key': self._azure_api_key,
+            'Ocp-Apim-Subscription-Key': cls._azure_api_key,
             'Pronunciation-Assessment': pronunciation_assessment_params,
             'Transfer-Encoding': 'chunked',
             'Expect': '100-continue'
         }
 
         try:
-            azure_api_response = self._get_azure_response(
+            azure_api_response = cls._get_azure_response(
                 url=azure_api_url,
-                data=self._get_chunk(audio_file),
+                data=cls._get_chunk(audio_file),
                 headers=azure_api_headers)
         except RetryError:
             raise SpeechEvaluationError('Error during Azure pronunciation evaluation')
 
         audio_file.seek(0)
+        print(azure_api_response)
+        print(azure_api_response.content)
+
         return azure_api_response.json()
+
+    @classmethod
+    def get_assessment_from_tuple(cls, audiofile_and_transcript: tuple) -> dict:
+        return cls.get_assessment(*audiofile_and_transcript)
 
     @staticmethod
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(1))
     def _get_azure_response(url, data, headers):
         return requests.post(url=url, data=data, headers=headers)
-
-    def get_assessment_from_tuple(self, audiofile_and_transcript: tuple):
-        return self.get_assessment(*audiofile_and_transcript)
 
     @staticmethod
     def _get_chunk(audio_file: IO, chunk_size=1024):

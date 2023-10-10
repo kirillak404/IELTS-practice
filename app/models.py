@@ -48,12 +48,11 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.hashed_password, password)
 
     def get_section_progress(self, section_id):
-        user_progress = UserProgress.query.filter(
+        return UserProgress.query.filter(
             UserProgress.user_id == self.id,
             UserProgress.section_id == section_id,
-            UserProgress.is_completed == False
+            UserProgress.is_completed is False
         ).first()
-        return user_progress
 
     def get_sections_history(self):
         user_progress = UserProgress.query.filter(
@@ -267,7 +266,7 @@ class UserProgress(db.Model):
         return last_attempt.question_set.topic
 
     @staticmethod
-    def create_or_update_user_progress(current_user, user_progress, section,
+    def create_or_update_user_progress(user, user_progress, section,
                                        question_set_id):
         if not user_progress:
 
@@ -279,7 +278,7 @@ class UserProgress(db.Model):
             if not question_set_is_valid:
                 abort(400, "Invalid question_set_id")
 
-            user_progress = UserProgress(user=current_user,
+            user_progress = UserProgress(user=user,
                                          section_id=section.id)
             db.session.add(user_progress)
 
@@ -511,5 +510,14 @@ class UserSpeakingAttemptResult(db.Model):
             feedback_text = SPEAKING_SCORES_FEEDBACK[criterion][criterion_score]
             score['feedback'] = feedback_text
 
-    def save_user_result(self):
-        pass
+    @staticmethod
+    def save_result(user, question_set):
+
+        # Get the 'speaking' section
+        section = Section.get_by_name("speaking")
+        # Get the current user's progress in this section
+        user_progress = user.get_section_progress(section.id)
+
+        # Update or create user's progress based on previous section progress
+        subsection_id, user_progress = UserProgress.create_or_update_user_progress(
+            user, user_progress, section, question_set.id)

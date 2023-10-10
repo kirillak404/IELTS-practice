@@ -4,7 +4,9 @@ import base64
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from io import BytesIO
+from types import MappingProxyType
 from typing import IO, Optional
 
 import openai
@@ -13,6 +15,57 @@ from pydub import AudioSegment
 from tenacity import retry, stop_after_attempt, wait_fixed, RetryError
 
 from app.models import QuestionSet, Subsection
+
+
+@dataclass(frozen=True)
+class SpeakingResults:
+    """
+    A data container for IELTS speaking evaluation results.
+
+    Stores various aspects of the speaking evaluation process, providing
+    a structured format for results that facilitates further analysis
+    and feedback presentation.
+
+    Attributes:
+    ------------
+    questions_set : QuestionSet
+        The set of questions presented during the IELTS speaking test.
+
+    answers : tuple[str]
+        Transcriptions of the user's spoken answers.
+
+    answers_pron_scores : tuple[dict]
+        Pronunciation scores associated with each spoken answer, represented
+        as dictionaries.
+
+    general_feedback : str
+        General feedback generated from the speaking evaluation.
+
+    ielts_scores : MappingProxyType
+        An immutable mapping of evaluated IELTS scores in various categories
+        (e.g., pronunciation, grammar).
+
+    Properties:
+    ------------
+    subsection : Subsection
+        A specific subsection of the IELTS speaking test.
+
+    section : Section
+        The corresponding section of the IELTS speaking test.
+    """
+    questions_set: QuestionSet
+    answers: tuple[str]
+    answers_pron_scores: tuple[dict]
+    general_feedback: str
+    ielts_scores: MappingProxyType
+
+    @property
+    def subsection(self):
+        return self.questions_set.subsection
+
+    @property
+    def section(self):
+        return self.questions_set.subsection.section
 
 
 class SpeechEvaluator:
@@ -30,13 +83,6 @@ class SpeechEvaluator:
     Attributes:
     - questions_set: An instance of the QuestionSet class containing IELTS speaking questions.
     - audio_files: A tuple of audio file objects containing the user's spoken responses.
-
-    Usage:
-    ```
-    evaluator = SpeechEvaluator(questions_set, audio_files)
-    evaluator.evaluate_speaking()
-    print(evaluator.ielts_scores)
-    ```
     """
 
     def __init__(self, questions_set: QuestionSet, audio_files: tuple[IO[bytes]]):
@@ -49,27 +95,7 @@ class SpeechEvaluator:
         self._gpt_speech_evaluation = None
         self._ielts_scores = {}
 
-    @property
-    def transcribed_answers(self):
-        """Provide access to the transcribed answers."""
-        return self._transcribed_answers
-
-    @property
-    def azure_pron_scores(self):
-        """Provide access to the Azure pronunciation scores."""
-        return self._azure_pron_scores
-
-    @property
-    def gpt_speech_evaluation(self):
-        """Provide access to the GPT speech evaluation results."""
-        return self._gpt_speech_evaluation
-
-    @property
-    def ielts_scores(self):
-        """Provide access to the calculated IELTS scores."""
-        return self._ielts_scores
-
-    def evaluate_speaking(self) -> None:
+    def evaluate_speaking(self) -> SpeakingResults:
         """Evaluate speaking by orchestrating transcription and assessments."""
 
         # Step 1: Transcribe audio with OpenAI Whisper
@@ -80,6 +106,12 @@ class SpeechEvaluator:
 
         # Step 3: Calculate IELTS scores from ChatGPT and Azure responses
         self._calculate_ielts_scores()
+
+        return SpeakingResults(questions_set=self.questions_set,
+                               answers=self._transcribed_answers,
+                               answers_pron_scores=self._azure_pron_scores,
+                               general_feedback=self._gpt_speech_evaluation['generalFeedback'],
+                               ielts_scores=MappingProxyType(self._ielts_scores))
 
     def _transcribe_audio_files(self) -> None:
         """Transcribe audio files using ChatGPT."""

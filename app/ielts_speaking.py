@@ -259,7 +259,7 @@ def get_azure_pronunciation_assessment(answer_data: dict) -> None:
             answer_data['pronunciation_assessment'] = pronunciation_evaluation
 
 
-@retry(stop=stop_after_attempt(10), wait=wait_fixed(2))
+@retry(stop=stop_after_attempt(20), wait=wait_fixed(2))
 def request_azure_pronunciation_assessment(audio_file: BytesIO,
                                            transcript: str) -> dict:
     """Send a request to Azure's pronunciation API to assess the pronunciation of a transcribed audio file.

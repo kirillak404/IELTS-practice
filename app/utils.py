@@ -306,6 +306,7 @@ def get_avg_score_from_answers_speech_eval(qa_data: tuple, score_name: str):
         int: The computed average score, rounded and converted to a 9-point scale.
     """
     # Extract the specified scores from the QA data
+    print(qa_data)
     pron_scores = tuple(
         score['pronunciation_assessment']['NBest'][0][score_name]
         for score in qa_data)

@@ -6,7 +6,9 @@ from io import BytesIO
 from typing import Optional
 from collections import namedtuple
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import requests
 from flask import abort, flash
 from tenacity import retry, stop_after_attempt, wait_fixed, RetryError
@@ -98,7 +100,7 @@ def transcribe_single_audio_file(audio_file: FileStorage) -> Optional[str]:
         RetryError: If all attempts to transcribe the audio file fail.
     """
     audio_file.name = "audio.webm"
-    audio_transcript = openai.Audio.transcribe(model="whisper-1",
+    audio_transcript = client.audio.transcribe(model="whisper-1",
                                                file=audio_file,
                                                language="en")
     audio_file.seek(0)
@@ -206,11 +208,9 @@ def get_chatgpt_response(messages: list, model="gpt-3.5-turbo", temperature=0) -
         RetryError: If all attempts to get a response from ChatGPT fail.
         JSONDecodeError: If there is an error deserializing the JSON response from ChatGPT.
     """
-    completion = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=temperature
-    )
+    completion = client.chat.completions.create(model=model,
+    messages=messages,
+    temperature=temperature)
     chatgpt_response_text = completion.choices[0].message["content"]
     return chatgpt_response_text
 

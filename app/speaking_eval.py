@@ -3,13 +3,16 @@ from __future__ import annotations
 import base64
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from io import BytesIO
 from types import MappingProxyType
 from typing import IO, Optional
 
-import openai
+from openai import OpenAI
+
+client = OpenAI()
 import requests
 from pydub import AudioSegment
 from tenacity import retry, stop_after_attempt, wait_fixed, RetryError
@@ -135,12 +138,24 @@ class SpeechEvaluator:
             self._gpt_speech_evaluation = chatgpt_future.result()
             self._azure_pron_scores = azure_future.result()
 
+    # def _assess_pronunciation_in_bulk(self) -> tuple:
+    #     """Evaluate pronunciation with Azure of all transcribed answers in bulk."""
+    #     with ThreadPoolExecutor() as executor:
+    #         audiofile_and_transcript_pairs = zip(self._audio_files, self._transcribed_answers)
+    #         return tuple(executor.map(AzurePronunciationAssessor.get_assessment_from_tuple,
+    #                             audiofile_and_transcript_pairs))
+
     def _assess_pronunciation_in_bulk(self) -> tuple:
-        """Evaluate pronunciation with Azure of all transcribed answers in bulk."""
-        with ThreadPoolExecutor() as executor:
-            audiofile_and_transcript_pairs = zip(self._audio_files, self._transcribed_answers)
-            return tuple(executor.map(AzurePronunciationAssessor.get_assessment_from_tuple,
-                                audiofile_and_transcript_pairs))
+        results = []
+        audiofile_and_transcript_pairs = zip(self._audio_files,
+                                             self._transcribed_answers)
+
+        for pair in audiofile_and_transcript_pairs:
+            result = AzurePronunciationAssessor.get_assessment_from_tuple(pair)
+            results.append(result)
+            time.sleep(1)  # задержка между запросами
+
+        return tuple(results)
 
     def _get_dialog_text(self) -> str:
         """Generate a dialog string using questions and transcribed answers."""
@@ -274,26 +289,31 @@ class ChatGPT:
                              model="gpt-3.5-turbo") -> str:
         """Retrieve a ChatGPT completion with retry logic."""
 
-        completion = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            temperature=temperature)
-        return completion.choices[0].message["content"]
+        completion = client.chat.completions.create(model=model,
+        messages=messages,
+        temperature=temperature)
+        return completion.choices[0].message.content
 
     @classmethod
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(1))
     def transcribe_audio_file(cls, audio_file: IO[bytes]) -> Optional[str]:
         """Transcribe an audio file using OpenAI Whisper."""
-
         # Transcribing audio file using OpenAI Whisper ASR API
-        transcript = openai.Audio.transcribe(model='whisper-1',
-                                             file=audio_file,
-                                             language='en',
-                                             response_format='text')
+
+        audio_file_bytes = BytesIO(audio_file.read())
+        audio_file_bytes.name = 'audio.webm'
+
+        transcript = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file_bytes,
+            language='en',
+            response_format='text'
+        )
 
         # Resetting the file pointer after read operation
         audio_file.seek(0)
         transcript = transcript.strip()
+        print(transcript)
 
         # Ensuring that the transcript is not empty or doesn't contain placeholder/fallback values
         if not transcript or transcript in ('you', 'Thank you.'):
@@ -307,6 +327,7 @@ class AzurePronunciationAssessor:
     _azure_api_key = os.getenv("AZURE_API_KEY")
 
     @classmethod
+    @retry(stop=stop_after_attempt(5), wait=wait_fixed(1))
     def get_assessment(cls, audio_file: IO, transcript: str) -> dict:
         """
         Get the assessment of the pronunciation from Azure.
@@ -343,7 +364,7 @@ class AzurePronunciationAssessor:
             ]
         }
         """
-
+        audio_file.seek(0)
         audio_file = cls._convert_audio_to_opus_bytesio(audio_file)
 
         pronunciation_assessment_params = json.dumps({
@@ -375,11 +396,6 @@ class AzurePronunciationAssessor:
                 headers=azure_api_headers)
         except RetryError:
             raise SpeechEvaluationError('Error during Azure pronunciation evaluation')
-
-        audio_file.seek(0)
-        print(azure_api_response)
-        print(azure_api_response.content)
-
         return azure_api_response.json()
 
     @classmethod
@@ -389,7 +405,14 @@ class AzurePronunciationAssessor:
     @staticmethod
     @retry(stop=stop_after_attempt(5), wait=wait_fixed(1))
     def _get_azure_response(url, data, headers):
-        return requests.post(url=url, data=data, headers=headers)
+        print('_get_azure_response')
+        time.sleep(1)
+        response = requests.post(url=url, data=data, headers=headers)
+        print(response.status_code)
+        if response.status_code != 200:
+            print(response.text)
+            raise Exception("Ошибка при отправке файла: " + response.text)
+        return response
 
     @staticmethod
     def _get_chunk(audio_file: IO, chunk_size=1024):
@@ -413,6 +436,7 @@ class AzurePronunciationAssessor:
         """
         # Convert FileStorage to Bytes
         blob = BytesIO(audio_file.read())
+        blob.name = 'audio.webm'
 
         # Load the file in webm format
         audio = AudioSegment.from_file(blob, format="webm")

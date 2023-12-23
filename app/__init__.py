@@ -1,6 +1,6 @@
 from flask import Flask
 
-from config import Config, init_db, init_auth, init_jinja_filters, init_sentry
+from config import Config, init_db, init_auth, init_jinja_filters  # init_sentry
 
 
 def create_app(config_class=Config):
@@ -11,7 +11,7 @@ def create_app(config_class=Config):
     init_db(app)
     init_auth(app)
     init_jinja_filters(app)
-    init_sentry(app)
+    # init_sentry(app)
 
     # register blueprints
     from app.auth import bp as auth_bp

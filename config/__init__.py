@@ -9,4 +9,4 @@ class Config(object):
 from .database import init_db
 from .auth import init_auth
 from .jinja_filters import init_jinja_filters
-from .sentry import init_sentry
+# from .sentry import init_sentry
